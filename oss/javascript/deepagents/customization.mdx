@@ -1,7 +1,7 @@
 ---
 title: 自定义深度智能体
 sidebarTitle: 自定义
-description: 了解如何使用系统提示、工具、子智能体等自定义深度智能体
+description: 了解如何使用系统提示词、工具、子智能体等自定义深度智能体
 ---
 
 import ChatModelTabsDaPy from '/snippets/chat-model-tabs-da.mdx';
@@ -29,26 +29,26 @@ import CreateDeepAgentConfigOptionsJs from '/snippets/create-deep-agent-config-o
 
 
 
-`createDeepAgent` has the following configuration options:
+`createDeepAgent` 具有以下配置选项：
 
 
-- [Model](#model)
-- [Tools](#tools)
-- [System Prompt](#system-prompt)
-- [Middleware](#middleware), including [prebuilt middleware](#prebuilt-middleware) and [custom middleware](#custom-middleware)
-- [Interpreters](#interpreters)
-- [Subagents](#subagents)
-- [Backends (virtual filesystems)](#backends)
-- [Human-in-the-loop](#human-in-the-loop)
-- [Skills](#skills)
-- [Memory](#memory)
-- [Profiles](#profiles)
+- [模型](#model)
+- [工具](#tools)
+- [系统提示词](#system-prompt)
+- [中间件](#middleware)，包括[预构建中间件](#prebuilt-middleware)和[自定义中间件](#custom-middleware)
+- [解释器](#interpreters)
+- [子智能体](#subagents)
+- [后端（虚拟文件系统）](#backends)
+- [人机协作](#human-in-the-loop)
+- [技能](#skills)
+- [记忆](#memory)
+- [配置文件](#profiles)
 
 
 
 <CreateDeepAgentConfigOptionsJs />
 
-有关完整的 parameter list, see the [`createDeepAgent`](https://reference.langchain.com/javascript/deepagents/types/CreateDeepAgentParams) API reference.
+For the full parameter list, see the [`createDeepAgent`](https://reference.langchain.com/javascript/deepagents/types/CreateDeepAgentParams) API reference.
 
 
 ## 模型
@@ -70,7 +70,7 @@ Pass a `model` string in `provider:model` format, or an initialized model instan
 
 ## 工具
 
-In addition to [built-in tools](/oss/javascript/deepagents/overview#core-capabilities) for planning, file management, and subagent spawning, you can provide custom tools:
+除了用于规划、文件管理和子智能体启动的[内置工具](/oss/javascript/deepagents/overview#core-capabilities)外，你还可以提供自定义工具：
 
 
 
@@ -105,12 +105,12 @@ const internetSearch = tool(
     description: "Run a web search",
     schema: z.object({
       query: z.string().describe("The search query"),
-      maxResults: z.number().可选().default(5),
+      maxResults: z.number().optional().default(5),
       topic: z
         .enum(["general", "news", "finance"])
-        .可选()
+        .optional()
         .default("general"),
-      includeRawContent: z.boolean().可选().default(false),
+      includeRawContent: z.boolean().optional().default(false),
     }),
   },
 );
@@ -121,13 +121,13 @@ const agent = createDeepAgent({
 ```
 
 
-## 系统提示
+## 系统提示词
 
-Deep Agents come with a built-in system prompt. A deep agent's value comes from the orchestration layer the SDK provides on top of the model—planning, virtual-filesystem tools, and subagents—and the model needs to know those exist and when to reach for them. The built-in prompt teaches the agent how to use that scaffolding so you don't have to re-derive it for every project; tweak it through a [profile](/oss/javascript/deepagents/profiles#harness-profiles) or your own `system_prompt=` rather than copying it verbatim.
+深度智能体附带内置系统提示词。 A deep agent's value comes from the orchestration layer the SDK provides on top of the model—planning, virtual-filesystem tools, and subagents—and the model needs to know those exist and when to reach for them. The built-in prompt teaches the agent how to use that scaffolding so you don't have to re-derive it for every project; tweak it through a [profile](/oss/javascript/deepagents/profiles#harness-profiles) or your own `system_prompt=` rather than copying it verbatim.
 
 When middleware add special tools, like the filesystem tools, it appends them to the system prompt.
 
-Each deep agent should also include a custom system prompt specific to its specific use case:
+每个深度智能体还应包含针对其特定用例的自定义系统提示词：
 
 
 
@@ -144,11 +144,11 @@ const agent = createDeepAgent({
 ```
 
 
-### 提示组装
+### 提示词组装
 
 Deep Agents builds the system prompt from up to four named parts so that caller-supplied instructions, the SDK's built-in agent guidance, and any model-specific [profile](/oss/javascript/deepagents/profiles) overrides can coexist with predictable precedence. Without this layering, a profile suffix tuned for Claude (for example) could overwrite or be overwritten by your `system_prompt=` argument depending on call order; the named slots make the ordering explicit and stable.
 
-在实际使用中, most callers only encounter two slots: `USER` (your `system_prompt=`) and `BASE` (the SDK default). Selecting a model with a built-in profile—Anthropic or OpenAI today—adds a `SUFFIX`. The full four-part assembly is mainly relevant when you author a custom `HarnessProfile` or debug why a profile's text appears where it does.
+In practice, most callers only encounter two slots: `USER` (your `system_prompt=`) and `BASE` (the SDK default). Selecting a model with a built-in profile—Anthropic or OpenAI today—adds a `SUFFIX`. The full four-part assembly is mainly relevant when you author a custom `HarnessProfile` or debug why a profile's text appears where it does.
 
 The four named parts (each may be absent):
 
@@ -238,9 +238,9 @@ agent = create_deep_agent(
 
 ## 中间件
 
-Deep Agents support any [middleware](/oss/javascript/langchain/middleware/overview), including the built-in middleware listed below, prebuilt middleware from LangChain, provider-specific middleware, and custom middleware you write yourself. Pass middleware to the `middleware` argument of `create_deep_agent`.
+深度智能体支持任何[中间件](/oss/javascript/langchain/middleware/overview), including the built-in middleware listed below, prebuilt middleware from LangChain, provider-specific middleware, and custom middleware you write yourself. Pass middleware to the `middleware` argument of `create_deep_agent`.
 
-默认情况下, Deep Agents have access to the following middleware:
+By default, Deep Agents have access to the following middleware:
 
 - [`TodoListMiddleware`](https://reference.langchain.com/javascript/langchain/index/todoListMiddleware): Tracks and manages todo lists for organizing agent tasks and work
 - [`FilesystemMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createFilesystemMiddleware): Handles file system operations such as reading, writing, and navigating directories
@@ -261,7 +261,7 @@ LangChain exposes additional prebuilt middleware that let you add-on various fea
 
 
 
-The `deepagents` package also exposes [`createSummarizationMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createSummarizationMiddleware) for the same workflow. 更多详情, see [Summarization](/oss/javascript/deepagents/context-engineering#summarization).
+The `deepagents` package also exposes [`createSummarizationMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createSummarizationMiddleware) for the same workflow. For more detail, see [Summarization](/oss/javascript/deepagents/context-engineering#summarization).
 
 
 
@@ -390,14 +390,14 @@ For setup, programmatic tool calling, interpreter skills, and limits, see [Inter
 
 ## 子智能体
 
-To isolate detailed work and avoid context bloat, use subagents:
+为了隔离详细工作并避免上下文膨胀，请使用子智能体：
 
 
 
 <SubagentBasicJs />
 
 
-更多信息请参阅 [Subagents](/oss/javascript/deepagents/subagents).
+For more information, see [Subagents](/oss/javascript/deepagents/subagents).
 
 {/* TODO(https://github.com/langchain-ai/docs/pull/2368/) ## Structured response format */}
 
@@ -405,7 +405,7 @@ To isolate detailed work and avoid context bloat, use subagents:
 
 ## 后端
 
-Tools for a deep agent can make use of virtual file systems to store, access, and edit files. 默认情况下, deep agents use a [`StateBackend`](https://reference.langchain.com/javascript/deepagents/backends/StateBackend).
+深度智能体的工具可以利用虚拟文件系统 to store, access, and edit files. By default, deep agents use a [`StateBackend`](https://reference.langchain.com/javascript/deepagents/backends/StateBackend).
 
 If you are using [skills](#skills) or [memory](#memory), you must add the expected skill or memory files to the backend before creating the agent.
 
@@ -426,7 +426,7 @@ If you are using [skills](#skills) or [memory](#memory), you must add the expect
         <Warning>
             This backend grants agents direct filesystem read/write access.
             Use with caution and only in appropriate environments.
-            更多信息请参阅 [`FilesystemBackend`](/oss/javascript/deepagents/backends#filesystembackend-local-disk).
+            For more information, see [`FilesystemBackend`](/oss/javascript/deepagents/backends#filesystembackend-local-disk).
         </Warning>
 
 
@@ -440,7 +440,7 @@ If you are using [skills](#skills) or [memory](#memory), you must add the expect
         <Warning>
             This backend grants agents direct filesystem read/write access **and** unrestricted shell execution on your host.
             Use with extreme caution and only in appropriate environments.
-            更多信息请参阅 [`LocalShellBackend`](/oss/javascript/deepagents/backends#localshellbackend-local-shell).
+            For more information, see [`LocalShellBackend`](/oss/javascript/deepagents/backends#localshellbackend-local-shell).
         </Warning>
 
 
@@ -470,12 +470,12 @@ If you are using [skills](#skills) or [memory](#memory), you must add the expect
     </Tab>
 </Tabs>
 
-更多信息请参阅 [Backends](/oss/javascript/deepagents/backends).
+For more information, see [Backends](/oss/javascript/deepagents/backends).
 
 ### 沙箱
 
 Sandboxes are specialized [backends](/oss/javascript/deepagents/backends) that run agent code in an isolated environment with their own filesystem and an `execute` tool for shell commands.
-Use a sandbox backend when you want your deep agent to write files, 安装依赖, and run commands without changing anything on your local machine.
+Use a sandbox backend when you want your deep agent to write files, install dependencies, and run commands without changing anything on your local machine.
 
 You configure sandboxes by passing a sandbox backend to `backend` when creating your deep agent:
 
@@ -484,11 +484,11 @@ You configure sandboxes by passing a sandbox backend to `backend` when creating 
 <SandboxBasicJs />
 
 
-更多信息请参阅 [Sandboxes](/oss/javascript/deepagents/sandboxes).
+For more information, see [Sandboxes](/oss/javascript/deepagents/sandboxes).
 
-## Human-in-the-loop
+## 人机协作
 
-某些工具操作可能是敏感的，需要在执行前获得人工审批。
+某些工具操作可能是敏感的，需要在执行前获得人工批准。
 You can configure the approval for each tool:
 
 
@@ -497,16 +497,16 @@ You can configure the approval for each tool:
 
 
 You can configure interrupt for agents and subagents on tool call as well as from within tool calls.
-更多信息请参阅 [Human-in-the-loop](/oss/javascript/deepagents/human-in-the-loop).
+For more information, see [Human-in-the-loop](/oss/javascript/deepagents/human-in-the-loop).
 
-## Skills
+## 技能
 
-你可以使用 [skills](/oss/javascript/deepagents/overview) to provide your deep agent with new capabilities and expertise.
+You can use [skills](/oss/javascript/deepagents/overview) to provide your deep agent with new capabilities and expertise.
 While [tools](/oss/javascript/deepagents/customization#tools) tend to cover lower level functionality like native file system actions or planning, skills can contain detailed instructions on how to complete tasks, reference info, and other assets, such as templates.
 These files are only loaded by the agent when the agent has determined that the skill is useful for the current prompt.
 This progressive disclosure reduces the amount of tokens and context the agent has to consider upon startup.
 
-例如 skills, see [Deep Agents example skills](https://github.com/langchain-ai/deepagentsjs/tree/main/examples/skills).
+For example skills, see [Deep Agents example skills](https://github.com/langchain-ai/deepagentsjs/tree/main/examples/skills).
 
 To add skills to your deep agent, pass them as an argument to `create_deep_agent`:
 
@@ -517,7 +517,7 @@ To add skills to your deep agent, pass them as an argument to `create_deep_agent
 
 ## 记忆
 
-Use [`AGENTS.md` files](https://agents.md/) to provide extra context 给你的深度智能体。
+Use [`AGENTS.md` files](https://agents.md/) to provide extra context to your deep agent.
 
 You can pass one or more file paths to the `memory` parameter when creating your deep agent:
 
@@ -646,7 +646,7 @@ You can pass one or more file paths to the `memory` parameter when creating your
         write_file: true,
         delete_file: true,
       },
-      checkpointer, // 必需!
+      checkpointer, // Required!
     });
     ```
   </Tab>
@@ -708,12 +708,12 @@ const internetSearch = tool(
     description: "Run a web search",
     schema: z.object({
       query: z.string().describe("The search query"),
-      maxResults: z.number().可选().default(5),
+      maxResults: z.number().optional().default(5),
       topic: z
         .enum(["general", "news", "finance"])
-        .可选()
+        .optional()
         .default("general"),
-      includeRawContent: z.boolean().可选().default(false),
+      includeRawContent: z.boolean().optional().default(false),
     }),
   }
 );
@@ -762,9 +762,9 @@ For more information and examples, see [response format](/oss/javascript/langcha
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/customization.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/customization.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

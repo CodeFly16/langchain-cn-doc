@@ -1,16 +1,16 @@
 ---
 title: 使用路由构建多源知识库
-sidebarTitle: 路由器：知识库
+sidebarTitle: "路由：知识库"
 ---
 
 import ChatModelTabsPy from '/snippets/chat-model-tabs.mdx';
 import ChatModelTabsJs from '/snippets/chat-model-tabs-js.mdx';
 
-## 概览
+## 概述
 
-The **router pattern** is a [multi-agent](/oss/python/langchain/multi-agent) architecture where a routing step classifies input and directs it to specialized agents, with results synthesized into a combined response. This pattern excels when your organization's knowledge lives across distinct **verticals** (separate knowledge domains that each require their own agent with specialized tools and prompts).
+**路由模式**是一种[多智能体](/oss/python/langchain/multi-agent)架构，其中路由步骤对输入进行分类并将其定向到专门的智能体，然后将结果综合为统一的响应。 This pattern excels when your organization's knowledge lives across distinct **verticals** (separate knowledge domains that each require their own agent with specialized tools and prompts).
 
-在本教程中, you'll build a multi-source knowledge base router that demonstrates these benefits through a realistic enterprise scenario. The system will coordinate three specialists:
+In this tutorial, you'll build a multi-source knowledge base router that demonstrates these benefits through a realistic enterprise scenario. The system will coordinate three specialists:
 
 - A **GitHub agent** that searches code, issues, and pull requests.
 - A **Notion agent** that searches internal documentation and wikis.
@@ -58,9 +58,9 @@ We will cover the following concepts:
 **Router vs. Subagents**: The [subagents pattern](/oss/python/langchain/multi-agent/subagents) can also route to multiple agents. Use the router pattern when you need specialized preprocessing, custom routing logic, or want explicit control over parallel execution. Use the subagents pattern when you want the LLM to decide which agents to call dynamically.
 </Tip>
 
-## 设置
+## Setup
 
-### 安装
+### Installation
 
 This tutorial requires the `langchain` and `langgraph` packages:
 
@@ -79,7 +79,7 @@ conda install langchain langgraph -c conda-forge
 
 
 
-更多详情请参阅 our [Installation guide](/oss/python/langchain/install).
+For more details, see our [Installation guide](/oss/python/langchain/install).
 
 ### LangSmith
 
@@ -494,7 +494,7 @@ After all agents complete, the `synthesize_results` function iterates over the c
 - Combines information from all sources without redundancy
 
 <Note>
-**Partial results**: 在本教程中, all selected agents must complete before synthesis.
+**Partial results**: In this tutorial, all selected agents must complete before synthesis.
 </Note>
 
 ## 8. Complete working example
@@ -817,7 +817,7 @@ The tool wrapper approach is recommended for most use cases. It provides clean s
 
 ### Full persistence approach
 
-If you need the router itself to maintain state—例如， to use previous search results in routing decisions—use [persistence](/oss/python/langchain/short-term-memory) to store message history at the router level.
+If you need the router itself to maintain state—for example, to use previous search results in routing decisions—use [persistence](/oss/python/langchain/short-term-memory) to store message history at the router level.
 
 <Warning>
 **Stateful routers add complexity.** When routing to different agents across turns, conversations may feel inconsistent if agents have different tones or prompts. Consider the [handoffs pattern](/oss/python/langchain/multi-agent/handoffs) or [subagents pattern](/oss/python/langchain/multi-agent/subagents) instead—both provide clearer semantics for multi-turn conversations with different agents.
@@ -841,7 +841,7 @@ Use the router pattern when you have multiple independent knowledge sources, nee
 For simpler cases with dynamic tool selection, consider the [subagents pattern](/oss/python/langchain/multi-agent/subagents). For workflows where agents need to converse with users sequentially, consider [handoffs](/oss/python/langchain/multi-agent/handoffs).
 </Tip>
 
-## 后续步骤
+## Next steps
 
 - Learn about [handoffs](/oss/python/langchain/multi-agent/handoffs) for agent-to-agent conversations
 - Explore the [subagents pattern](/oss/python/langchain/multi-agent/subagents-personal-assistant) for centralized orchestration
@@ -855,6 +855,6 @@ For simpler cases with dynamic tool selection, consider the [subagents pattern](
     [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/multi-agent/router-knowledge-base.mdx) 或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/multi-agent/router-knowledge-base.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 </div>

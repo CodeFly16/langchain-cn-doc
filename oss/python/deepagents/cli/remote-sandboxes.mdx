@@ -1,18 +1,18 @@
 ---
 title: 使用远程沙箱
 sidebarTitle: 远程沙箱
-description: Run Deep Agents CLI tool execution in LangSmith, Daytona, Modal, Runloop, or AgentCore sandboxes. Install provider extras, set credentials, and use flags and setup scripts.
+description: 在 LangSmith、Daytona、Modal、Runloop 或 AgentCore 沙箱中运行深度智能体 CLI 工具执行。安装提供商扩展、设置凭证，以及使用标志和设置脚本。
 ---
 
-The CLI uses the [sandbox as tool](/oss/python/deepagents/sandboxes#sandbox-as-tool-pattern) pattern: the CLI process (LLM loop, memory, tool dispatch) runs on your machine, but agent tool calls (`read_file`, `write_file`, `execute`, etc.) target the remote sandbox, not your local filesystem. To get files into the sandbox, use a [setup script](#setup-scripts) or the provider's file transfer APIs (see [Working with files](/oss/python/deepagents/sandboxes#working-with-files)).
+CLI 使用[沙箱即工具](/oss/python/deepagents/sandboxes#sandbox-as-tool-pattern)模式：CLI 进程（大语言模型（LLM）循环、记忆、工具调度）在你的本地机器上运行，但智能体工具调用（`read_file`、`write_file`、`execute` 等）指向远程沙箱，而不是你的本地文件系统。要将文件导入沙箱，请使用[设置脚本](#setup-scripts)或提供商的文件传输 API（参见[使用文件](/oss/python/deepagents/sandboxes#working-with-files)）。
 
-For a deeper look at sandbox architecture, integration patterns, and security best practices, see [Sandboxes](/oss/python/deepagents/sandboxes).
+有关沙箱架构、集成模式和安全最佳实践的深入了解，请参见[沙箱](/oss/python/deepagents/sandboxes)。
 
 <Steps>
-    <Step title="Install provider dependency" icon="download">
+    <Step title="安装提供商依赖" icon="download">
         <Tabs>
             <Tab title="LangSmith">
-                Included 默认情况下 when installing `deepagents-cli`. No extra installation needed.
+                安装 `deepagents-cli` 时默认包含。无需额外安装。
             </Tab>
             <Tab title="Daytona">
                 ```bash
@@ -37,7 +37,7 @@ For a deeper look at sandbox architecture, integration patterns, and security be
         </Tabs>
     </Step>
 
-    <Step title="Set provider credentials" icon="key">
+    <Step title="设置提供商凭证" icon="key">
         <Tabs>
             <Tab title="LangSmith">
                 ```bash
@@ -70,7 +70,7 @@ For a deeper look at sandbox architecture, integration patterns, and security be
         </Tabs>
     </Step>
 
-    <Step title="Run the CLI with a sandbox" icon="player-play">
+    <Step title="使用沙箱运行 CLI" icon="player-play">
         <Tabs>
             <Tab title="LangSmith">
                 ```bash
@@ -101,40 +101,40 @@ For a deeper look at sandbox architecture, integration patterns, and security be
     </Step>
 </Steps>
 
-## Sandbox flags and examples
+## 沙箱标志和示例
 
-| Flag | Description |
-|------|-------------|
-| `--sandbox TYPE` | Sandbox provider to use: `langsmith`, `agentcore`, `modal`, `daytona`, or `runloop` (default: `none`) |
-| `--sandbox-id ID` | Reuse an existing sandbox by ID instead of creating a new one. Skips creation and cleanup. Refer to your sandbox documentation for more |
-| `--sandbox-setup PATH` | Path to a setup script to run inside the sandbox upon creation |
+| 标志 | 说明 |
+|------|------|
+| `--sandbox TYPE` | 使用的沙箱提供商：`langsmith`、`agentcore`、`modal`、`daytona` 或 `runloop`（默认：`none`） |
+| `--sandbox-id ID` | 通过 ID 复用现有沙箱而非创建新沙箱。跳过创建和清理。详情请参考你的沙箱文档 |
+| `--sandbox-setup PATH` | 沙箱创建后在其内部运行的设置脚本路径 |
 
-Examples:
+示例：
 
 ```bash
-# Create a new Daytona sandbox
+# 创建新的 Daytona 沙箱
 deepagents --sandbox daytona
 
-# Reuse an existing sandbox (skips creation and cleanup)
+# 复用现有沙箱（跳过创建和清理）
 deepagents --sandbox runloop --sandbox-id dbx_abc123
 
-# Run a setup script after sandbox creation
+# 沙箱创建后运行设置脚本
 deepagents --sandbox modal --sandbox-setup ./setup.sh
 ```
 
-## Setup scripts
+## 设置脚本
 
-Use `--sandbox-setup` to run a shell script inside the sandbox after creation. This is useful for cloning repos, installing dependencies, and configuring environment variables.
+使用 `--sandbox-setup` 在沙箱创建后运行 shell 脚本。这对于克隆仓库、安装依赖和配置环境变量非常有用。
 
 ```bash title="setup.sh"
 #!/bin/bash
 set -e
 
-# Clone repository using GitHub token
+# 使用 GitHub token 克隆仓库
 git clone https://x-access-token:${GITHUB_TOKEN}@github.com/username/repo.git $HOME/workspace
 cd $HOME/workspace
 
-# Make environment variables persistent
+# 使环境变量持久化
 cat >> ~/.bashrc <<'EOF'
 export GITHUB_TOKEN="${GITHUB_TOKEN}"
 export OPENAI_API_KEY="${OPENAI_API_KEY}"
@@ -143,10 +143,10 @@ EOF
 source ~/.bashrc
 ```
 
-The CLI expands `${VAR}` references in setup scripts using your local environment variables. Store secrets in a local `.env` file for the setup script to access.
+CLI 会使用你本地的环境变量来展开设置脚本中的 `${VAR}` 引用。将密钥存储在本地 `.env` 文件中供设置脚本访问。
 
 <Warning>
-    Sandboxes isolate code execution, but agents remain vulnerable to prompt injection with untrusted inputs. Use human-in-the-loop approval, short-lived secrets, and trusted setup scripts only. See [Security considerations](/oss/python/deepagents/sandboxes#security-considerations) for details.
+    沙箱隔离了代码执行，但智能体在处理不受信任的输入时仍然容易受到提示注入攻击。请使用人机协作审批、短期密钥，且仅使用受信任的设置脚本。详情请参见[安全注意事项](/oss/python/deepagents/sandboxes#security-considerations)。
 </Warning>
 
 ---
@@ -156,6 +156,6 @@ The CLI expands `${VAR}` references in setup scripts using your local environmen
     [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/cli/remote-sandboxes.mdx) 或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/cli/remote-sandboxes.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

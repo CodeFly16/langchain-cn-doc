@@ -1,12 +1,12 @@
 ---
 title: 配置
 sidebarTitle: 配置
-description: Configure the Deep Agents CLI with config.toml, hooks, and MCP servers
+description: 使用 config.toml、hooks 和 MCP 服务器配置深度智能体 CLI
 ---
 
-The CLI stores its configuration in the `~/.deepagents/` directory. The main config files are:
+CLI 将其配置存储在 `~/.deepagents/` 目录中。主要配置文件包括：
 
-| File | Format | Purpose |
+| 文件 | 格式 | 用途 |
 |------|--------|---------|
 | `config.toml` | TOML | Model defaults, provider settings, constructor params, profile overrides, themes, update settings, MCP trust store |
 | `.env` | Dotenv | Global API keys and secrets |
@@ -17,26 +17,26 @@ The CLI stores its configuration in the `~/.deepagents/` directory. The main con
     Files under `~/.deepagents/.state/` hold per-machine CLI state and are managed automatically by the CLI. The `.state/` directory was introduced in `deepagents-cli>=0.0.49`.
 </Note>
 
-## Provider credentials
+## 提供商凭据
 
-For every provider, the CLI checks two credential sources in order:
+对于每个提供商，CLI 按顺序检查两个凭据来源：
 
 1. **Stored keys** — entered via `/auth` and persisted locally.
 2. **Environment variables** — `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`, etc., plus the same names with a [`DEEPAGENTS_CLI_`](#deepagents_cli_-prefix) prefix and any keys loaded from [`.env` files](#environment-variables).
 
-A stored key always wins over an env-var key for the same provider.
+对于同一提供商，存储的密钥始终优先于环境变量密钥。
 
-### Use `/auth` (recommended)
+### 使用 `/auth`（推荐）
 
-Open the credential manager from any session:
+从任何会话打开凭据管理器：
 
 ```txt
 /auth
 ```
 
-The manager lists every LLM provider the CLI knows about, marks the ones that already have a key, and lets you paste, rotate, or clear credentials inline. Each provider renders as one of:
+管理器列出 CLI 已知的每个大语言模型（LLM）提供商, marks the ones that already have a key, and lets you paste, rotate, or clear credentials inline. Each provider renders as one of:
 
-| Label | Meaning |
+| 标签 | 含义 |
 |-------|---------|
 | `✓ credentials set` | A stored or env-var key is available |
 | `! missing OPENAI_API_KEY` | The named env var is unset and no key is stored — pick the row to paste one |
@@ -52,7 +52,7 @@ Press Enter on a row to paste a key, or use the row's delete affordance to clear
 
 `/auth` only manages **LLM provider** credentials. Tool credentials such as `TAVILY_API_KEY` (web search) and `LANGSMITH_API_KEY` (tracing) are read from the environment instead — [set them in `~/.deepagents/.env` or your shell](#environment-variables).
 
-### 环境变量 (CI and headless)
+### 环境变量（CI 和无头模式）
 
 For non-interactive runs, CI/CD pipelines, or anywhere a TUI isn't available, export the provider's env var or write it to `~/.deepagents/.env`:
 
@@ -67,7 +67,7 @@ See [Environment variables](#environment-variables) below for loading order, the
 
 The CLI loads environment variables from dotenv files so you don't need to `export` API keys in your shell profile or duplicate `.env` files across projects.
 
-### Loading order and precedence
+### 加载顺序和优先级
 
 Two `.env` files are loaded at startup:
 
@@ -76,9 +76,9 @@ Two `.env` files are loaded at startup:
 
 The effective precedence is: **shell environment > project `.env` > global `.env`**. Values already set in the shell are never overwritten—including on `/reload`.
 
-### `DEEPAGENTS_CLI_` prefix
+### `DEEPAGENTS_CLI_` 前缀
 
-All CLI-specific environment variables use a `DEEPAGENTS_CLI_` prefix (e.g., `DEEPAGENTS_CLI_AUTO_UPDATE`, `DEEPAGENTS_CLI_DEBUG`). 请参阅[CLI environment variable reference](#cli-environment-variable-reference)了解完整的list.
+All CLI-specific environment variables use a `DEEPAGENTS_CLI_` prefix (e.g., `DEEPAGENTS_CLI_AUTO_UPDATE`, `DEEPAGENTS_CLI_DEBUG`). See the [CLI environment variable reference](#cli-environment-variable-reference) for the full list.
 
 The prefix also works as an override mechanism for any environment variable the CLI reads, including third-party credentials. The CLI checks `DEEPAGENTS_CLI_{NAME}` first, then falls back to `{NAME}`:
 
@@ -109,13 +109,13 @@ DEEPAGENTS_CLI_OPENAI_API_KEY=sk-cli-only-...
 
 Then override per-project where needed by placing a `.env` in the project directory.
 
-### Enable web search with Tavily
+### 使用 Tavily 启用网络搜索
 
 The built-in `web_search` tool uses [Tavily](https://tavily.com). The CLI shows a "Web search disabled — `TAVILY_API_KEY` is not set" notification on startup until you provide a key. Unlike model provider keys, Tavily is **not** managed by `/auth`; it is read directly from the environment.
 
 <Steps>
     <Step title="Get a key">
-        Sign up at [tavily.com](https://tavily.com) and copy the key (it starts with `tvly-`). The 免费层级 is sufficient for most CLI usage.
+        Sign up at [tavily.com](https://tavily.com) and copy the key (it starts with `tvly-`). The free tier is sufficient for most CLI usage.
     </Step>
 
     <Step title="Add it to your environment">
@@ -141,11 +141,11 @@ The built-in `web_search` tool uses [Tavily](https://tavily.com). The CLI shows 
 
 ---
 
-## Config file
+## 配置文件
 
 `~/.deepagents/config.toml` lets you customize model providers, set defaults, and pass extra parameters to model constructors.
 
-### Default and recent model
+### 默认和最近使用的模型
 
 ```toml
 [models]
@@ -155,7 +155,7 @@ recent = "google_genai:gemini-3.1-pro-preview"   # last /model switch (written a
 
 `[models].default` always takes priority over `[models].recent`. The `/model` command only writes to `[models].recent`, so your configured default is never overwritten by mid-session switches. To remove the default, use `/model --default --clear` or delete the `default` key from the config file.
 
-### Default and recent agent
+### 默认和最近使用的智能体
 
 ```toml
 [agents]
@@ -167,7 +167,7 @@ recent = "frontend-dev"  # last /agents switch (written automatically)
 
 Explicit `-a`/`--agent` always overrides both, and `-r`/`--resume` bypasses both so the thread's original agent is restored. See [Command reference](/oss/javascript/deepagents/cli/overview#command-reference) for related flags.
 
-### Provider configuration
+### 提供商配置
 
 Each provider is a TOML table under `[models.providers]`:
 
@@ -189,41 +189,41 @@ temperature = 0.7
 
 Providers have the following configuration options:
 
-<ResponseField name="models" type="string[]" post={["可选"]}>
+<ResponseField name="models" type="string[]" post={["optional"]}>
     A list of model names to show in the interactive `/model` switcher for this provider. For providers that already ship with model profiles, any names you add here appear alongside the bundled ones, useful for newly released models that haven't been added to the package yet. For [arbitrary providers](#arbitrary-providers), this list is the only source of models in the switcher.
 
     Models listed here **bypass** the profile-based [filtering criteria](/oss/javascript/deepagents/cli/providers#which-models-appear-in-the-switcher) and always appear in the switcher. This makes it the recommended way to surface models that are excluded because their profile lacks `tool_calling` support or doesn't exist yet.
 
-    This key is 可选. You can always pass any model name directly to `/model` or `--model` regardless of whether it appears in the switcher; the provider validates the name at request time.
+    This key is optional. You can always pass any model name directly to `/model` or `--model` regardless of whether it appears in the switcher; the provider validates the name at request time.
 </ResponseField>
 
-<ResponseField name="api_key_env" type="string" post={["可选"]}>
-    The **name** of the environment variable that holds the API key (e.g., `"OPENAI_API_KEY"`), not the key itself. The CLI reads the credential from this env var at startup to verify access before creating the model. Most chat model packages read from a default env var automatically. 请参阅[Provider reference](/oss/javascript/deepagents/cli/providers#provider-reference) table for which variable each provider checks.
+<ResponseField name="api_key_env" type="string" post={["optional"]}>
+    The **name** of the environment variable that holds the API key (e.g., `"OPENAI_API_KEY"`), not the key itself. The CLI reads the credential from this env var at startup to verify access before creating the model. Most chat model packages read from a default env var automatically. See the [Provider reference](/oss/javascript/deepagents/cli/providers#provider-reference) table for which variable each provider checks.
 </ResponseField>
 
-<ResponseField name="base_url" type="string" post={["可选"]}>
-    Override the base URL used by the provider, if supported. Refer to your provider packages' [reference docs](https://reference.langchain.com/python/integrations/)了解更多info.
+<ResponseField name="base_url" type="string" post={["optional"]}>
+    Override the base URL used by the provider, if supported. Refer to your provider packages' [reference docs](https://reference.langchain.com/python/integrations/) for more info.
 </ResponseField>
 
-<ResponseField name="params" type="object" post={["可选"]}>
+<ResponseField name="params" type="object" post={["optional"]}>
     Extra keyword arguments forwarded to the model constructor. Flat keys (e.g., `temperature = 0`) apply to every model from this provider. Model-keyed sub-tables (e.g., `[params."gpt-4o"]`) override individual values for that model only; the merge is shallow (model wins on conflict).
 
     Do not put credentials (e.g., `api_key`) in `params`. Use [`api_key_env`](#provider-configuration) to point at an environment variable instead.
 </ResponseField>
 
-<ResponseField name="profile" type="object" post={["可选"]}>
+<ResponseField name="profile" type="object" post={["optional"]}>
     (Advanced) Override fields in the model's runtime [profile](/oss/javascript/langchain/models#model-profiles) (e.g., `max_input_tokens`). Flat keys apply to every model from this provider. Model-keyed sub-tables (e.g., `[profile."claude-sonnet-4-5"]`) override individual values for that model only; the merge is shallow (model wins on conflict). These overrides are applied after the model is created, so they take effect for context-limit display, auto-summarization, and any other feature that reads the profile.
 </ResponseField>
 
-<ResponseField name="class_path" type="string" post={["可选"]}>
+<ResponseField name="class_path" type="string" post={["optional"]}>
     Used for [arbitrary model](#arbitrary-providers) providers. Fully-qualified Python class in `module.path:ClassName` format. When set, the CLI imports and instantiates this class directly for provider `<name>`. The class must be a `BaseChatModel` subclass.
 </ResponseField>
 
-<ResponseField name="enabled" type="boolean" default="true" post={["可选"]}>
+<ResponseField name="enabled" type="boolean" default="true" post={["optional"]}>
     Whether this provider appears in the `/model` selector. Set to `false` to hide a provider that was auto-discovered from an installed package (e.g., a transitive dependency you don't want cluttering the switcher). You can still use a disabled provider directly via `/model provider:model` or `--model`.
 </ResponseField>
 
-### 模型 constructor params
+### 模型构造参数
 
 Any provider can use the `params` table to pass extra arguments to the model constructor:
 
@@ -233,7 +233,7 @@ temperature = 0
 num_ctx = 8192
 ```
 
-#### Per-model overrides
+#### 每模型覆盖
 
 If a specific model needs different params, add a model-keyed sub-table under `params` to override individual values without duplicating the entire provider config:
 
@@ -261,7 +261,7 @@ The merge is shallow: any key present in the model sub-table replaces the same k
     For one-off adjustments without editing `config.toml`, pass a JSON object via `--model-params` at launch or mid-session with `/model`. CLI flags take highest priority over the config file. See [Model parameters](/oss/javascript/deepagents/cli/providers#model-parameters) on the providers page for syntax and provider-specific examples.
 </Tip>
 
-### Profile overrides (Advanced)
+### 配置文件覆盖（高级）
 
 Override fields in the model's runtime profile to change how the CLI interprets model capabilities. The most common use case is lowering `max_input_tokens` to trigger auto-summarization earlier — useful for testing or for constraining context usage:
 
@@ -284,7 +284,7 @@ max_input_tokens = 8192
 
 Profile overrides are merged into the model's profile after creation. Any feature that reads the profile — context-limit display in the status bar, auto-summarization thresholds, capability checks — will see the overridden values.
 
-#### CLI profile overrides with `--profile-override` (Advanced)
+#### 使用 `--profile-override` 的 CLI 配置文件覆盖（高级）
 
 To override model profile fields at runtime without editing the config file, pass a JSON object via `--profile-override`:
 
@@ -302,9 +302,9 @@ These are merged on top of config file profile overrides (CLI wins). The priorit
 
 `--profile-override` values persist across mid-session `/model` hot-swaps — switching models re-applies the override to the new model.
 
-### Custom base URL
+### 自定义基础 URL
 
-Some provider packages accept a `base_url` to override the default endpoint. 例如, `langchain-ollama` defaults to `http://localhost:11434` via the underlying `ollama` client. To point it elsewhere, set `base_url` in your configuration:
+Some provider packages accept a `base_url` to override the default endpoint. For example, `langchain-ollama` defaults to `http://localhost:11434` via the underlying `ollama` client. To point it elsewhere, set `base_url` in your configuration:
 
 ```toml
 [models.providers.ollama]
@@ -313,7 +313,7 @@ base_url = "http://your-host-here:port"
 
 Refer to your provider's reference documentation for compatibility information and additional considerations.
 
-### Compatible APIs
+### 兼容 API
 
 For providers that expose APIs that are wire-compatible with OpenAI or Anthropic, you can use the existing `langchain-openai` or `langchain-anthropic` packages by pointing `base_url` at the provider's endpoint:
 
@@ -344,7 +344,7 @@ models = ["my-model"]
     ```
 </Warning>
 
-### Adding models to the interactive switcher
+### 将模型添加到交互式切换器
 
 Some providers (e.g. `langchain-ollama`) don't bundle model profile data (see [Provider reference](/oss/javascript/deepagents/cli/providers#provider-reference) for full listing). When this is the case, the interactive `/model` switcher won't list models for that provider. You can fill in the gap by defining a `models` list in your config file for the provider:
 
@@ -355,7 +355,7 @@ models = ["llama3", "mistral", "codellama"]
 
 The `/model` switcher will now include an Ollama section with these models listed.
 
-This is entirely 可选. You can always switch to any model by specifying its full name directly:
+This is entirely optional. You can always switch to any model by specifying its full name directly:
 
 ```txt
 /model ollama:llama3
@@ -365,9 +365,9 @@ This is entirely 可选. You can always switch to any model by specifying its fu
     When `langchain-ollama` is installed and the daemon is reachable, the CLI auto-discovers locally pulled models and merges them into the switcher—no `models` list required. Run `/reload` to refresh after pulling new models, or set `DEEPAGENTS_CLI_OLLAMA_DISCOVERY=0` to opt out.
 </Note>
 
-### Arbitrary providers
+### 任意提供商
 
-你可以使用 any [LangChain `BaseChatModel`](https://reference.langchain.com/python/langchain_core/language_models/#langchain_core.language_models.BaseChatModel) subclass using `class_path`. The CLI imports and instantiates the class directly — no built-in provider package required.
+You can use any [LangChain `BaseChatModel`](https://reference.langchain.com/python/langchain_core/language_models/#langchain_core.language_models.BaseChatModel) subclass using `class_path`. The CLI imports and instantiates the class directly — no built-in provider package required.
 
 ```toml
 [models.providers.my_custom]
@@ -380,7 +380,7 @@ temperature = 0
 max_tokens = 4096
 ```
 
-`api_key_env` and `base_url` are 可选. `class_path` providers are expected to handle their own authentication internally — useful when your model uses custom auth (JWT tokens, proprietary headers, mTLS, etc.) rather than a standard API key:
+`api_key_env` and `base_url` are optional. `class_path` providers are expected to handle their own authentication internally — useful when your model uses custom auth (JWT tokens, proprietary headers, mTLS, etc.) rather than a standard API key:
 
 ```toml
 [models.providers.xyz]
@@ -423,17 +423,17 @@ MyChatModel(model="my-model-v1", base_url="...", api_key="...", temperature=0, m
     `class_path` executes arbitrary Python code from your config file. This has the same trust model as `pyproject.toml` build scripts — you control your own machine.
 </Warning>
 
-Your provider package may 可选ly provide model profiles at a `_PROFILES` dict in `<package>.data._profiles` in lieu of defining them under the `models` key. See LangChain [model profiles](https://github.com/langchain-ai/langchain/tree/master/libs/model-profiles)了解更多info.
+Your provider package may optionally provide model profiles at a `_PROFILES` dict in `<package>.data._profiles` in lieu of defining them under the `models` key. See LangChain [model profiles](https://github.com/langchain-ai/langchain/tree/master/libs/model-profiles) for more info.
 
 ---
 
-## Skills extra allowed directories
+## 技能额外允许目录
 
-默认情况下, when the CLI loads skills it validates that a resolved skill file path stays inside one of the standard [skill directories](/oss/javascript/deepagents/data-locations#skills). This prevents symlinks inside skill directories from reading arbitrary files outside those roots.
+By default, when the CLI loads skills it validates that a resolved skill file path stays inside one of the standard [skill directories](/oss/javascript/deepagents/data-locations#skills). This prevents symlinks inside skill directories from reading arbitrary files outside those roots.
 
 If you store shared skill assets in a non-standard location and use symlinks from a standard skill directory to reference them, you can add that location to the containment allowlist. This does **not** add a new skill discovery location: skills are still only discovered from the standard directories.
 
-<ResponseField name="extra_allowed_dirs" type="string[]" post={["可选"]}>
+<ResponseField name="extra_allowed_dirs" type="string[]" post={["optional"]}>
     Paths added to the skill containment allowlist. Supports `~` expansion.
 
     ```toml
@@ -455,7 +455,7 @@ When the environment variable is set, it takes precedence over the config file v
 
 ---
 
-## Themes
+## 主题
 
 Use `/theme` to open an interactive theme selector. Navigate the list to preview themes in real-time, press `Enter` to persist your choice to `config.toml`.
 
@@ -466,9 +466,9 @@ The CLI ships with many built-in themes. The default theme is `langchain`, a dar
 theme = "langchain-dark"
 ```
 
-### User-defined themes
+### 用户定义的主题
 
-Define custom themes under `[themes.<name>]` sections in `config.toml`. Each section requires `label` (str). `dark` (bool) defaults to `false` if omitted — set to `true` for dark themes. All color fields are 可选 — omitted fields fall back to the built-in dark or light palette based on the `dark` flag.
+Define custom themes under `[themes.<name>]` sections in `config.toml`. Each section requires `label` (str). `dark` (bool) defaults to `false` if omitted — set to `true` for dark themes. All color fields are optional — omitted fields fall back to the built-in dark or light palette based on the `dark` flag.
 
 ```toml
 [themes.my-solarized]
@@ -486,7 +486,7 @@ background = "#CAF0F8"
 
 User-defined themes appear alongside built-in themes in the `/theme` selector.
 
-### Override built-in theme colors
+### 覆盖内置主题颜色
 
 To tweak a built-in theme's colors without creating a new theme, use a `[themes.<builtin-name>]` section. Only color fields are read — `label` and `dark` are inherited from the built-in:
 
@@ -499,7 +499,7 @@ Omitted color fields retain the existing built-in values.
 
 Changes to `[themes.*]` sections take effect on `/reload`.
 
-### Map themes to terminals
+### 将主题映射到终端
 
 If you switch between terminals with different color schemes (for example, a dark iTerm and a light Apple Terminal), map each one to a theme under `[ui.terminal_themes]`. The CLI matches the shell's `TERM_PROGRAM` and applies the mapped theme automatically:
 
@@ -543,7 +543,7 @@ Press `T` in the `/theme` picker to save the highlighted theme for the current t
 
 ---
 
-## Auto-update
+## 自动更新
 
 The CLI can automatically check for and install updates.
 
@@ -565,7 +565,7 @@ The environment variable takes precedence over the config file.
 
 When enabled, the CLI checks PyPI for a newer version at session start and automatically upgrades using the detected install method (uv, Homebrew, or pip). When disabled (default), the CLI shows an update hint with the appropriate install command instead.
 
-你也可以 check for and install updates manually at any time with the `/update` slash command, which bypasses the cache and reports success or failure inline.
+You can also check for and install updates manually at any time with the `/update` slash command, which bypasses the cache and reports success or failure inline.
 
 After an upgrade, the CLI shows a "what's new" banner on the next launch with a link to the changelog.
 
@@ -573,7 +573,7 @@ At session exit, if a newer version was detected during the session, an update b
 
 ---
 
-## Managed deployments
+## 受管部署
 
 The [install script](https://github.com/langchain-ai/deepagents/blob/main/libs/cli/scripts/install.sh) supports running as root, targeting macOS MDM tools (Kandji, Jamf, etc.) that execute scripts in a minimal root environment.
 
@@ -588,45 +588,45 @@ To pre-configure auto-update for managed installs, set `DEEPAGENTS_CLI_AUTO_UPDA
 
 ---
 
-## CLI environment variable reference
+## CLI 环境变量参考
 
 All CLI-specific environment variables use the `DEEPAGENTS_CLI_` prefix. See [`DEEPAGENTS_CLI_` prefix](#deepagents_cli_-prefix) for how the prefix also works as an override for third-party credentials.
 
-<ResponseField name="DEEPAGENTS_CLI_AUTO_UPDATE" type="string" post={["可选"]}>
+<ResponseField name="DEEPAGENTS_CLI_AUTO_UPDATE" type="string" post={["optional"]}>
     Enable automatic CLI updates (`1`, `true`, or `yes`).
 </ResponseField>
 
-<ResponseField name="DEEPAGENTS_CLI_DEBUG" type="string" post={["可选"]}>
+<ResponseField name="DEEPAGENTS_CLI_DEBUG" type="string" post={["optional"]}>
     Enable verbose debug logging to a file. Accepts `1`, `true`, `yes`, `on` (case-insensitive) as enabled; `0`, `false`, `no`, `off`, empty string, or unset disables it. When enabled, the per-session server log file is preserved on shutdown and its path is printed to stderr for triage.
 </ResponseField>
 
-<ResponseField name="DEEPAGENTS_CLI_DEBUG_FILE" type="string" default="/tmp/deepagents_debug.log" post={["可选"]}>
+<ResponseField name="DEEPAGENTS_CLI_DEBUG_FILE" type="string" default="/tmp/deepagents_debug.log" post={["optional"]}>
     Path for the debug log file.
 </ResponseField>
 
-<ResponseField name="DEEPAGENTS_CLI_EXTRA_SKILLS_DIRS" type="string" post={["可选"]}>
+<ResponseField name="DEEPAGENTS_CLI_EXTRA_SKILLS_DIRS" type="string" post={["optional"]}>
     Colon-separated paths added to the [skill containment allowlist](#skills-extra-allowed-directories).
 </ResponseField>
 
-<ResponseField name="DEEPAGENTS_CLI_LANGSMITH_PROJECT" type="string" post={["可选"]}>
+<ResponseField name="DEEPAGENTS_CLI_LANGSMITH_PROJECT" type="string" post={["optional"]}>
     Override the LangSmith project name for agent traces. See [Trace with LangSmith](/oss/javascript/deepagents/cli/overview#trace-with-langsmith).
 </ResponseField>
 
-<ResponseField name="DEEPAGENTS_CLI_NO_UPDATE_CHECK" type="string" post={["可选"]}>
+<ResponseField name="DEEPAGENTS_CLI_NO_UPDATE_CHECK" type="string" post={["optional"]}>
     Disable automatic update checking when set.
 </ResponseField>
 
-<ResponseField name="DEEPAGENTS_CLI_SHELL_ALLOW_LIST" type="string" post={["可选"]}>
+<ResponseField name="DEEPAGENTS_CLI_SHELL_ALLOW_LIST" type="string" post={["optional"]}>
     Comma-separated shell commands to allow (or `recommended` / `all`).
 </ResponseField>
 
-<ResponseField name="DEEPAGENTS_CLI_USER_ID" type="string" post={["可选"]}>
+<ResponseField name="DEEPAGENTS_CLI_USER_ID" type="string" post={["optional"]}>
     Attach a user identifier to LangSmith trace metadata.
 </ResponseField>
 
 ---
 
-## External editor
+## 外部编辑器
 
 Press `Ctrl+X` or type `/editor` to compose prompts in an external editor. The CLI checks `$VISUAL`, then `$EDITOR`, then falls back to `vi` (macOS/Linux) or `notepad` (Windows). GUI editors (VS Code, Cursor, Zed, Sublime Text, Windsurf) automatically receive a `--wait` flag so the CLI blocks until you close the file.
 
@@ -638,7 +638,7 @@ export EDITOR="nvim"    # Terminal fallback
 
 ---
 
-## Hooks
+## 钩子
 
 Hooks let external programs react to CLI lifecycle events. Configure commands in `~/.deepagents/hooks.json` and the CLI pipes a JSON payload to each matching command's stdin whenever an event fires.
 
@@ -661,7 +661,7 @@ Create `~/.deepagents/hooks.json`:
 
 Now every time a session starts or ends, the CLI appends the event payload to `~/deepagents-events.log`.
 
-### Hook configuration
+### 钩子配置
 
 The config file contains a single `hooks` array. Each entry has:
 
@@ -669,7 +669,7 @@ The config file contains a single `hooks` array. Each entry has:
     Command and arguments to run. No shell expansion: use `["bash", "-c", "..."]` if needed.
 </ResponseField>
 
-<ResponseField name="events" type="list[str]" post={["可选"]}>
+<ResponseField name="events" type="list[str]" post={["optional"]}>
     Event names to subscribe to. Omit or leave empty to receive **all** events.
 </ResponseField>
 
@@ -689,7 +689,7 @@ The config file contains a single `hooks` array. Each entry has:
 
 The second hook above has no `events` filter, so it receives every event the CLI emits.
 
-### Payload format
+### 有效负载格式
 
 Each hook command receives a JSON object on stdin with an `"event"` key plus event-specific fields:
 
@@ -700,7 +700,7 @@ Each hook command receives a JSON object on stdin with an `"event"` key plus eve
 }
 ```
 
-### Events reference
+### 事件参考
 
 #### `session.start`
 
@@ -760,7 +760,7 @@ Fired before the CLI compacts (summarizes) the conversation context.
 
 No additional fields.
 
-### Execution model
+### 执行模型
 
 - **Background thread**: Hook subprocesses run in a thread via `asyncio.to_thread` so the main event loop is never blocked.
 - **Concurrent dispatch**: When multiple hooks match an event, they run concurrently in a thread pool.
@@ -769,7 +769,7 @@ No additional fields.
 - **Lazy loading**: The config file is read once on the first event dispatch and cached for the rest of the session.
 - **No shell expansion**: Commands are executed directly (not through a shell). Wrap in `["bash", "-c", "..."]` if you need shell features like pipes or variable expansion.
 
-### Hook examples
+### 钩子示例
 
 <Accordion title="Log all events to a file">
 ```json
@@ -828,7 +828,7 @@ elif event == "permission.request":
 ```
 </Accordion>
 
-### Security considerations
+### 安全考虑
 
 Hooks follow the same trust model as Git hooks or shell aliases — any user who can write to `~/.deepagents/hooks.json` can execute arbitrary commands. This is by design:
 
@@ -844,9 +844,9 @@ Hooks follow the same trust model as Git hooks or shell aliases — any user who
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/cli/configuration.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/cli/configuration.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

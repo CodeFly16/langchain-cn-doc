@@ -1,22 +1,17 @@
 ---
 title: 沙箱
-description: Build an IDE-like UI for a coding agent backed by a sandbox environment
+description: 为基于沙箱环境的编码智能体构建类 IDE 的用户界面
 ---
 
-Coding agents need more than a chat window. They need a file browser, a code
-viewer, and a diff panel, an IDE experience. This pattern connects a deep
-agent to a [sandbox](/oss/python/deepagents/sandboxes) so it can read,
-write, and execute code in an isolated environment, then exposes the sandbox
-filesystem through a custom API server so the frontend can display files in
-real time as the agent works.
+编码智能体需要的不仅仅是聊天窗口。它们需要文件浏览器、代码查看器和差异面板——一种 IDE 体验。此模式将深度智能体连接到[沙箱](/oss/python/deepagents/sandboxes)，使其可以在隔离环境中读取、写入和执行代码，然后通过自定义 API 服务器暴露沙箱文件系统，以便前端在智能体工作时实时显示文件。
 
 import { PatternEmbed } from "/snippets/pattern-embed.jsx";
 
 <PatternEmbed pattern="deep-agent-ide" minHeight={700} />
 
-## Architecture
+## 架构
 
-The sandbox pattern has three layers:
+沙箱模式有三层：
 
 1. **A deep agent with a sandbox backend:** The agent gets filesystem tools
    (`read_file`, `write_file`, `edit_file`, `execute`) automatically from the
@@ -66,12 +61,12 @@ graph LR
 
 Before diving into the code, it's important to understand how sandboxes are
 scoped. The scoping strategy determines who shares a sandbox, how long it
-lives, and how it's resolved 在运行时.
+lives, and how it's resolved at runtime.
 
 ### Thread-scoped sandbox (recommended)
 
 Each LangGraph thread gets its own sandbox. The sandbox ID is stored in the
-thread's metadata and resolved 在运行时 via `getConfig()`.
+thread's metadata and resolved at runtime via `getConfig()`.
 This is the recommended approach for most applications:
 
 - Conversations are isolated — file changes in one thread don't affect another
@@ -189,7 +184,7 @@ commands. No tool configuration needed.
 ### Resolve a sandbox per thread
 
 Instead of creating a sandbox at module level (which would be shared across
-all threads and may expire), resolve the sandbox per-thread 在运行时. The sandbox reads `thread_id` from the LangGraph config via `getConfig()`:
+all threads and may expire), resolve the sandbox per-thread at runtime. The sandbox reads `thread_id` from the LangGraph config via `getConfig()`:
 
 
 
@@ -229,7 +224,7 @@ Before the agent runs, populate the sandbox with your project files using
   the sandbox (see `get_or_create_sandbox_for_thread` above). `upload_files` seeds or updates
 
 
-  project files 在运行时 on top of that image.
+  project files at runtime on top of that image.
 </Info>
 
 ```ts
@@ -760,10 +755,10 @@ A sandbox is the right choice when:
 - **Prototyping tools** where users describe features in natural language and
   watch the agent implement them in real time
 
-## 最佳实践
+## Best practices
 
 - **Use thread-scoped sandboxes** for production apps. Store the sandbox ID in
-  thread metadata and resolve it via `getConfig()` 在运行时. This avoids
+  thread metadata and resolve it via `getConfig()` at runtime. This avoids
   module-level state and keeps sandboxes isolated per conversation.
 - **Share `getOrCreateSandboxForThread`** between the agent backend and the
   API server. Both should resolve the sandbox the same way — via thread
@@ -791,6 +786,6 @@ A sandbox is the right choice when:
     [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/frontend/sandbox.mdx) 或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/frontend/sandbox.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 </div>

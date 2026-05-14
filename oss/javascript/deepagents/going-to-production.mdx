@@ -8,19 +8,19 @@ import SandboxLifecycleFactoryAssistantTs from '/snippets/deepagents-sandbox-lif
 import SandboxLifecycleFactoryThreadPy from '/snippets/deepagents-sandbox-lifecycle-factory-thread-py.mdx';
 import SandboxLifecycleFactoryThreadTs from '/snippets/deepagents-sandbox-lifecycle-factory-thread-ts.mdx';
 
-本指南 covers considerations for taking a deep agent from a local prototype to a production deployment. 它将引导你完成记忆范围界定、配置执行环境、添加防护栏和连接前端。
+本指南涵盖将深度智能体从本地原型部署到生产环境的注意事项。它逐步介绍了记忆范围界定、执行环境配置、添加防护措施和连接前端。
 
 
 ## 概述
 
-Agents use information from memory and their execution environment to accomplish tasks.
-在生产环境中, there are a few primitives that determine how information is shared and accessed:
+智能体使用来自记忆和执行环境的信息来完成任务。
+在生产环境中，有几个基本要素决定了信息如何共享和访问：
 
 - **Thread**: a single conversation. Message history and scratch files are scoped to the thread by default and don't carry over.
 - **User**: someone interacting with your agent. Memory and files can be private to a user or shared across users. Identity and authorization comes from your [auth layer](/langsmith/auth).
 - **Assistant**: a configured agent instance. Memory and files can be tied to one assistant or shared across all of them.
 
-本页面 covers:
+本页涵盖：
 - **[LangSmith Deployments](#langsmith-deployments)**: managed infrastructure with auth, webhooks, and cron
 - **[Production considerations](#production-considerations)**: multi-tenancy, authentication, credentials, async, and durability
 - **[Memory](#memory)**: persist information across conversations
@@ -53,13 +53,13 @@ All code snippets on this page use the following `langgraph.json` unless otherwi
 
 `langgraph.json` is the configuration file that tells the LangGraph platform how to build and run your application. It lives at the root of your project and is required for both local development (with `langgraph dev`) and production deployment. The key fields are:
 
-| Field | 描述 |
+| Field | Description |
 | --- | --- |
 | `dependencies` | Packages to install. `["."]` installs the current directory as a package (reads from `requirements.txt`, `pyproject.toml`, or `package.json`). |
 | `graphs` | Maps graph IDs to their code locations. Each entry is `"<id>": "./<file>:<variable>"`, where `<id>` is the name you use to invoke the graph via the API, and `<variable>` is the compiled graph or constructor function exported from `<file>`. |
 | `env` | Path to a `.env` file with environment variables (API keys, secrets). These are set at build time and available at runtime. |
 
-有关完整的 set of configuration options (custom Docker steps, store indexing, auth handlers, and more), see [application structure](/oss/javascript/langgraph/application-structure).
+For the full set of configuration options (custom Docker steps, store indexing, auth handlers, and more), see [application structure](/oss/javascript/langgraph/application-structure).
 
 ## 生产环境考虑
 
@@ -79,19 +79,19 @@ When your agent serves multiple users, you need to handle three concerns: verify
 
 For a step-by-step tutorial, see [Make conversations private](/langsmith/resource-auth). For a walkthrough, watch the [custom auth video](https://www.youtube.com/watch?v=DkNqgCz8cjE).
 
-How you [scope memory](#scoping) and [execution environments](#execution-environment) determines what data is shared between users. 请参阅sections below了解详情.
+How you [scope memory](#scoping) and [execution environments](#execution-environment) determines what data is shared between users. See the sections below for details.
 
 #### 团队访问控制（RBAC）
 
 LangSmith's [role-based access control](/langsmith/rbac) governs who on your team can deploy, configure, and monitor agents. This is separate from end-user authorization above.
 
-| Role | Access |
+| 角色 | 访问权限 |
 | --- | --- |
 | Workspace Admin | Full permissions including settings and member management |
 | Workspace Editor | Create and modify resources, but cannot delete runs or manage members |
 | Workspace Viewer | Read-only access |
 
-Custom roles with granular permissions are available on Enterprise plans. 请参阅[RBAC reference](/langsmith/rbac)了解完整的permission model.
+Custom roles with granular permissions are available on Enterprise plans. See the [RBAC reference](/langsmith/rbac) for the full permission model.
 
 #### 终端用户凭据
 
@@ -119,7 +119,7 @@ const authResult = await authClient.authenticate({
 
 **Credential injection for sandboxes.** If your agent runs code inside a [sandbox](#sandboxes) that calls external APIs, the [sandbox auth proxy](/langsmith/sandbox-auth-proxy) can inject credentials into outbound requests automatically, so sandbox code never receives raw API keys. See [Managing secrets](#managing-secrets) for setup details.
 
-**Workspace secrets.** For API keys shared across all users (for example your organization's LLM provider keys, search API keys), store them as [workspace secrets](/langsmith/set-up-hierarchy#configure-workspace-settings) in LangSmith. See [Managing secrets](#managing-secrets)了解详情.
+**Workspace secrets.** For API keys shared across all users (for example your organization's LLM provider keys, search API keys), store them as [workspace secrets](/langsmith/set-up-hierarchy#configure-workspace-settings) in LangSmith. See [Managing secrets](#managing-secrets) for details.
 
 ### 异步
 
@@ -157,23 +157,23 @@ Without memory, every conversation starts from scratch. Memory lets your agent r
 
 ![Short-term memory is scoped to a single thread via checkpoints; long-term memory persists across threads via the store](/oss/images/deepagents/production/memory.png)
 
-### 作用域
+### 范围界定
 
 Memory is always persistent across conversations. The main question is how it's scoped across user and assistant boundaries. The right scope depends on who should see and modify the data:
 
-| Scope | Namespace | Use case | Example |
+| 范围 | 命名空间 | 使用场景 | 示例 |
 | --- | --- | --- | --- |
-| **User** (recommended default) | `(user_id)` | Per-user preferences and context | "I prefer concise responses" |
-| **Assistant** | `(assistant_id)` | Shared instructions for one assistant | "Cap posts at 280 characters" |
-| **Global** | `(org_id)` | Read-only policies for all users and assistants | "Never disclose internal pricing" |
+| **用户**（推荐默认值） | `(user_id)` | Per-user preferences and context | "I prefer concise responses" |
+| **助手** | `(assistant_id)` | Shared instructions for one assistant | "Cap posts at 280 characters" |
+| **全局** | `(org_id)` | Read-only policies for all users and assistants | "Never disclose internal pricing" |
 
 <Warning>
-Shared memory (assistant, user, or organization scope) is a vector for prompt injection. If one user can write to memory that another user's conversation reads, a malicious user could inject instructions into that shared state. Enforce read-only access where appropriate. 例如, make organization-wide policies writable only through application code, not by the agent itself. Use [permissions](/oss/javascript/deepagents/permissions) to declaratively deny writes to shared paths, or [backend policy hooks](/oss/javascript/deepagents/backends#add-policy-hooks) for custom validation logic.
+Shared memory (assistant, user, or organization scope) is a vector for prompt injection. If one user can write to memory that another user's conversation reads, a malicious user could inject instructions into that shared state. Enforce read-only access where appropriate. For example, make organization-wide policies writable only through application code, not by the agent itself. Use [permissions](/oss/javascript/deepagents/permissions) to declaratively deny writes to shared paths, or [backend policy hooks](/oss/javascript/deepagents/backends#add-policy-hooks) for custom validation logic.
 </Warning>
 
 ### 配置
 
-In Deep Agents, memory is stored as files in a virtual filesystem. 默认情况下, files are scoped to a single thread (conversation) and not shared across threads. To share memory across threads, route a path like `/memories/` to a [StoreBackend](https://reference.langchain.com/javascript/deepagents/backends/StoreBackend) that writes to the LangGraph [Store](/langsmith/custom-store). Use a [CompositeBackend](https://reference.langchain.com/javascript/deepagents/backends/CompositeBackend) to give the agent both thread-scoped scratch space and cross-thread [long-term memory](/oss/javascript/deepagents/memory).
+In Deep Agents, memory is stored as files in a virtual filesystem. By default, files are scoped to a single thread (conversation) and not shared across threads. To share memory across threads, route a path like `/memories/` to a [StoreBackend](https://reference.langchain.com/javascript/deepagents/backends/StoreBackend) that writes to the LangGraph [Store](/langsmith/custom-store). Use a [CompositeBackend](https://reference.langchain.com/javascript/deepagents/backends/CompositeBackend) to give the agent both thread-scoped scratch space and cross-thread [long-term memory](/oss/javascript/deepagents/memory).
 
 
 
@@ -281,13 +281,13 @@ export const agent = createDeepAgent({
   </Tab>
 </Tabs>
 
-你也可以 read and write to the store from your application code using the [Store API](/langsmith/custom-store). See [Advanced usage](/oss/javascript/deepagents/memory#advanced-usage) for examples.
+You can also read and write to the store from your application code using the [Store API](/langsmith/custom-store). See [Advanced usage](/oss/javascript/deepagents/memory#advanced-usage) for examples.
 
-有关完整的 namespace factory API, see [namespace factories](/oss/javascript/deepagents/backends#namespace-factories). For memory patterns like self-improving instructions and knowledge bases, see [long-term memory](/oss/javascript/deepagents/memory).
+For the full namespace factory API, see [namespace factories](/oss/javascript/deepagents/backends#namespace-factories). For memory patterns like self-improving instructions and knowledge bases, see [long-term memory](/oss/javascript/deepagents/memory).
 
 ## 执行环境
 
-Locally, agents can read and write files on disk and run shell commands directly. 在生产环境中, you need to think about isolation and persistence. The right setup depends on whether your agent needs to execute code:
+Locally, agents can read and write files on disk and run shell commands directly. In production, you need to think about isolation and persistence. The right setup depends on whether your agent needs to execute code:
 
 - **Filesystem backends** are enough if your agent only reads and writes files. Choose a backend that matches your persistence needs: thread-scoped scratch space, cross-thread storage, or a mix of both.
 - **Sandboxes** add an isolated container with an `execute` tool for running shell commands. Use a sandbox if your agent needs to run code, install packages, or do anything beyond file I/O.
@@ -298,9 +298,9 @@ Choose a backend based on what needs to persist:
 
 - [StateBackend](https://reference.langchain.com/javascript/deepagents/backends/StateBackend) (default): thread-scoped scratch space. Files persist across turns within a thread via your checkpointer but are not shared across threads. Checkpointed at every step, so avoid writing large files.
 - [StoreBackend](https://reference.langchain.com/javascript/deepagents/backends/StoreBackend): cross-thread storage that survives across conversations. Scope with a [namespace factory](/oss/javascript/deepagents/backends#namespace-factories).
-- [CompositeBackend](https://reference.langchain.com/javascript/deepagents/backends/CompositeBackend): mix both. 线程作用域 scratch space by default with cross-thread routes for specific paths like `/memories/`.
+- [CompositeBackend](https://reference.langchain.com/javascript/deepagents/backends/CompositeBackend): mix both. Thread-scoped scratch space by default with cross-thread routes for specific paths like `/memories/`.
 
-有关完整的 list of backends and how to build custom ones, see [backends](/oss/javascript/deepagents/backends).
+For the full list of backends and how to build custom ones, see [backends](/oss/javascript/deepagents/backends).
 
 <Warning>
 `FilesystemBackend` and `LocalShellBackend` access the host directly. Don't use them in deployed agents.
@@ -314,17 +314,17 @@ If your agent needs to run code (not just read and write files), use a [sandbox]
 
 The key decision is how long a sandbox lives. Does each conversation get a fresh one, or do conversations share a persistent environment?
 
-| Scope | Sandbox ID stored on | Lifecycle | Example use case |
+| 范围 | 沙箱 ID 存储位置 | 生命周期 | 示例使用场景 |
 |---|---|---|---|
-| **线程作用域** | [Thread](/langsmith/use-threads) metadata | Fresh per conversation, cleaned up on TTL | A data analysis bot where each conversation starts clean |
-| **Assistant-scoped** | [Assistant](/langsmith/assistants) config | Shared across all conversations | A coding assistant that maintains a cloned repo across conversations |
+| **线程范围** | [Thread](/langsmith/use-threads) metadata | Fresh per conversation, cleaned up on TTL | A data analysis bot where each conversation starts clean |
+| **助手范围** | [Assistant](/langsmith/assistants) config | Shared across all conversations | A coding assistant that maintains a cloned repo across conversations |
 
 <Note>
 The examples below use an async [graph factory](/langsmith/graph-rebuild) instead of a static graph because the sandbox needs the `thread_id` or `assistant_id` to look up or create the correct sandbox. Graph factories don't receive a full `Runtime` (no `server_info` or `execution_info`); instead, accept a `RunnableConfig` and read `thread_id` and `assistant_id` from `config["configurable"]`. The factory is async because sandbox creation is an I/O-bound operation that requires per-run information only available at invocation time.
 </Note>
 
 <Tabs>
-  <Tab title="线程作用域 (most common)">
+  <Tab title="Thread-scoped (most common)">
     Each conversation gets its own sandbox. The [graph factory](/langsmith/graph-rebuild) reads `thread_id` from the run config, so each [thread](/langsmith/use-threads) automatically gets its own isolated environment. The provider's label-based lookup handles deduplication across runs. Cleaned up when the sandbox [TTL](/langsmith/configure-ttl) expires.
 
 
@@ -352,7 +352,7 @@ Because the `agent` variable is an async function (not a compiled graph), the se
 Once deployed with `langgraph deploy`, invoke the agent from your application code using the SDK. The client-side code is the same regardless of scope. The scoping is handled entirely in the agent factory above, but the behavior differs:
 
 <Tabs>
-  <Tab title="线程作用域">
+  <Tab title="Thread-scoped">
     Each thread gets its own sandbox. Follow-up messages within the same thread reuse the same sandbox, but a new thread always starts fresh with no leftover files or installed packages from previous conversations.
 
 
@@ -395,7 +395,7 @@ for await (const chunk of client.runs.stream(
 
   </Tab>
   <Tab title="Assistant-scoped">
-    All threads share one sandbox. 这在以下情况很有用 when the sandbox has state that's expensive to recreate, such as a cloned repo, installed dependencies, or build artifacts. Any conversation on the same assistant picks up where the last one left off without repeating setup.
+    All threads share one sandbox. This is useful when the sandbox has state that's expensive to recreate, such as a cloned repo, installed dependencies, or build artifacts. Any conversation on the same assistant picks up where the last one left off without repeating setup.
 
 
 
@@ -409,7 +409,7 @@ const thread1 = await client.threads.create();
 for await (const chunk of client.runs.stream(
   thread1.thread_id,
   "agent",
-  { input: { messages: [{ role: "human", content: "Clone https://github.com/org/repo and 安装依赖" }] } },
+  { input: { messages: [{ role: "human", content: "Clone https://github.com/org/repo and install dependencies" }] } },
 )) {
   console.log(chunk.data);
 }
@@ -524,7 +524,7 @@ export const agent = createDeepAgent({
 
 Sandboxes are isolated containers, so environment variables from your host aren't available inside them. There are two ways to provide API keys and other secrets to sandbox code:
 
-**Auth proxy (recommended).** The [sandbox auth proxy](/langsmith/sandbox-auth-proxy) intercepts outbound requests from the sandbox and injects authentication headers automatically. Sandbox code calls external APIs normally, and the proxy adds the correct credentials based on the destination host. 这意味着 API keys never appear in sandbox code, environment variables, or logs.
+**Auth proxy (recommended).** The [sandbox auth proxy](/langsmith/sandbox-auth-proxy) intercepts outbound requests from the sandbox and injects authentication headers automatically. Sandbox code calls external APIs normally, and the proxy adds the correct credentials based on the destination host. This means API keys never appear in sandbox code, environment variables, or logs.
 
 ![The sandbox auth proxy injects credentials into outbound requests so secrets never enter the sandbox](/oss/images/deepagents/production/sandbox-auth-proxy.png)
 
@@ -559,7 +559,7 @@ The `${SECRET_KEY}` references resolve against secrets stored in your LangSmith 
 Avoid passing secrets into sandboxes via environment variables or file uploads. Agents can read any accessible file or environment variable inside the sandbox, including credentials. The auth proxy keeps secrets out of the sandbox entirely.
 </Warning>
 
-## 防护栏
+## 防护措施
 
 Agents in production run autonomously, which means they can loop indefinitely, hit rate limits, or process user data that contains sensitive information. Deep Agents provide two layers of protection:
 
@@ -589,11 +589,11 @@ const agent = createAgent({
 ```
 
 
-Use `run_limit` to cap calls within a single invocation (resets each turn). Use `thread_limit` to cap calls across an entire conversation (requires a checkpointer). See [ModelCallLimitMiddleware](https://reference.langchain.com/javascript/langchain/index/modelCallLimitMiddleware) and [ToolCallLimitMiddleware](https://reference.langchain.com/javascript/langchain/index/toolCallLimitMiddleware)了解完整的configuration.
+Use `run_limit` to cap calls within a single invocation (resets each turn). Use `thread_limit` to cap calls across an entire conversation (requires a checkpointer). See [ModelCallLimitMiddleware](https://reference.langchain.com/javascript/langchain/index/modelCallLimitMiddleware) and [ToolCallLimitMiddleware](https://reference.langchain.com/javascript/langchain/index/toolCallLimitMiddleware) for the full configuration.
 
 ### 错误处理
 
-Not all errors should be handled the same way. Transient failures (network timeouts, rate limits) should be retried automatically. Errors the LLM can recover from (bad tool output, parsing failures) should be fed back to the model. Errors that need human input should pause the agent. 有关完整的 breakdown with code examples, see [Handle errors appropriately](/oss/javascript/langgraph/thinking-in-langgraph#handle-errors-appropriately).
+Not all errors should be handled the same way. Transient failures (network timeouts, rate limits) should be retried automatically. Errors the LLM can recover from (bad tool output, parsing failures) should be fed back to the model. Errors that need human input should pause the agent. For the full breakdown with code examples, see [Handle errors appropriately](/oss/javascript/langgraph/thinking-in-langgraph#handle-errors-appropriately).
 
 Middleware handles the transient case. Model calls and tool calls each have their own retry middleware with exponential backoff. If your primary model provider goes down entirely, the fallback middleware switches to an alternative:
 
@@ -625,7 +625,7 @@ const agent = createAgent({
 ```
 
 
-Scope [ToolRetryMiddleware](https://reference.langchain.com/javascript/langchain/index/toolRetryMiddleware) to specific tools rather than retrying everything. A filesystem `read_file` that fails won't benefit from a retry, but a web search that times out probably will. See [ModelRetryMiddleware](https://reference.langchain.com/javascript/langchain/index/modelRetryMiddleware) and [ModelFallbackMiddleware](https://reference.langchain.com/javascript/langchain/index/modelFallbackMiddleware)了解完整的configuration.
+Scope [ToolRetryMiddleware](https://reference.langchain.com/javascript/langchain/index/toolRetryMiddleware) to specific tools rather than retrying everything. A filesystem `read_file` that fails won't benefit from a retry, but a web search that times out probably will. See [ModelRetryMiddleware](https://reference.langchain.com/javascript/langchain/index/modelRetryMiddleware) and [ModelFallbackMiddleware](https://reference.langchain.com/javascript/langchain/index/modelFallbackMiddleware) for the full configuration.
 
 ### 数据隐私
 
@@ -646,9 +646,9 @@ const agent = createAgent({
 ```
 
 
-Strategies include `redact` (replace with `[REDACTED_EMAIL]`), `mask` (partial masking like `****-****-****-1234`), `hash` (deterministic hash), and `block` (raise an error). 你也可以 write custom detectors for domain-specific patterns.
+Strategies include `redact` (replace with `[REDACTED_EMAIL]`), `mask` (partial masking like `****-****-****-1234`), `hash` (deterministic hash), and `block` (raise an error). You can also write custom detectors for domain-specific patterns.
 
-See [piiMiddleware](https://reference.langchain.com/javascript/langchain/index/piiMiddleware)了解完整的configuration.
+See [piiMiddleware](https://reference.langchain.com/javascript/langchain/index/piiMiddleware) for the full configuration.
 
 
 For the complete list of available middleware, see [prebuilt middleware](/oss/javascript/langchain/middleware/built-in).
@@ -657,7 +657,7 @@ For the complete list of available middleware, see [prebuilt middleware](/oss/ja
 
 Deep Agents use [`useStream`](/oss/javascript/langchain/frontend/overview) to connect your UI to the agent backend. `useStream` is a frontend hook (available for React, Vue, Svelte, and Angular) that streams messages, subagent progress, and custom state from your agent in real time.
 
-Locally, `useStream` points at `http://localhost:2024`. 在生产环境中, point it at your [LangSmith Deployment](/langsmith/deployment) and configure reconnection so users don't lose progress if their connection drops.
+Locally, `useStream` points at `http://localhost:2024`. In production, point it at your [LangSmith Deployment](/langsmith/deployment) and configure reconnection so users don't lose progress if their connection drops.
 
 ```tsx
 import { useStream } from "@langchain/react";
@@ -692,9 +692,9 @@ For UI patterns specific to deep agents, such as subagent cards, todo lists, and
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/going-to-production.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/going-to-production.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

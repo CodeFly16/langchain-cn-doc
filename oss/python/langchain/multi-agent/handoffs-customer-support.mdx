@@ -1,19 +1,19 @@
 ---
 title: 使用交接构建客户支持
-sidebarTitle: 交接：客户支持
+sidebarTitle: "交接：客户支持"
 ---
 
 import ChatModelTabsPy from '/snippets/chat-model-tabs.mdx';
 import ChatModelTabsJs from '/snippets/chat-model-tabs-js.mdx';
 
-The [state machine pattern](/oss/python/langchain/multi-agent/handoffs) describes workflows where an agent's behavior changes as it moves through different states of a task. This tutorial shows how to implement a state machine by using tool calls to dynamically change a single agent's configuration—updating its available tools and instructions based on the current state. The state can be determined from multiple sources: the agent's past actions (tool calls), external state (such as API call results), or even initial user input (例如， by running a classifier to determine user intent).
+[状态机模式](/oss/python/langchain/multi-agent/handoffs)描述了智能体的行为随着任务不同状态的推进而变化的工作流程。本教程展示如何通过使用工具调用来动态更改单个智能体的配置来实现状态机——根据当前状态更新其可用工具和指令。 The state can be determined from multiple sources: the agent's past actions (tool calls), external state (such as API call results), or even initial user input (for example, by running a classifier to determine user intent).
 
-在本教程中, you'll build a customer support agent that does the following:
+在本教程中，你将构建一个客户支持智能体，它可以：
 
-- Collects warranty information before proceeding.
-- Classifies issues as hardware or software.
-- Provides solutions or escalates to human support.
-- Maintains conversation state across multiple turns.
+- 在继续之前收集保修信息。
+- 将问题分类为硬件或软件。
+- 提供解决方案或升级到人工支持。
+- 跨多个回合维护对话状态。
 
 Unlike the [subagents pattern](/oss/python/langchain/multi-agent/subagents-personal-assistant) where sub-agents are called as tools, the **state machine pattern** uses a single agent whose configuration changes based on workflow progress. Each "step" is just a different configuration (system prompt + tools) of the same underlying agent, selected dynamically based on state.
 
@@ -54,9 +54,9 @@ flowchart TD
     class Escalate escalateNode
 ```
 
-## 设置
+## Setup
 
-### 安装
+### Installation
 
 This tutorial requires the `langchain` package:
 
@@ -75,7 +75,7 @@ conda install langchain -c conda-forge
 
 
 
-更多详情请参阅 our [Installation guide](/oss/python/langchain/install).
+For more details, see our [Installation guide](/oss/python/langchain/install).
 
 ### LangSmith
 
@@ -513,7 +513,7 @@ See the [short-term memory guide](/oss/python/langchain/short-term-memory) for o
 
 ## 9. Add flexibility: Go back
 
-Some workflows need to allow users to return to previous steps to correct information (e.g., changing warranty status or issue classification). However, not all transitions make sense—例如， you typically can't go back once a refund has been processed. For this support workflow, we'll add tools to return to the warranty verification and issue classification steps.
+Some workflows need to allow users to return to previous steps to correct information (e.g., changing warranty status or issue classification). However, not all transitions make sense—for example, you typically can't go back once a refund has been processed. For this support workflow, we'll add tools to return to the warranty verification and issue classification steps.
 
 <Tip>
 If your workflow requires arbitrary transitions between most steps, consider whether you need a structured workflow at all. This pattern works best when steps follow a clear sequential progression with occasional backwards transitions for corrections.
@@ -823,7 +823,7 @@ if __name__ == "__main__":
 
 </Expandable>
 
-## 后续步骤
+## Next steps
 
 - Learn about the [subagents pattern](/oss/python/langchain/multi-agent/subagents-personal-assistant) for centralized orchestration
 - Explore [middleware](/oss/python/langchain/middleware) for more dynamic behaviors
@@ -837,6 +837,6 @@ if __name__ == "__main__":
     [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/multi-agent/handoffs-customer-support.mdx) 或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/multi-agent/handoffs-customer-support.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 </div>

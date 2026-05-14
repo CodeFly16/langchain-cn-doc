@@ -3,44 +3,44 @@ title: 使用 CLI 部署
 description: 使用深度智能体 CLI 将模型无关的开源智能体部署到生产环境
 ---
 
-`deepagents deploy` 获取你的智能体配置和文件，并将它们一起部署为 [LangSmith Deployment](/langsmith/deployment).
+`deepagents deploy` 获取你的智能体配置和文件，并将它们作为 [LangSmith 部署](/langsmith/deployment)一起部署。
 
-LangSmith 部署是水平可扩展的服务器 包含 30 多个端点，包括 MCP、A2A、Agent Protocol, 人机协作和记忆 API。 基于开放标准构建：
+LangSmith 部署是具有 30 多个端点的水平可扩展服务器，包括 MCP、A2A、Agent Protocol、人机协作和记忆 API。基于开放标准构建：
 
-- **Open source harness**: MIT licensed, available for [Python](https://github.com/langchain-ai/deepagents) and [TypeScript](https://github.com/langchain-ai/deepagentsjs)
-- **[AGENTS.md](https://agents.md/)**: open standard for agent instructions
-- **[Agent Skills](https://agentskills.io/)**: open standard for agent knowledge and actions
-- **Any model, any sandbox**: no provider lock-in
-- **Open protocols**: [MCP](https://modelcontextprotocol.io/docs/getting-started/intro), [A2A](https://a2a-protocol.org/latest/), [Agent Protocol](https://github.com/langchain-ai/agent-protocol)
-- **Self-hostable**: LangSmith Deployments can be self-hosted so memory stays in your infrastructure
+- **开源引擎**：MIT 许可证，适用于 [Python](https://github.com/langchain-ai/deepagents) 和 [TypeScript](https://github.com/langchain-ai/deepagentsjs)
+- **[AGENTS.md](https://agents.md/)**：智能体指令的开放标准
+- **[Agent Skills](https://agentskills.io/)**：智能体知识和操作的开放标准
+- **任何模型，任何沙箱**：无供应商锁定
+- **开放协议**：[MCP](https://modelcontextprotocol.io/docs/getting-started/intro)、[A2A](https://a2a-protocol.org/latest/)、[Agent Protocol](https://github.com/langchain-ai/agent-protocol)
+- **可自托管**：LangSmith 部署可以自托管，因此记忆保留在你的基础设施中
 
 <Warning>
-    Deep Agents Deploy is currently in beta and requires `deepagents-cli>=0.0.36`. APIs, configuration format, and behavior may change between releases. 请参阅[releases page](https://github.com/langchain-ai/deepagents/releases) for detailed changelogs.
+    深度智能体部署目前处于测试阶段，需要 `deepagents-cli>=0.0.36`。API、配置格式和行为可能在不同版本之间发生变化。请参阅[发布页面](https://github.com/langchain-ai/deepagents/releases)了解详细更新日志。
 </Warning>
 
-## 与 Claude 托管智能体比较
+## 与 Claude Managed Agents 对比
 
-|  | Deep Agents Deploy | Claude Managed Agents |
+|  | 深度智能体部署 | Claude Managed Agents |
 | --- | --- | --- |
-| Model support | OpenAI, Anthropic, Google, Bedrock, Azure, Fireworks, Baseten, OpenRouter, [many more](/oss/javascript/integrations/providers/overview) | Anthropic only |
-| Harness | Open source (MIT) | Proprietary, closed source |
-| Sandbox | LangSmith, Daytona, Modal, Runloop, or [custom](/oss/javascript/contributing/implement-langchain#sandboxes) | Built in |
-| MCP support | ✅ | ✅ |
-| Skill support | ✅ | ✅ |
-| AGENTS.md support | ✅ | ❌ |
-| Agent endpoints | MCP, A2A, Agent Protocol | Proprietary |
-| Self hosting | ✅ | ❌ |
+| 模型支持 | OpenAI、Anthropic、Google、Bedrock、Azure、Fireworks、Baseten、OpenRouter、[更多](/oss/javascript/integrations/providers/overview) | 仅 Anthropic |
+| 引擎 | 开源（MIT） | 专有，闭源 |
+| 沙箱 | LangSmith、Daytona、Modal、Runloop 或[自定义](/oss/javascript/contributing/implement-langchain#sandboxes) | 内置 |
+| MCP 支持 | ✅ | ✅ |
+| 技能支持 | ✅ | ✅ |
+| AGENTS.md 支持 | ✅ | ❌ |
+| 智能体端点 | MCP、A2A、Agent Protocol | 专有 |
+| 自托管 | ✅ | ❌ |
 
 ## 安装
 
-安装 CLI 或直接运行 `uvx`:
+安装 CLI 或直接使用 `uvx` 运行：
 
 <CodeGroup>
     ```bash uv
     uv tool install deepagents-cli
     ```
 
-    ```bash uvx (no install)
+    ```bash uvx（无需安装）
     uvx deepagents-cli deploy
     ```
 </CodeGroup>
@@ -48,42 +48,42 @@ LangSmith 部署是水平可扩展的服务器 包含 30 多个端点，包括 M
 ## 用法
 
 ```bash
-deepagents init [name] [--force]                                             # scaffold a new project
-deepagents dev  [--config deepagents.toml] [--port 2024] [--allow-blocking]  # bundle and run locally
-deepagents deploy [--config deepagents.toml] [--dry-run]                     # bundle and deploy
+deepagents init [name] [--force]                                             # 创建新项目脚手架
+deepagents dev  [--config deepagents.toml] [--port 2024] [--allow-blocking]  # 打包并本地运行
+deepagents deploy [--config deepagents.toml] [--dry-run]                     # 打包并部署
 ```
 
-默认情况下, `deepagents deploy` looks for `deepagents.toml` in the current directory. Pass `--config` to use a different path:
+默认情况下，`deepagents deploy` 在当前目录查找 `deepagents.toml`。传递 `--config` 使用不同路径：
 
 ```bash
 deepagents deploy --config path/to/deepagents.toml
 ```
 
-`deepagents deploy` fully rebuils and creates a new revision on every invocation. Use `deepagents dev` for local iteration.
+`deepagents deploy` 每次调用都会完全重建并创建新的修订版本。使用 `deepagents dev` 进行本地迭代。
 
 ### `deepagents init`
 
-Scaffold a new agent project:
+创建新智能体项目脚手架：
 
 ```bash
 deepagents init my-agent
 ```
 
-This creates the following files:
+这会创建以下文件：
 
-| File | Purpose |
+| 文件 | 用途 |
 | --- | --- |
-| `deepagents.toml` | Agent config — name, model, 可选 sandbox |
-| `AGENTS.md` | System prompt loaded at session start |
-| `.env` | API key template (`GOOGLE_API_KEY`, `LANGSMITH_API_KEY`, etc.) |
-| `mcp.json` | MCP server configuration (empty by default) |
-| `skills/` | Directory for [Agent Skills](https://agentskills.io/), with an example `review` skill |
+| `deepagents.toml` | 智能体配置——名称、模型、可选沙箱 |
+| `AGENTS.md` | 会话启动时加载的系统提示词 |
+| `.env` | API 密钥模板（`GOOGLE_API_KEY`、`LANGSMITH_API_KEY` 等） |
+| `mcp.json` | MCP 服务器配置（默认为空） |
+| `skills/` | [Agent Skills](https://agentskills.io/) 目录，包含一个示例 `review` 技能 |
 
-After init, edit your project files and run `deepagents deploy`.
+初始化后，编辑你的项目文件并运行 `deepagents deploy`。
 
 ## 设置
 
-The deploy command uses the following project layout. Place the following files alongside your `deepagents.toml` and they are automatically discovered and deployed:
+部署命令使用以下项目布局。将以下文件放在 `deepagents.toml` 旁边，它们会被自动发现并部署：
 
 ```txt
 my-agent/
@@ -104,30 +104,30 @@ my-agent/
     └── AGENTS.md
 ```
 
-| File | 描述 |
+| 文件 | 描述 |
 | ---- | ----------- |
-| **`deepagents.toml`** | 必需. Configures the agent's [identity](#configuration-file), [authentication](#auth), [sandbox environment](#sandbox), and the deployment of a prebuilt [frontend](#frontend) Reach chat UI. |
-| **`AGENTS.md`** | 必需. [Memory](/oss/javascript/deepagents/memory) for the agent. Provides persistent context (project conventions, instructions, preferences) that is always loaded at startup. Read-only at runtime. |
-| **`skills/`** | _Optional_. Directory of [skill](/oss/javascript/deepagents/skills) definitions that provide specialized workflows and domain knowledge. Each subdirectory should contain a `SKILL.md` file. Read-only at runtime. Dotfiles are skipped when uploading. |
-| **`user/`** | _Optional_. Per-user writable memory. If an `AGENTS.md` template is present in the `user` folder, the agents seeds the template per user (if the folder is empty the agents creates an empty `AGENTS.md`). The agent can read from and write to this file. Preloaded into the agent's context via the memory middleware. |
-| **`mcp.json`** | _Optional_. MCP tools (HTTP/SSE). If `mcp.json` exists, it is included in the deployment and [`langchain-mcp-adapters`](https://pypi.org/project/langchain-mcp-adapters/) is added as a dependency. See [MCP (LangChain)](/oss/javascript/langchain/mcp)了解更多information. <Warning> `mcp.json` must only contain servers using `http` or `sse` transports. Servers using `stdio` transport are not supported in deployed environments because there is no local process to spawn. <br /><br /> Convert stdio servers to HTTP or SSE before deploying. </Warning> |
-| **`subagents/`** | _Optional_. Specialized [Subagents](#subagents) the main agent can delegate to. Each subdirectory must contain a `deepagents.toml`, `AGENTS.md`, and 可选ly a `skills` folder. Auto-discovered at bundle time. |
-| `.env` | _Optional_. Environment variables (API keys, secrets). Placed alongside `deepagents.toml` at the project root. See [Environment variables](#environment-variables). |
+| **`deepagents.toml`** | 必需。配置智能体的[身份](#configuration-file)、[身份验证](#auth)、[沙箱环境](#sandbox)以及预构建[前端](#frontend) React 聊天 UI 的部署。 |
+| **`AGENTS.md`** | 必需。智能体的[记忆](/oss/javascript/deepagents/memory)。提供在启动时始终加载的持久上下文（项目约定、指令、偏好）。运行时只读。 |
+| **`skills/`** | _可选_。提供专业工作流和领域知识的[技能](/oss/javascript/deepagents/skills)定义目录。每个子目录应包含一个 `SKILL.md` 文件。运行时只读。上传时跳过点文件。 |
+| **`user/`** | _可选_。每用户可写记忆。如果 `user` 文件夹中存在 `AGENTS.md` 模板，智能体会为每个用户播种该模板（如果文件夹为空，智能体会创建一个空的 `AGENTS.md`）。智能体可以读取和写入此文件。通过记忆中间件预加载到智能体的上下文中。 |
+| **`mcp.json`** | _可选_。MCP 工具（HTTP/SSE）。如果 `mcp.json` 存在，它将包含在部署中，并且 [`langchain-mcp-adapters`](https://pypi.org/project/langchain-mcp-adapters/) 将作为依赖项添加。参见 [MCP (LangChain)](/oss/javascript/langchain/mcp) 了解更多信息。<Warning> `mcp.json` 必须只包含使用 `http` 或 `sse` 传输的服务器。使用 `stdio` 传输的服务器在部署环境中不受支持，因为没有本地进程可以启动。<br /><br /> 部署前请将 stdio 服务器转换为 HTTP 或 SSE。</Warning> |
+| **`subagents/`** | _可选_。主智能体可以委派任务的专门[子智能体](#subagents)。每个子目录必须包含 `deepagents.toml`、`AGENTS.md`，以及可选的 `skills` 文件夹。在打包时自动发现。 |
+| `.env` | _可选_。环境变量（API 密钥、密钥）。放在项目根目录的 `deepagents.toml` 旁边。参见[环境变量](#environment-variables)。 |
 
-## 配置 file
+## 配置文件
 
-`deepagents.toml` configures the agent's identity and sandbox environment. Only the `[agent]` section is required. The `[sandbox]` section is 可选 and defaults to no sandbox.
+`deepagents.toml` 配置智能体的身份和沙箱环境。只有 `[agent]` 部分是必需的。`[sandbox]` 部分是可选的，默认无沙箱。
 
-| Field | Type | 描述 |
+| 字段 | 类型 | 描述 |
 | --- | --- | --- |
-| [`[agent]`](#agent) | Object | 必需. Core agent identity (name and model). |
-| [`[sandbox]`](#sandbox) | Object | _Optional_. Configure the isolated execution environment where the agent runs code. Defaults to no sandbox. |
-| [`[auth]`](#auth) | Object | _Optional_. Configure authentication on the deployed agent. 必需 when `[frontend].enabled = true`. |
-| [`[frontend]`](#frontend) | Object | _Optional_. Enable and configure the built-in chat UI frontend. |
+| [`[agent]`](#agent) | Object | 必需。核心智能体身份（名称和模型）。 |
+| [`[sandbox]`](#sandbox) | Object | _可选_。配置智能体运行代码的隔离执行环境。默认无沙箱。 |
+| [`[auth]`](#auth) | Object | _可选_。配置已部署智能体的身份验证。当 `[frontend].enabled = true` 时必需。 |
+| [`[frontend]`](#frontend) | Object | _可选_。启用和配置内置的聊天 UI 前端。 |
 
 ### `[agent]`
 
-Configure the core agent identity:
+配置核心智能体身份：
 
 ```toml deepagents.toml
 [agent]
@@ -136,15 +136,15 @@ description = "Researches market trends, competitors, and target audiences"
 model = "google_genai:gemini-3.1-pro-preview"
 ```
 
-| Field | Type | 描述 |
+| 字段 | 类型 | 描述 |
 | --- | --- | --- |
-| `name` | `string` | 必需. Name for the deployed agent. Used as the assistant identifier in LangSmith. |
-| `description` | `string` | _Optional_. Human-readable description of what the agent does. |
-| `model` | `string` | _Optional_. Model identifier in `provider:model` format. See [supported models](/oss/javascript/deepagents/models#supported-models). The `provider:` prefix in the `model` field determines the required `langchain-*` package (e.g., `google_genai` -> `langchain-google-genai`) which is automatically included in the deployment. This includes models specified in subagent configs. Defaults to a credential-based model if omitted (tries `openai:gpt-5.2`, then `anthropic:claude-sonnet-4-6`, then `google_genai:gemini-3.1-pro-preview`, then `google_vertexai:gemini-3.1-pro-preview`, then `nvidia:nvidia/nemotron-3-super-120b-a12b`). |
+| `name` | `string` | 必需。已部署智能体的名称。在 LangSmith 中用作助手标识符。 |
+| `description` | `string` | _可选_。智能体功能的人类可读描述。 |
+| `model` | `string` | _可选_。`provider:model` 格式的模型标识符。参见[支持的模型](/oss/javascript/deepagents/models#supported-models)。`model` 字段中的 `provider:` 前缀决定所需的 `langchain-*` 包（例如 `google_genai` -> `langchain-google-genai`），该包会自动包含在部署中。这也包括子智能体配置中指定的模型。如果省略，默认使用基于凭据的模型（依次尝试 `openai:gpt-5.2`、`anthropic:claude-sonnet-4-6`、`google_genai:gemini-3.1-pro-preview`、`google_vertexai:gemini-3.1-pro-preview`、`nvidia:nvidia/nemotron-3-super-120b-a12b`）。 |
 
 ### `[sandbox]`
 
-Configure the isolated execution environment where the agent runs code. Sandboxes provide a container with a filesystem and shell access, so untrusted code cannot affect the host. For supported providers and advanced sandbox configuration, see [sandboxes](/oss/javascript/deepagents/sandboxes).
+配置智能体运行代码的隔离执行环境。沙箱提供带有文件系统和 shell 访问的容器，因此不受信任的代码不会影响主机。有关支持的提供商和高级沙箱配置，请参阅[沙箱](/oss/javascript/deepagents/sandboxes)。
 
 ```toml deepagents.toml
 [sandbox]
@@ -153,21 +153,21 @@ template = "coding-agent"
 image = "python:3.12"
 ```
 
-| Field | Type | 描述 |
+| 字段 | 类型 | 描述 |
 | --- | --- | --- |
-| `provider` | `string` | _Optional_. Sandbox provider. Supported values: `"none"`, `"daytona"`, `"modal"`, `"runloop"`, `"langsmith"` (private beta). The relevant partner package is automatically included in the deployment. See [sandbox integrations](/oss/javascript/integrations/sandboxes) for provider details. Defaults to `"none"`. When omitted or set to `provider = "none"`, the sandbox is disabled. |
-| `template` | `string` | _Optional_. Provider-specific template name for the sandbox environment. Defaults to `"deepagents-deploy"`. |
-| `image` | `string` | _Optional_. Base Docker image for the sandbox container. Defaults to `"python:3"`. |
-| `scope` | `string` | _Optional_. Sandbox lifecycle scope. Defaults to `"thread"`. `"thread"` creates one sandbox per conversation. `"assistant"` shares a single sandbox across all conversations for the same assistant. |
+| `provider` | `string` | _可选_。沙箱提供商。支持的值：`"none"`、`"daytona"`、`"modal"`、`"runloop"`、`"langsmith"`（私有测试版）。相关合作伙伴包会自动包含在部署中。参见[沙箱集成](/oss/javascript/integrations/sandboxes)了解提供商详情。默认为 `"none"`。省略或设置为 `provider = "none"` 时，沙箱被禁用。 |
+| `template` | `string` | _可选_。沙箱环境的提供商特定模板名称。默认为 `"deepagents-deploy"`。 |
+| `image` | `string` | _可选_。沙箱容器的基础 Docker 镜像。默认为 `"python:3"`。 |
+| `scope` | `string` | _可选_。沙箱生命周期范围。默认为 `"thread"`。`"thread"` 为每个对话创建一个沙箱。`"assistant"` 为同一助手的所有对话共享一个沙箱。 |
 
-**Scope behavior:**
+**范围行为：**
 
-- `"thread"` (default): Each conversation gets its own sandbox. Different threads get different sandboxes, but the same thread reuses its sandbox across turns. Use this when each conversation should start with a clean environment.
-- `"assistant"`: All conversations share one sandbox. Files, installed packages, and other state persist across conversations. Use this when the agent maintains a long-lived workspace like a cloned repo.
+- `"thread"`（默认）：每个对话获得自己的沙箱。不同线程获得不同的沙箱，但同一线程在不同轮次间复用其沙箱。当每个对话应以全新环境开始时使用此选项。
+- `"assistant"`：所有对话共享一个沙箱。文件、已安装的包和其他状态在对话之间持久化。当智能体维护长期工作空间（如克隆的仓库）时使用此选项。
 
 ### `[auth]`
 
-Add an `[auth]` section to configure authentication on the deployed agent. `[auth]` is **required** when `[frontend].enabled = true`; otherwise it is 可选 (without it, LangSmith Deployment's default `x-api-key` requirement applies).
+添加 `[auth]` 部分以配置已部署智能体的身份验证。当 `[frontend].enabled = true` 时 `[auth]` 是**必需的**；否则是可选的（没有它，LangSmith 部署默认的 `x-api-key` 要求适用）。
 
 ```toml deepagents.toml
 [agent]
@@ -178,48 +178,48 @@ model = "google-genai:gemini-3.1-pro-preview"
 provider = "supabase"   # supabase | clerk | anonymous
 ```
 
-| Field | Type | 描述 |
+| 字段 | 类型 | 描述 |
 | --- | --- | --- |
-| `provider` | `string` | 必需. Auth provider. Supported values: `"supabase"`, `"clerk"`, `"anonymous"`. |
+| `provider` | `string` | 必需。身份验证提供商。支持的值：`"supabase"`、`"clerk"`、`"anonymous"`。 |
 
-Pick one of three providers:
+选择三个提供商之一：
 
-- **Clerk** (`[auth] provider = "clerk"`) — per-user real authentication. Each user signs in; threads and memory are scoped per user.
-- **Supabase** (`[auth] provider = "supabase"`) — per-user real authentication. Same per-user scoping as Clerk.
-- **Anonymous** (`[auth] provider = "anonymous"`) — the bundler ships a permissive auth handler that overrides LangSmith Deployment's default `x-api-key` requirement so the frontend can reach `/threads`, which means anyone with the deploy URL can call the API. The frontend assigns each browser a UUID cookie and filters the thread picker by it (UX-only scoping, not security). The CLI requires an interactive `y/N` confirmation before pushing.
+- **Clerk**（`[auth] provider = "clerk"`）——每用户真实身份验证。每个用户登录；线程和记忆按用户隔离。
+- **Supabase**（`[auth] provider = "supabase"`）——每用户真实身份验证。与 Clerk 相同的每用户隔离。
+- **Anonymous**（`[auth] provider = "anonymous"`）——打包器附带一个宽松的身份验证处理程序，覆盖 LangSmith 部署默认的 `x-api-key` 要求，以便前端可以访问 `/threads`，这意味着任何拥有部署 URL 的人都可以调用 API。前端为每个浏览器分配 UUID cookie 并按此过滤线程选择器（仅 UX 隔离，非安全性）。CLI 在推送前需要交互式 `y/N` 确认。
 
-Depending on your provider, add the following credentials to your `.env` alongside your other credentials:
+根据你的提供商，将以下凭据添加到 `.env` 中，与其他凭据一起：
 
-| Provider | 必需 env vars |
+| 提供商 | 必需的环境变量 |
 | --- | --- |
-| `supabase` | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_DEFAULT_KEY` |
+| `supabase` | `SUPABASE_URL`、`SUPABASE_PUBLISHABLE_DEFAULT_KEY` |
 | `clerk` | `CLERK_SECRET_KEY` |
-| `anonymous` | None |
+| `anonymous` | 无 |
 
-**Runtime behavior:**
+**运行时行为：**
 
-- Unauthenticated requests return `401`.
-- On success, the authenticated user's identity is injected into `config.configurable.langgraph_auth_user_id`.
-- All resources (threads, runs, store) are automatically scoped per user via `metadata.owner`.
-- LangSmith Studio bypasses auth for local development.
+- 未认证的请求返回 `401`。
+- 成功后，已认证用户的身份被注入到 `config.configurable.langgraph_auth_user_id` 中。
+- 所有资源（线程、运行、存储）通过 `metadata.owner` 自动按用户隔离。
+- LangSmith Studio 在本地开发时跳过身份验证。
 
-For information on how to authenticate, see [Authentication](#authentication).
+有关如何进行身份验证的信息，请参阅[身份验证](#authentication)。
 
 ### `[frontend]`
 
 <Note>
-    Frontend deployment requires `deepagents-cli>=0.0.43`.
+    前端部署需要 `deepagents-cli>=0.0.43`。
 </Note>
 
-Optionally enable `[frontend]` to ship a prebuilt React chat UI alongside your agent on the same deployment. The frontend is mounted at `/app` on your deployment URL; your LangGraph API stays at the root (`/threads`, `/runs`, `/assistants`). The frontend provides:
+可选启用 `[frontend]` 以在同一部署中随智能体一起发布预构建的 React 聊天 UI。前端挂载在部署 URL 的 `/app` 上；你的 LangGraph API 保持在根路径（`/threads`、`/runs`、`/assistants`）。前端提供：
 
-- Streaming chat with the agent
-- Thread picker with auto-generated titles from the first user message
-- Real-time todos, files, and subagent activity panels that reflect your deep agent's live graph state
-- Light/dark theme toggle that follows OS preference on first load and persists after
-- (Clerk / Supabase only) Sign-in / sign-up / sign-out flows — Clerk ships its full widget (social logins, password reset); Supabase ships email/password with a built-in password reset flow
+- 与智能体的流式输出聊天
+- 带有从第一条用户消息自动生成标题的线程选择器
+- 反映深度智能体实时图状态的实时待办事项、文件和子智能体活动面板
+- 首次加载时跟随操作系统偏好的亮/暗主题切换，之后持久化
+- （仅 Clerk / Supabase）登录/注册/退出流程——Clerk 附带完整组件（社交登录、密码重置）；Supabase 附带电子邮件/密码和内置密码重置流程
 
-Every frontend uses one of three authentication providers — Clerk, Supabase, or anonymous (see [`[auth]`](#auth)).
+每个前端使用三种身份验证提供商之一——Clerk、Supabase 或匿名（参见 [`[auth]`](#auth)）。
 
 ```toml deepagents.toml
 [agent]
@@ -227,7 +227,7 @@ name = "my-agent"
 model = "anthropic:claude-sonnet-4-6"
 
 [auth]
-provider = "supabase"   # or "clerk"
+provider = "supabase"   # 或 "clerk"
 
 [frontend]
 enabled = true
@@ -240,68 +240,68 @@ prompts = [
 ]
 ```
 
-| Field | Type | 描述 |
+| 字段 | 类型 | 描述 |
 | --- | --- | --- |
-| `enabled` | `boolean` | _Optional_. If `true`, bundle the default chat UI into the deployment. Defaults to `false`. |
-| `app_name` | `string` | _Optional_. Display name shown in the UI header and browser tab. Defaults to `[agent].name`. |
-| `subtitle` | `string` | _Optional_. Subtitle shown under the app name in the header and on the empty-state hero. Use it to describe what the agent does. Defaults to `"Your deep agent, deployed."`. |
-| `prompts` | `string[]` | _Optional_. Suggestion chips shown on the empty-state when there are no messages. Defaults to a generic research-themed set; override to tailor the chips to your agent. |
+| `enabled` | `boolean` | _可选_。如果为 `true`，将默认聊天 UI 打包到部署中。默认为 `false`。 |
+| `app_name` | `string` | _可选_。在 UI 头部和浏览器标签中显示的名称。默认为 `[agent].name`。 |
+| `subtitle` | `string` | _可选_。在头部应用名称下方和空状态主页显示的副标题。用来描述智能体的功能。默认为 `"Your deep agent, deployed."`。 |
+| `prompts` | `string[]` | _可选_。在没有消息时的空状态中显示的建议标签。默认为通用研究主题集；覆盖以定制适合你的智能体的标签。 |
 
-**Environment variables:**
+**环境变量：**
 
-The frontend reuses most of what `[auth]` already requires. Only Clerk needs one additional browser-facing key.
+前端复用 `[auth]` 已经需要的大部分内容。只有 Clerk 需要一个额外的面向浏览器的密钥。
 
-| Provider | Additional var |
+| 提供商 | 额外变量 |
 | --- | --- |
-| `supabase` | None — reuses `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_DEFAULT_KEY` from `[auth]` |
-| `clerk` | `CLERK_PUBLISHABLE_KEY` (browser-facing publishable key; distinct from `CLERK_SECRET_KEY`) |
+| `supabase` | 无——复用 `[auth]` 中的 `SUPABASE_URL` 和 `SUPABASE_PUBLISHABLE_DEFAULT_KEY` |
+| `clerk` | `CLERK_PUBLISHABLE_KEY`（面向浏览器的可公开密钥；与 `CLERK_SECRET_KEY` 不同） |
 
-**Post-deploy setup:**
+**部署后设置：**
 
-After deploying, add your deployment URL to your auth provider's dashboard so auth redirects land back in the app. This is a one-time step per deployment URL.
+部署后，将你的部署 URL 添加到身份验证提供商的仪表板中，以便身份验证重定向回到应用。这是每个部署 URL 的一次性步骤。
 
-- **Clerk:** Dashboard → your application → **Domains** → add your deployment host (e.g. `clerk-abc.us.langgraph.app`). Clerk development instances auto-whitelist localhost; production deployment URLs need explicit whitelisting.
-- **Supabase:** Dashboard → **Authentication** → **URL Configuration** → add `https://<your-deployment>/app/**` to **Redirect URLs**. Without this, password-reset and email-confirmation links won't route back to your app.
+- **Clerk：** 仪表板 → 你的应用 → **Domains** → 添加你的部署主机（例如 `clerk-abc.us.langgraph.app`）。Clerk 开发实例自动白名单 localhost；生产部署 URL 需要显式白名单。
+- **Supabase：** 仪表板 → **Authentication** → **URL Configuration** → 将 `https://<your-deployment>/app/**` 添加到 **Redirect URLs**。没有这个，密码重置和电子邮件确认链接不会路由回你的应用。
 
 ## 环境变量
 
-Place a `.env` file alongside `deepagents.toml` with your API 密钥：
+将 `.env` 文件放在 `deepagents.toml` 旁边，包含你的 API 密钥：
 
 ```bash
-# 必需 — model provider keys
+# 必需——模型提供商密钥
 ANTHROPIC_API_KEY=sk-...
 OPENAI_API_KEY=sk-...
-# ...etc.
+# ...等
 
-# 必需 for deploy and LangSmith sandbox
+# 部署和 LangSmith 沙箱必需
 LANGSMITH_API_KEY=lsv2_...
 
-# Optional — sandbox provider keys
+# 可选——沙箱提供商密钥
 DAYTONA_API_KEY=...
 MODAL_TOKEN_ID=...
 MODAL_TOKEN_SECRET=...
 RUNLOOP_API_KEY=...
 
-# 必需 if [auth] provider = "supabase"
+# [auth] provider = "supabase" 时必需
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_PUBLISHABLE_DEFAULT_KEY=eyJhbGc...
 
-# 必需 if [auth] provider = "clerk"
+# [auth] provider = "clerk" 时必需
 CLERK_SECRET_KEY=sk_test_...
 
-# 必需 if [frontend].enabled = true AND [auth] provider = "clerk"
+# [frontend].enabled = true 且 [auth] provider = "clerk" 时必需
 CLERK_PUBLISHABLE_KEY=pk_test_...
 ```
 
-## 认证
+## 身份验证
 
-The runtime auth posture depends on `[auth]`:
+运行时的身份验证姿态取决于 `[auth]`：
 
-- **`[auth] provider = "supabase"` or `"clerk"`** — per-user real authentication. Pass the user's auth-provider token in the `Authorization` header.
-- **`[auth] provider = "anonymous"`** — the bundler ships a permissive auth handler. The API is open to anyone with the deploy URL. No header required. (必需 when shipping `[frontend]` without real per-user auth.)
-- **No `[auth]` section** — the deploy falls back to LangSmith Deployment's default `x-api-key` requirement. Pass your LangSmith API key in the `x-api-key` header. Only valid when `[frontend].enabled` is `false` or unset.
+- **`[auth] provider = "supabase"` 或 `"clerk"`** —— 每用户真实身份验证。在 `Authorization` 请求头中传递用户的身份验证提供商 Token。
+- **`[auth] provider = "anonymous"`** —— 打包器附带宽松的身份验证处理程序。API 对任何拥有部署 URL 的人开放。无需请求头。（在没有真实每用户身份验证的情况下发布 `[frontend]` 时必需。）
+- **没有 `[auth]` 部分** —— 部署回退到 LangSmith 部署默认的 `x-api-key` 要求。在 `x-api-key` 请求头中传递你的 LangSmith API 密钥。仅在 `[frontend].enabled` 为 `false` 或未设置时有效。
 
-When `[auth]` is configured for `supabase` or `clerk`, pass the token from your auth provider in the `Authorization` header:
+当 `[auth]` 配置为 `supabase` 或 `clerk` 时，在 `Authorization` 请求头中传递来自你的身份验证提供商的 Token：
 
 <Tabs>
     <Tab title="curl">
@@ -326,65 +326,65 @@ When `[auth]` is configured for `supabase` or `clerk`, pass the token from your 
     </Tab>
 </Tabs>
 
-| Provider | Where to get the token |
+| 提供商 | 获取 Token 的位置 |
 | --- | --- |
-| Supabase | Supabase session `access_token` from `supabase.auth.getSession()` |
-| Clerk | Clerk session token from `getToken()` |
+| Supabase | 来自 `supabase.auth.getSession()` 的 Supabase 会话 `access_token` |
+| Clerk | 来自 `getToken()` 的 Clerk 会话 Token |
 
-Each user's threads and memory are isolated automatically—User B cannot see User A's threads.
+每个用户的线程和记忆自动隔离——用户 B 无法看到用户 A 的线程。
 
-## 部署ment endpoints
+## 部署端点
 
-The deployed server exposes:
+已部署的服务器暴露：
 
-- [**MCP**](https://modelcontextprotocol.io/docs/getting-started/intro): call your agent as a tool from other agents
-- [**A2A**](https://a2a-protocol.org/latest/): multi-agent orchestration via A2A protocol
-- [**Agent Protocol**](https://github.com/langchain-ai/agent-protocol): standard API for building UIs
-- [**Human-in-the-loop**](/oss/javascript/deepagents/human-in-the-loop): approval gates for sensitive actions
-- [**Memory**](/oss/javascript/deepagents/memory): short-term and long-term memory access
+- [**MCP**](https://modelcontextprotocol.io/docs/getting-started/intro)：将你的智能体作为工具从其他智能体调用
+- [**A2A**](https://a2a-protocol.org/latest/)：通过 A2A 协议进行多智能体编排
+- [**Agent Protocol**](https://github.com/langchain-ai/agent-protocol)：用于构建 UI 的标准 API
+- [**人机协作**](/oss/javascript/deepagents/human-in-the-loop)：敏感操作的审批门控
+- [**记忆**](/oss/javascript/deepagents/memory)：短期和长期记忆访问
 
 ## 用户记忆
 
-User memory gives each user their own writable `AGENTS.md` that persists across conversations. To enable it, create a `user/` directory at your project root:
+用户记忆为每个用户提供自己的可写 `AGENTS.md`，在对话之间持久化。要启用它，在项目根目录创建 `user/` 目录：
 
 ```txt
 user/
-└── AGENTS.md          # 可选 — seeded as empty if not provided
+└── AGENTS.md          # 可选——如果未提供则播种为空
 ```
 
-If the `user/` directory exists (even if empty), every user gets their own `AGENTS.md` at `/memories/user/AGENTS.md`. If you provide `user/AGENTS.md`, its contents are used as the initial template; otherwise an empty file is seeded.
+如果 `user/` 目录存在（即使为空），每个用户都会在 `/memories/user/AGENTS.md` 获得自己的 `AGENTS.md`。如果你提供了 `user/AGENTS.md`，其内容将用作初始模板；否则播种一个空文件。
 
-At runtime, user memory is scoped per user via custom auth (`runtime.server_info.user.identity`). The first time a user interacts with the agent, their namespace is seeded with the template. Subsequent interactions reuse the existing file — the agent's edits persist, and redeployments never overwrite user data.
+在运行时，用户记忆通过自定义身份验证（`runtime.server_info.user.identity`）按用户隔离。用户第一次与智能体交互时，其命名空间用模板播种。后续交互复用现有文件——智能体的编辑会持久化，重新部署不会覆盖用户数据。
 
 ### 工作原理
 
-1. **Bundle time** — the bundler reads `user/AGENTS.md` (or uses an empty string) and includes it in the seed payload.
-2. **Runtime (first access)** — when the agent sees a `user_id` for the first time, it writes the `AGENTS.md` template to the store under that user's namespace. Existing entries are never overwritten.
-3. **Preloaded** — the user `AGENTS.md` is passed to the memory middleware, so the agent sees its contents in context at the start of every conversation.
-4. **Writable** — the agent can update it using the `edit_file` tool. The shared `AGENTS.md` file and skills folder are read-only.
+1. **打包时** —— 打包器读取 `user/AGENTS.md`（或使用空字符串）并将其包含在播种负载中。
+2. **运行时（首次访问）** —— 当智能体首次看到一个 `user_id` 时，它将 `AGENTS.md` 模板写入该用户命名空间下的存储。现有条目永远不会被覆盖。
+3. **预加载** —— 用户 `AGENTS.md` 传递给记忆中间件，因此智能体在每次对话开始时都能在上下文中看到其内容。
+4. **可写** —— 智能体可以使用 `edit_file` 工具更新它。共享的 `AGENTS.md` 文件和技能文件夹是只读的。
 
 ### 权限
 
-| Path | Writable | Scope |
+| 路径 | 可写 | 作用域 |
 | --- | --- | --- |
-| `/memories/AGENTS.md` | No | Shared (assistant-scoped) |
-| `/memories/skills/**` | No | Shared (assistant-scoped) |
-| `/memories/user/**` | Yes | Per-user (`user_id`-scoped) |
-| `/memories/subagents/<name>/**` | By subagent only | Per-subagent (isolated) |
+| `/memories/AGENTS.md` | 否 | 共享（assistant 范围） |
+| `/memories/skills/**` | 否 | 共享（assistant 范围） |
+| `/memories/user/**` | 是 | 每用户（`user_id` 范围） |
+| `/memories/subagents/<name>/**` | 仅子智能体 | 每子智能体（隔离） |
 
 ### 用户身份
 
-The `user_id` is resolved from custom auth via `runtime.user.identity`. The platform injects the authenticated user's identity automatically — no need to pass it through `configurable`. If no authenticated user is present, user memory features are gracefully skipped for that invocation.
+`user_id` 通过自定义身份验证从 `runtime.user.identity` 解析。平台自动注入已认证用户的身份——无需通过 `configurable` 传递。如果没有已认证用户，该次调用的用户记忆功能会被优雅地跳过。
 
 ## 子智能体
 
-Subagents let the main agent delegate specialized tasks to isolated child agents. Each subagent has its own system prompt, 可选 skills, and 可选 MCP tools. The main agent receives a `task` tool that dispatches work to subagents by name.
+子智能体让主智能体将专门任务委派给隔离的子智能体。每个子智能体有自己的系统提示词、可选技能和可选 MCP 工具。主智能体收到一个 `task` 工具，按名称将工作分派给子智能体。
 
-For background on why subagents are useful and how they work at the SDK level, see [Subagents](/oss/javascript/deepagents/subagents).
+有关子智能体为何有用以及它们在 SDK 级别如何工作的背景，请参阅[子智能体](/oss/javascript/deepagents/subagents)。
 
 ### 目录结构
 
-Create a `subagents/` directory at your project root. Each subdirectory is a subagent:
+在项目根目录创建 `subagents/` 目录。每个子目录是一个子智能体：
 
 ```txt
 my-agent/
@@ -392,30 +392,30 @@ my-agent/
 ├── AGENTS.md
 └── subagents/
     ├── researcher/
-    │   ├── deepagents.toml       # name, description, 可选 model override
-    │   ├── AGENTS.md             # subagent system prompt
-    │   ├── skills/               # 可选 — subagent-specific skills
+    │   ├── deepagents.toml       # 名称、描述、可选的模型覆盖
+    │   ├── AGENTS.md             # 子智能体系统提示词
+    │   ├── skills/               # 可选——子智能体特定技能
     │   │   └── analyze-market/
     │   │       └── SKILL.md
-    │   └── mcp.json              # 可选 — HTTP/SSE MCP tools
+    │   └── mcp.json              # 可选——HTTP/SSE MCP 工具
     └── writer/
         ├── deepagents.toml
         └── AGENTS.md
 ```
 
-Each subagent subdirectory **must** contain:
+每个子智能体子目录**必须**包含：
 
-| File | Purpose |
+| 文件 | 用途 |
 | --- | --- |
-| `deepagents.toml` | Subagent config with `[agent].name` and `[agent].description` |
-| `AGENTS.md` | System prompt for the subagent |
+| `deepagents.toml` | 包含 `[agent].name` 和 `[agent].description` 的子智能体配置 |
+| `AGENTS.md` | 子智能体的系统提示词 |
 
-Each subagent subdirectory **may** contain:
+每个子智能体子目录**可以**包含：
 
-| File | Purpose |
+| 文件 | 用途 |
 | --- | --- |
-| `skills/` | Subagent-specific skills (with `SKILL.md` files) |
-| `mcp.json` | MCP server configuration (HTTP/SSE only; stdio is rejected) |
+| `skills/` | 子智能体特定技能（包含 `SKILL.md` 文件） |
+| `mcp.json` | MCP 服务器配置（仅 HTTP/SSE；stdio 会被拒绝） |
 
 ### 子智能体配置
 
@@ -426,36 +426,36 @@ description = "Researches market trends, competitors, and target audiences"
 model = "google_genai:gemini-3.1-pro-preview"
 ```
 
-| Field | Type | 描述 |
+| 字段 | 类型 | 描述 |
 | --- | --- | --- |
-| `name` | `string` | 必需. Unique identifier for the subagent. Must be unique across all subagents. |
-| `description` | `string` | 必需. What this subagent does. The main agent uses this to decide when to delegate. Must be non-empty. |
-| `model` | `string` | _Optional_. Model override in `provider:model` format. Omit to inherit the main agent's model. |
+| `name` | `string` | 必需。子智能体的唯一标识符。必须在所有子智能体中唯一。 |
+| `description` | `string` | 必需。此子智能体的功能描述。主智能体使用此描述来决定何时委派任务。必须非空。 |
+| `model` | `string` | _可选_。`provider:model` 格式的模型覆盖。省略以继承主智能体的模型。 |
 
 ### 继承
 
-Subagents inherit some properties from the main agent by default:
+子智能体默认从主智能体继承某些属性：
 
-| Property | Inherited | Notes |
+| 属性 | 是否继承 | 备注 |
 | --- | --- | --- |
-| Model | Yes | Override with `model` in the subagent's `deepagents.toml` |
-| Tools | Yes | Override by adding `mcp.json` to the subagent directory |
-| Skills | No | Declare explicitly in the subagent's own `skills/` directory |
+| 模型 | 是 | 在子智能体的 `deepagents.toml` 中使用 `model` 覆盖 |
+| 工具 | 是 | 通过在子智能体目录中添加 `mcp.json` 来覆盖 |
+| 技能 | 否 | 在子智能体自己的 `skills/` 目录中显式声明 |
 
-### 记忆 isolation
+### 记忆隔离
 
-Each subagent gets a dedicated, isolated memory namespace at `/memories/subagents/<name>/`. The subagent's `AGENTS.md` and skills are seeded into this namespace at deploy time.
+每个子智能体在 `/memories/subagents/<name>/` 获得专用的隔离记忆命名空间。子智能体的 `AGENTS.md` 和技能在部署时播种到此命名空间中。
 
-| Path | Main agent | Subagent |
+| 路径 | 主智能体 | 子智能体 |
 | --- | --- | --- |
-| `/memories/AGENTS.md` | Read | No access |
-| `/memories/skills/**` | Read | No access |
-| `/memories/user/**` | Read + Write | No access |
-| `/memories/subagents/<name>/**` | Read | Read + Write |
+| `/memories/AGENTS.md` | 读取 | 无访问权 |
+| `/memories/skills/**` | 读取 | 无访问权 |
+| `/memories/user/**` | 读取 + 写入 | 无访问权 |
+| `/memories/subagents/<name>/**` | 读取 | 读取 + 写入 |
 
 ### 示例
 
-A go-to-market agent that delegates research to a specialized subagent:
+一个将研究委派给专门子智能体的 GTM 策略智能体：
 
 ```toml deepagents.toml
 [agent]
@@ -484,12 +484,12 @@ market data to support go-to-market decisions.
 
 ## 限制
 
-- **MCP: HTTP/SSE only.** Stdio transports are rejected at bundle time.
-- **No custom Python tools.** Use MCP servers to expose custom tool logic.
+- **MCP：仅 HTTP/SSE。** stdio 传输在打包时被拒绝。
+- **无自定义 Python 工具。** 使用 MCP 服务器暴露自定义工具逻辑。
 
 ## 示例
 
-A content writing agent with per-user preferences that the agent can update:
+带有每用户偏好的内容写作智能体，智能体可以更新这些偏好：
 
 ```toml deepagents.toml
 [agent]
@@ -505,10 +505,10 @@ my-content-writer/
 │   ├── blog-post/SKILL.md
 │   └── social-media/SKILL.md
 └── user/
-    └── AGENTS.md          # writable — agent learns user preferences
+    └── AGENTS.md          # 可写——智能体学习用户偏好
 ```
 
-A coding agent with a LangSmith sandbox for running code:
+带有 LangSmith 沙箱用于运行代码的编码智能体：
 
 ```toml deepagents.toml
 [agent]
@@ -521,7 +521,7 @@ template = "coding-agent"
 image = "python:3.12"
 ```
 
-A GTM strategy agent that delegates research to a subagent:
+将研究委派给子智能体的 GTM 策略智能体：
 
 ```txt
 my-gtm-agent/
@@ -539,7 +539,7 @@ my-gtm-agent/
                 └── SKILL.md
 ```
 
-A lightweight internal-demo agent with the bundled UI in anonymous mode (no signup, no infrastructure):
+匿名模式下带有内置 UI 的轻量级内部演示智能体（无需注册，无需基础设施）：
 
 ```toml deepagents.toml
 [agent]
@@ -547,7 +547,7 @@ name = "internal-demo"
 model = "anthropic:claude-sonnet-4-6"
 
 [auth]
-provider = "anonymous"   # API open to anyone with the URL — confirm at deploy time
+provider = "anonymous"   # API 对任何拥有 URL 的人开放——部署时确认
 
 [frontend]
 enabled = true
@@ -557,9 +557,9 @@ enabled = true
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/deploy.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/deploy.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

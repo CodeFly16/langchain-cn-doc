@@ -3,18 +3,18 @@ title: 快速入门
 description: 几分钟内构建你的第一个智能体
 ---
 
-本快速入门指南将向你展示如何在短短几分钟内创建一个功能完备的 AI 智能体。
+本快速入门指南向你展示如何在短短几分钟内创建一个功能完整的 AI 智能体。
 
 <Tip>
-    **正在使用 AI 编程助手？**
+    **Using an AI coding assistant?**
 
-    - 安装 [LangChain Docs MCP 服务器](/use-these-docs)，让你的智能体访问最新的 LangChain 文档和示例。
-    - 安装 [LangChain Skills](https://github.com/langchain-ai/langchain-skills)，提升你的智能体在 LangChain 生态系统任务中的表现。
+    - Install the [LangChain Docs MCP server](/use-these-docs) to give your agent access to up-to-date LangChain documentation and examples.
+    - Install [LangChain Skills](https://github.com/langchain-ai/langchain-skills) to improve your agent's performance on LangChain ecosystem tasks.
 </Tip>
 
 ## 安装依赖
 
-安装以下包以便跟随教程操作：
+安装以下包以跟随操作：
 
 <CodeGroup>
     ```bash uv
@@ -40,7 +40,7 @@ description: 几分钟内构建你的第一个智能体
 
 ## 设置 API 密钥
 
-从[任意受支持的模型提供商](/oss/python/integrations/providers/overview)获取 API 密钥（例如 Google Gemini 或 OpenAI）。
+从[任何支持的模型提供商](/oss/python/integrations/providers/overview)获取 API 密钥（例如 Google Gemini 或 OpenAI）。
 
 设置 API 密钥，例如：
 
@@ -90,8 +90,8 @@ export BASETEN_API_KEY="your-api-key"
   <Tab title="Ollama">
 
 ```bash
-# 本地运行：Ollama 必须正在运行 (https://ollama.com)
-# 云端：设置你的 Ollama API 密钥用于托管推理
+# Local: Ollama must be running (https://ollama.com)
+# Cloud: Set your Ollama API key for hosted inference
 export OLLAMA_API_KEY="your-api-key"
 ```
 
@@ -121,14 +121,14 @@ export HUGGINGFACEHUB_API_TOKEN="hf_..."
 ```
 
   </Tab>
-  <Tab title="其他">
-    查看完整的[聊天模型集成](/oss/python/integrations/chat)列表。
+  <Tab title="Other">
+    See the full list of supported [chat model integrations](/oss/python/integrations/chat).
   </Tab>
 </Tabs>
 
-## 构建基础智能体
+## Build a basic agent
 
-首先创建一个能够回答问题并调用工具的简单智能体。此示例中的智能体使用所选语言模型、一个基础天气函数作为工具，以及一个简单的提示词来引导其行为：
+Start by creating a simple agent that can answer questions and call tools. The agent in this example uses the chosen language model, a basic weather function as a tool, and a simple prompt to guide its behavior:
 
 <CodeGroup>
     ```python OpenAI
@@ -322,28 +322,28 @@ export HUGGINGFACEHUB_API_TOKEN="hf_..."
 
 
 
-当你运行代码并提示智能体告诉你旧金山的天气时，智能体会使用该输入及其可用上下文。
-智能体理解你在询问旧金山的天气，因此会使用提供的城市名称调用天气工具。
+When you run the code and prompt the agent to tell you about the weather in San Francisco, the agent uses that input and its available context.
+The agent understands that you are asking about the weather for the city San Francisco and therefore calls the weather tool with the provided city name.
 
 <Tip>
-你可以通过更改模型名称并设置相应的 API 密钥来使用[任意受支持的模型](/oss/python/integrations/providers/overview)。使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langchain-quickstart) 追踪智能体内部发生了什么——请按照[追踪快速入门](/langsmith/trace-with-langchain)进行设置。
+You can use [any supported model](/oss/python/integrations/providers/overview) by changing the model name and setting up the appropriate API key. Trace what's happening inside your agent with [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langchain-quickstart)—follow the [tracing quickstart](/langsmith/trace-with-langchain) to get set up.
 </Tip>
 
-## 构建真实世界的智能体
+## Build a real-world agent
 
-在以下示例中，你将构建一个能够回答有关文本文件问题的研究智能体。
-在此过程中，你将探索以下概念：
+In the following example you will build a research agent that can answer questions about text files.
+Along the way you will explore the following concepts:
 
-1. **详细的系统提示词**以获得更好的智能体行为
-1. **创建工具**与外部数据集成
-1. **模型配置**以获得一致的响应
-1. **对话记忆**实现类聊天交互
-1. **Deep Agents** 的内置功能
-1. **测试**你的智能体
+1. **Detailed system prompts** for better agent behavior
+1. **Create tools** that integrate with external data
+1. **Model configuration** for consistent responses
+1. **Conversational memory** for chat-like interactions
+1. **Deep Agents** for built-in features
+1. **Testing** your agent
 
 <Steps>
-    <Step title="定义系统提示词">
-        系统提示词定义了智能体的角色和行为。保持其具体且可操作：
+    <Step title="Define the system prompt">
+        The system prompt defines your agent’s role and behavior. Keep it specific and actionable:
 
         ```python wrap
         SYSTEM_PROMPT = """You are a literary data assistant.
@@ -356,12 +356,13 @@ export HUGGINGFACEHUB_API_TOKEN="hf_..."
 
 
 
-    </Step>
-    <Step title="创建工具">
-        [工具](/oss/python/langchain/tools)让模型能够通过调用你定义的函数与外部系统交互。
-        工具可以依赖[运行时上下文](/oss/python/langchain/runtime)，也可以与[智能体记忆](/oss/python/langchain/short-term-memory)交互。
 
-        此示例使用一个工具从给定 URL 加载文档：
+    </Step>
+    <Step title="Create tools">
+        [Tools](/oss/python/langchain/tools) let a model interact with external systems by calling functions you define.
+        Tools can depend on [runtime context](/oss/python/langchain/runtime) and also interact with [agent memory](/oss/python/langchain/short-term-memory).
+
+        This example uses a tool to load a document from a given URL:
 
         ```python
         import urllib.error
@@ -388,16 +389,16 @@ export HUGGINGFACEHUB_API_TOKEN="hf_..."
         ```
 
         <Tip>
-            工具应该有良好的文档说明：它们的名称、描述和参数名称会成为模型提示词的一部分。
-            LangChain 的 [`@tool` 装饰器](https://reference.langchain.com/python/langchain-core/tools/convert/tool)添加了元数据，并通过 `ToolRuntime` 参数启用运行时注入。
-            在[工具指南](/oss/python/langchain/tools)中了解更多。
+            Tools should be well-documented: their name, description, and argument names become part of the model's prompt.
+            LangChain's [`@tool` decorator](https://reference.langchain.com/python/langchain-core/tools/convert/tool) adds metadata and enables runtime injection with the `ToolRuntime` parameter.
+            Learn more in the [tools guide](/oss/python/langchain/tools).
         </Tip>
 
 
 
     </Step>
-    <Step title="配置你的模型">
-        根据你的用例设置[语言模型](/oss/python/langchain/models)的适当参数。例如：
+    <Step title="Configure your model">
+        Set up your [language model](/oss/python/langchain/models) with the right parameters for your use case. For example:
 
         <CodeGroup>
             ```python OpenAI
@@ -512,12 +513,12 @@ export HUGGINGFACEHUB_API_TOKEN="hf_..."
 
 
 
-        根据所选的模型和提供商，初始化参数可能会有所不同；请参阅其参考页面了解详情。
+        Depending on the model and provider chosen, initialization parameters may vary; refer to their reference pages for details.
     </Step>
-    <Step title="添加记忆">
+    <Step title="Add memory">
 
-        为你的智能体添加[记忆](/oss/python/langchain/short-term-memory)以在交互之间维护状态。这使
-        智能体能够记住之前的对话和上下文。
+        Add [memory](/oss/python/langchain/short-term-memory) to your agent to maintain state across interactions. This allows
+        the agent to remember previous conversations and context.
 
         ```python
         from langgraph.checkpoint.memory import InMemorySaver
@@ -529,28 +530,28 @@ export HUGGINGFACEHUB_API_TOKEN="hf_..."
 
 
         <Info>
-            在生产环境中，请使用将消息历史保存到数据库的持久化检查点器。
-            查看[添加和管理记忆](/oss/python/langgraph/add-memory#manage-short-term-memory)了解更多详情。
+            In production, use a persistent checkpointer that saves message history to a database.
+            See [Add and manage memory](/oss/python/langgraph/add-memory#manage-short-term-memory) for more details.
         </Info>
 
     </Step>
-    <Step title="创建并运行智能体">
+    <Step title="Create and run the agent">
 
-        现在用所有组件组装你的智能体并运行它。
+        Now assemble your agent with all the components and run it.
 
-        创建智能体有两种不同的框架：LangChain 智能体和 Deep Agents。
-        LangChain 智能体和 Deep Agents 都提供了对工具、记忆等的细粒度控制。
-        两者的主要区别在于 Deep Agents 内置了一系列常用功能，如规划、文件系统工具和子智能体。
+        There are two different frameworks for creating agents: LangChain agents and deep agents.
+        Both LangChain and deep agents provide you with fine-grained control over tools, memory, and more.
+        The main difference between both is that deep agents come with a range of commonly useful capabilities already built in, such as planning, file system tools, and subagents.
 
-        当你想要以最少的设置获得最大能力时使用 Deep Agents；当你需要细粒度控制时选择 LangChain 智能体。
+        Use deep agents when you want maximum capability with minimal setup; choose LangChain agents when you need fine-grained control.
 
         <Warning>
-            由于代码使用《了不起的盖茨比》的完整文本调用模型，它会使用大量 Token。
+            Since the code invokes the model with the entire text from The Great Gatsby, it uses a large amount of tokens.
 
-            你可以在下一步中查看示例输出。
+            You can view example output in the next step.
         </Warning>
 
-        让我们尝试两种方式：
+        Let's try both:
 
         ```python wrap
         from langchain.agents import create_agent
@@ -599,7 +600,7 @@ export HUGGINGFACEHUB_API_TOKEN="hf_..."
 
 
 
-        <Expandable title="完整示例代码">
+        <Expandable title="Full example code">
 
         ```python wrap
         import urllib.error
@@ -692,12 +693,12 @@ export HUGGINGFACEHUB_API_TOKEN="hf_..."
 
         </Expandable>
     </Step>
-    <Step title="查看结果">
+    <Step title="Review the results">
 
-        结果会因模型和执行情况而异。
+        The results will differ based on the model and the execution.
 
-        <Tabs default="LangChain 智能体">
-        <Tab title="LangChain 智能体">
+        <Tabs default="LangChain agents">
+        <Tab title="LangChain agents">
 
         ````txt wrap expandable
         **1) Number of lines containing `Gatsby`:** `null`
@@ -712,7 +713,7 @@ export HUGGINGFACEHUB_API_TOKEN="hf_..."
         ````
 
         </Tab>
-        <Tab title="Deep Agents">
+        <Tab title="Deep agents">
 
         ````txt wrap expandable
         Based on the text fetched directly from the Gutenberg URL and analyzed using filesystem search tools, here are the answers to your questions:
@@ -722,7 +723,7 @@ export HUGGINGFACEHUB_API_TOKEN="hf_..."
 
         **2) First line containing `Daisy`**
         Line **181** is the first line in the file that contains the exact substring `Daisy`.
-        *(For context, the line reads: "Buchanans. Daisy was my second cousin once removed, and I'd known Tom")*
+        *(For context, the line reads: "Buchanans. Daisy was my second cousin once removed, and I’d known Tom")*
 
         **3) Two-sentence neutral synopsis**
         *The Great Gatsby* follows the mysterious millionaire Jay Gatsby and his obsessive pursuit to reunite with his former lover, Daisy Buchanan, in 1920s Long Island. The story is narrated by Nick Carraway, who observes the tragic consequences of Gatsby's relentless ambition and the shallow materialism of the era's wealthy elite.
@@ -736,60 +737,60 @@ export HUGGINGFACEHUB_API_TOKEN="hf_..."
         </Tab>
         </Tabs>
 
-        如果你查看两个标签页的输出，会注意到 LangChain 智能体提供了答案但都是估计值。该智能体缺少回答这个问题所需的工具。你可能还会收到提示词过长的错误。
+        If you look at the output on both tabs, you notice that the LangChain agent provided answers but they are estimates. The agent lacks the tools to answer this question. You may also get errors that the prompt is too long.
 
-        另一方面，Deep Agent 能够：
+        The deep agent, on the other hand can:
 
-        1. **规划其方法**，使用内置的 [`write_todos`](/oss/python/deepagents/harness#planning-capabilities) 工具来分解研究任务。
-        1. **加载文件**，通过调用 `fetch_text_from_url` 工具来收集信息。
-        1. **管理上下文**，使用文件系统工具（[`grep`](/oss/python/deepagents/harness#virtual-filesystem-access) 和 [`read_file`](/oss/python/deepagents/harness#virtual-filesystem-access)）。
-        1. **派生子智能体**，根据需要将复杂子任务委派给专门的子智能体。
+        1. **Plans its approach** using the built-in [`write_todos`](/oss/python/deepagents/harness#planning-capabilities) tool to break down the research task.
+        1. **Loads the file** by calling the `fetch_text_from_url` tool to gather information.
+        1. **Manages context** by using file system tools ([`grep`](/oss/python/deepagents/harness#virtual-filesystem-access) and [`read_file`](/oss/python/deepagents/harness#virtual-filesystem-access)).
+        1. **Spawns subagents** as needed to delegate complex subtasks to specialized subagents.
 
-        对于 LangChain 智能体，你必须实现更多功能才能获得类似的服务水平，并且可以根据需要在过程中对其进行自定义。
+        For LangChain agents, you must implement more capabilities to get a similar level of service and can customize them along the way as needed.
 
     </Step>
 </Steps>
 
-## 追踪智能体调用
+## Trace agent calls
 
-你使用 LangChain 构建的大多数有趣应用程序会对大语言模型(LLM)进行多次调用。随着这些应用程序变得更加复杂，能够检查智能体内部到底发生了什么变得越来越重要。最好的方式是使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langchain-quickstart)。
+Most interesting applications you build with LangChain make many calls to LLMs. As these applications get more complex, it becomes important to be able to inspect what exactly is going on inside your agent. The best way to do this is with [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langchain-quickstart).
 
-注册一个 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langchain-quickstart) 账户并设置以下变量开始记录追踪：
+Sign up for a [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langchain-quickstart) account and set these to start logging traces:
 
 ```shell
 export LANGSMITH_TRACING="true"
 export LANGSMITH_API_KEY="..."
 ```
 
-设置完成后，重新运行你的脚本，然后在 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langchain-quickstart) 上检查智能体调用期间发生了什么。
+Once set, run your script again and then inspect what happened during your agent calls on [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langchain-quickstart) .
 
 <Tip>
-    要了解更多关于使用 LangSmith 追踪智能体的信息，请参阅 [LangSmith 文档](/langsmith/trace-with-langchain)。
+    To learn more about tracing your agent with LangSmith, see the [LangSmith documentation](/langsmith/trace-with-langchain).
 </Tip>
 
-## 后续步骤
+## Next steps
 
-你现在拥有了能够执行以下操作的智能体：
+You now have agents that can:
 
-- **理解上下文**并记住对话
-- **智能使用工具**
-- **提供结构化响应**，格式一致
-- **处理用户特定信息**，通过上下文
-- **跨交互维护对话状态**
-- **规划、研究和综合**（仅限 Deep Agents）
+- **Understand context** and remember conversations
+- **Use tools** intelligently
+- **Provide structured responses** in a consistent format
+- **Handle user-specific information** through context
+- **Maintain conversation state** across interactions
+- **Plan, research, and synthesize** (deep agents only)
 
-继续学习：
+Continue with:
 
-- **LangChain 智能体**：[添加和管理记忆](/oss/python/langgraph/add-memory#manage-short-term-memory)、[部署到生产环境](/oss/python/langgraph/deploy)
-- **Deep Agents**：[自定义选项](/oss/python/deepagents/customization)、[持久化记忆](/oss/python/deepagents/long-term-memory)、[部署到生产环境](/oss/python/langgraph/deploy)
+- **LangChain agents**: [Add and manage memory](/oss/python/langgraph/add-memory#manage-short-term-memory), [deploy to production](/oss/python/langgraph/deploy)
+- **Deep Agents**: [Customization options](/oss/python/deepagents/customization), [persistent memory](/oss/python/deepagents/long-term-memory), [deploy to production](/oss/python/langgraph/deploy)
 
 ---
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    [连接这些文档](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/quickstart.mdx) 或 [提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/quickstart.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 </div>

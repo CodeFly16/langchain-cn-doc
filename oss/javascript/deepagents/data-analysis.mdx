@@ -6,7 +6,7 @@ description: 构建一个能够分析数据文件、生成可视化图表并分�
 
 ## 概述
 
-本指南 demonstrates how to build a data analysis agent using a [deep agent](/oss/javascript/deepagents). 数据分析任务通常需要规划、代码执行, 以及处理脚本、报告和图表等产物—这些都是深度智能体设计用来处理的能力。
+本指南演示如何使用[深度智能体](/oss/javascript/deepagents)构建数据分析智能体。数据分析任务通常需要规划、代码执行以及处理脚本、报告和图表等产物——这些都是深度智能体设计用来处理的能力。
 
 我们将构建的智能体将：
 
@@ -15,10 +15,10 @@ description: 构建一个能够分析数据文件、生成可视化图表并分�
 3. 将结果分享到 Slack 频道
 
 <Tip>
-The Slack integration is 可选. The agent can be modified to save artifacts locally or share results through other channels.
+Slack 集成是可选的。可以修改智能体以在本地保存产物或通过其他渠道分享结果。
 </Tip>
 
-### 关键概念
+### 核心概念
 
 本教程涵盖：
 
@@ -29,20 +29,20 @@ The Slack integration is 可选. The agent can be modified to save artifacts loc
 
 ### 安装
 
-安装 core dependencies:
+安装核心依赖：
 
 
 
-### Optional dependencies
+### 可选依赖
 
-For this tutorial, we'll use:
+在本教程中，我们将使用：
 - [Slack Python SDK](https://docs.slack.dev/tools/python-slack-sdk/) for sharing results ([token setup](https://docs.slack.dev/authentication/tokens/))
 - A [sandbox](/oss/javascript/deepagents/sandboxes) environment for code execution. See [available providers](/oss/javascript/deepagents/sandboxes#available-providers) for setup details
 
 
 
 <Note>
-These services are 可选, though a sandboxed environment is highly recommended for any production use. You can alternatively use the local shell backend (with important [security considerations](/oss/javascript/deepagents/backends#localshellbackend-local-shell)) or download artifacts directly from the backend.
+These services are optional, though a sandboxed environment is highly recommended for any production use. You can alternatively use the local shell backend (with important [security considerations](/oss/javascript/deepagents/backends#localshellbackend-local-shell)) or download artifacts directly from the backend.
 </Note>
 
 ### LangSmith
@@ -58,7 +58,7 @@ export LANGSMITH_API_KEY="..."
 
 
 
-## Set up the backend
+## 设置后端
 
 Deep Agents use [backends](/oss/javascript/deepagents/backends) to execute code in sandboxed environments.
 
@@ -154,7 +154,7 @@ backend = RunloopSandbox(devbox=devbox)
   </Tab>
 <Tab title="Local shell">
 <Warning>
-This backend provides unrestricted filesystem and shell access. Use only in controlled environments for development and testing. 请参阅[security considerations](/oss/javascript/deepagents/backends#localshellbackend-local-shell)了解更多details.
+This backend provides unrestricted filesystem and shell access. Use only in controlled environments for development and testing. See the [security considerations](/oss/javascript/deepagents/backends#localshellbackend-local-shell) for more details.
 </Warning>
 
 ```python
@@ -165,7 +165,7 @@ backend = LocalShellBackend(root_dir=".", env={"PATH": "/usr/bin:/bin"})
 </Tab>
 </Tabs>
 
-### Upload sample data
+### 上传示例数据
 
 Create and upload sample sales data to the backend:
 ```python
@@ -193,10 +193,10 @@ text_buf.close()
 backend.upload_files([("/home/daytona/data/sales_data.csv", csv_bytes)])
 ```
 
-## Implement custom tools
+## 实现自定义工具
 
 Data analysis tasks might produce artefacts, like reports or plots.
-以下 simple [tool](/oss/javascript/langchain/tools) downloads them with `backend.download_files` and then uploads them using the Slack SDK.
+The following simple [tool](/oss/javascript/langchain/tools) downloads them with `backend.download_files` and then uploads them using the Slack SDK.
 We could also ask our agent to list the relevant file paths instead of uploading them, so interested parties can obtain them separately as needed.
 
 ```python
@@ -210,7 +210,7 @@ slack_client = WebClient(token=slack_token)
 
 @tool(parse_docstring=True)
 def slack_send_message(text: str, file_path: str | None = None) -> str:
-    """Send message, 可选ly including attachments such as images.
+    """Send message, optionally including attachments such as images.
 
     Args:
         text: (str) text content of the message
@@ -256,13 +256,13 @@ thread_id = str(uuid7())
 config={"configurable": {"thread_id": thread_id}}
 ```
 
-We include:
+我们包含：
 - A choice of [model](/oss/javascript/deepagents/customization#model)
 - Our custom [tool](/oss/javascript/deepagents/customization#tools)
 - The [backend](/oss/javascript/deepagents/backends)
 - A [checkpointer](/oss/javascript/langchain/short-term-memory) to support multi-turn conversations
 
-Let's now invoke our agent.
+现在让我们调用智能体。
 ```python
 input_message = {
     "role": "user",
@@ -603,7 +603,7 @@ Message sent.
 
 Excellent! I've successfully completed the analysis and sent everything to Slack. Here's what I did:
 
-## 总结
+## Summary
 
 **Analysis Completed:**
 - Analyzed the sales data from August 1-5, 2025
@@ -634,7 +634,7 @@ The analysis reveals that Widget A is the top performer, while Widget C shows ro
 
 View the full [LangSmith trace](https://smith.langchain.com/public/ac2443a8-16ad-4e00-8f02-afde6a737534/r) for this execution.
 
-## Results
+## 结果
 
 The agent successfully analyzes the data and shares a comprehensive report with visualizations to Slack:
 
@@ -655,7 +655,7 @@ See [provider guides](/oss/javascript/deepagents/sandboxes#available-providers) 
 
 ## 后续步骤
 
-Now that you've built a data analysis agent, explore these resources to extend its capabilities:
+现在你已经构建了一个数据分析智能体，请探索以下资源以扩展其功能：
 
 - [Backends](/oss/javascript/deepagents/backends): Learn about the Deep Agents backend system
 - [Sandboxes](/oss/javascript/deepagents/sandboxes): Review backends for sandboxed code execution, including security considerations and advanced configurations
@@ -668,9 +668,9 @@ Now that you've built a data analysis agent, explore these resources to extend i
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/data-analysis.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/data-analysis.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

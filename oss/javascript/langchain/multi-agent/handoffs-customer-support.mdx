@@ -1,23 +1,23 @@
 ---
-title: Build customer support with handoffs
-sidebarTitle: "Handoffs: Customer support"
+title: 使用交接构建客户支持
+sidebarTitle: "交接：客户支持"
 ---
 
 import ChatModelTabsPy from '/snippets/chat-model-tabs.mdx';
 import ChatModelTabsJs from '/snippets/chat-model-tabs-js.mdx';
 
-The [state machine pattern](/oss/javascript/langchain/multi-agent/handoffs) describes workflows where an agent's behavior changes as it moves through different states of a task. This tutorial shows how to implement a state machine by using tool calls to dynamically change a single agent's configuration—updating its available tools and instructions based on the current state. The state can be determined from multiple sources: the agent's past actions (tool calls), external state (such as API call results), or even initial user input (例如, by running a classifier to determine user intent).
+[状态机模式](/oss/javascript/langchain/multi-agent/handoffs)描述了智能体的行为随着它在任务的不同状态之间移动而变化的工作流。本教程展示如何通过使用工具调用动态更改单个智能体的配置来实现状态机——基于当前状态更新其可用工具和指令。状态可以从多个来源确定：智能体过去的操作（工具调用）、外部状态（如 API 调用结果），甚至是初始用户输入（例如，通过运行分类器来确定用户意图）。
 
-在本教程中, you'll build a customer support agent that does the following:
+在本教程中，你将构建一个客户支持智能体，它执行以下操作：
 
-- Collects warranty information before proceeding.
-- Classifies issues as hardware or software.
-- Provides solutions or escalates to human support.
-- Maintains conversation state across multiple turns.
+- 在继续之前收集保修信息。
+- 将问题分类为硬件或软件问题。
+- 提供解决方案或升级到人工支持。
+- 跨多轮对话维护会话状态。
 
-Unlike the [subagents pattern](/oss/javascript/langchain/multi-agent/subagents-personal-assistant) where sub-agents are called as tools, the **state machine pattern** uses a single agent whose configuration changes based on workflow progress. Each "step" is just a different configuration (system prompt + tools) of the same underlying agent, selected dynamically based on state.
+与[子智能体模式](/oss/javascript/langchain/multi-agent/subagents-personal-assistant)（子智能体作为工具被调用）不同，**状态机模式**使用单个智能体，其配置根据工作流进度而变化。每个"步骤"只是同一底层智能体的不同配置（系统提示 + 工具），根据状态动态选择。
 
-Here's the workflow we'll build:
+以下是我们将构建的工作流：
 
 ```mermaid
 %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#E5F4FF','primaryTextColor':'#030710','primaryBorderColor':'#006DDD','lineColor':'#40668D','secondaryColor':'#F6FFDB','tertiaryColor':'#FDF3FF'}}}%%
@@ -75,9 +75,9 @@ pnpm add langchain
 </CodeGroup>
 
 
-有关更多详情，请参阅 our [Installation guide](/oss/javascript/langchain/install).
+For more details, see our [Installation guide](/oss/javascript/langchain/install).
 
-### LangSmith
+### LangSmith 设置
 
 Set up [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langchain-multi-agent-handoffs-customer-support) to inspect what is happening inside your agent. Then set the following environment variables:
 
@@ -95,7 +95,7 @@ process.env.LANGSMITH_API_KEY = "...";
 </CodeGroup>
 
 
-### Select an LLM
+### 选择 LLM
 
 Select a chat model from LangChain's suite of integrations:
 
@@ -104,7 +104,7 @@ Select a chat model from LangChain's suite of integrations:
 <ChatModelTabsJs />
 
 
-## 1. Define custom state
+## 1. 定义自定义状态
 
 First, define a custom state schema that tracks which step is currently active:
 
@@ -130,7 +130,7 @@ const SupportState = new StateSchema({  // [!code highlight]
 
 The `current_step` field is the core of the state machine pattern - it determines which configuration (prompt + tools) is loaded on each turn.
 
-## 2. Create tools that manage workflow state
+## 2. 创建管理工作流状态的工具
 
 Create tools that update the workflow state. These tools allow the agent to record information and transition to the next step.
 
@@ -224,7 +224,7 @@ const provideSolution = tool(
 
 Notice how `record_warranty_status` and `record_issue_type` return `Command` objects that update both the data (`warranty_status`, `issue_type`) AND the `current_step`. This is how the state machine works - tools control workflow progression.
 
-## 3. Define step configurations
+## 3. 定义步骤配置
 
 Define prompts and tools for each step. First, define the prompts for each step:
 
@@ -306,7 +306,7 @@ This dictionary-based configuration makes it easy to:
 - Understand the workflow dependencies (`requires` field)
 - Use prompt templates with state variables (e.g., `{warranty_status}`)
 
-## 4. Create step-based middleware
+## 4. 创建基于步骤的中间件
 
 Create middleware that reads `current_step` from state and applies the appropriate configuration. We'll use the `@wrap_model_call` decorator for a clean implementation:
 
@@ -359,7 +359,7 @@ This middleware:
 
 The `request.override()` method is key - it allows us to dynamically change the agent's behavior based on state without creating separate agent instances.
 
-## 5. Create the agent
+## 5. 创建智能体
 
 Now create the agent with the step-based middleware and a checkpointer for state persistence:
 
@@ -399,7 +399,7 @@ const agent = createAgent({
 **Why a checkpointer?** The checkpointer maintains state across conversation turns. Without it, the `current_step` state would be lost between user messages, breaking the workflow.
 </Note>
 
-## 6. Test the workflow
+## 6. 测试工作流
 
 Test the complete workflow:
 
@@ -462,11 +462,11 @@ Expected flow:
 2. **Issue classification step**: Asks about the problem, determines it's hardware
 3. **Resolution step**: Provides warranty repair instructions
 
-## 7. Understanding state transitions
+## 7. 理解状态转换
 
 Let's trace what happens at each turn:
 
-### Turn 1: Initial message
+### 第 1 轮：初始消息
 
 
 
@@ -482,7 +482,7 @@ Middleware applies:
 - System prompt: `WARRANTY_COLLECTOR_PROMPT`
 - Tools: `[record_warranty_status]`
 
-### Turn 2: After warranty recorded
+### 第 2 轮：记录保修后
 
 
 
@@ -501,7 +501,7 @@ Next turn, middleware applies:
 - System prompt: `ISSUE_CLASSIFIER_PROMPT` (formatted with `warranty_status="in_warranty"`)
 - Tools: `[record_issue_type]`
 
-### Turn 3: After issue classified
+### 第 3 轮：问题分类后
 
 
 
@@ -522,7 +522,7 @@ Next turn, middleware applies:
 
 The key insight: **Tools drive the workflow** by updating `current_step`, and **middleware responds** by applying the appropriate configuration on the next turn.
 
-## 8. Manage message history
+## 8. 管理消息历史
 
 As the agent progresses through steps, message history grows. Use [summarization middleware](/oss/javascript/langchain/short-term-memory#summarize-messages) to compress earlier messages while preserving conversational context:
 
@@ -549,11 +549,11 @@ const agent = createAgent({
 ```
 
 
-请参阅 [short-term memory guide](/oss/javascript/langchain/short-term-memory) for other memory management techniques.
+See the [short-term memory guide](/oss/javascript/langchain/short-term-memory) for other memory management techniques.
 
-## 9. Add flexibility: Go back
+## 9. 增加灵活性：返回上一步
 
-Some workflows need to allow users to return to previous steps to correct information (e.g., changing warranty status or issue classification). However, not all transitions make sense—例如, you typically can't go back once a refund has been processed. For this support workflow, we'll add tools to return to the warranty verification and issue classification steps.
+Some workflows need to allow users to return to previous steps to correct information (e.g., changing warranty status or issue classification). However, not all transitions make sense—for example, you typically can't go back once a refund has been processed. For this support workflow, we'll add tools to return to the warranty verification and issue classification steps.
 
 <Tip>
 If your workflow requires arbitrary transitions between most steps, consider whether you need a structured workflow at all. This pattern works best when steps follow a clear sequential progression with occasional backwards transitions for corrections.
@@ -635,7 +635,7 @@ const result = await agent.invoke(
 ```
 
 
-## Complete example
+## 完整示例
 
 Here's everything together in a runnable script:
 
@@ -909,7 +909,7 @@ for (const msg of result.messages) {
 
 </Expandable>
 
-## 下一步
+## 后续步骤
 
 - Learn about the [subagents pattern](/oss/javascript/langchain/multi-agent/subagents-personal-assistant) for centralized orchestration
 - Explore [middleware](/oss/javascript/langchain/middleware) for more dynamic behaviors
@@ -920,9 +920,9 @@ for (const msg of result.messages) {
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    [连接这些文档](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/multi-agent/handoffs-customer-support.mdx) 或[提交 Issue](https://github.com/langchain-ai/docs/issues/new/choose).
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/multi-agent/handoffs-customer-support.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

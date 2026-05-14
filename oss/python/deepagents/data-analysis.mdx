@@ -1,46 +1,46 @@
 ---
 title: 构建数据分析智能体
-sidebarTitle: Data Analysis
-description: Build an agent that analyzes data files, generates visualizations, and shares results
+sidebarTitle: 数据分析
+description: 构建一个能够分析数据文件、生成可视化图表并分享结果的智能体
 ---
 
-## 概览
+## 概述
 
-This guide demonstrates how to build a data analysis agent using a [deep agent](/oss/python/deepagents). Data analysis tasks typically require planning, code execution, and working with artifacts such as scripts, reports, and plots—capabilities that deep agents are designed to handle.
+本指南演示如何使用[深度智能体](/oss/python/deepagents)构建数据分析智能体。数据分析任务通常需要规划、代码执行以及处理脚本、报告和图表等产物——这些都是深度智能体旨在处理的能力。
 
-The agent we'll build will:
+我们将构建的智能体将：
 
-1. Accept a CSV file for analysis
-2. Perform exploratory data analysis and generate visualizations
-3. Share results to a Slack channel
+1. 接受 CSV 文件进行分析
+2. 执行探索性数据分析并生成可视化
+3. 将结果分享到 Slack 频道
 
 <Tip>
-The Slack integration is optional. The agent can be modified to save artifacts locally or share results through other channels.
+Slack 集成是可选的。可以修改智能体以在本地保存产物或通过其他渠道分享结果。
 </Tip>
 
 ### 关键概念
 
-This tutorial covers:
+本教程涵盖：
 
-- [Backends](/oss/python/deepagents/backends) for sandboxed code execution
-- Custom [tools](/oss/python/langchain/tools) for external integrations
+- 用于沙箱化代码执行的[后端](/oss/python/deepagents/backends)
+- 用于外部集成的自定义[工具](/oss/python/langchain/tools)
 
 ## 设置
 
 ### 安装
 
-Install the core dependencies:
+安装核心依赖：
 
 ```bash pip
 pip install deepagents
 ```
 
 
-### Optional dependencies
+### 可选依赖
 
-For this tutorial, we'll use:
-- [Slack Python SDK](https://docs.slack.dev/tools/python-slack-sdk/) for sharing results ([token setup](https://docs.slack.dev/authentication/tokens/))
-- A [sandbox](/oss/python/deepagents/sandboxes) environment for code execution. See [available providers](/oss/python/deepagents/sandboxes#available-providers) for setup details
+本教程中我们将使用：
+- [Slack Python SDK](https://docs.slack.dev/tools/python-slack-sdk/) 用于分享结果（[Token 设置](https://docs.slack.dev/authentication/tokens/)）
+- 用于代码执行的[沙箱](/oss/python/deepagents/sandboxes)环境。设置详情请参见[可用提供商](/oss/python/deepagents/sandboxes#available-providers)
 
 ```bash pip
 pip install slack-sdk
@@ -73,11 +73,11 @@ os.environ["LANGSMITH_API_KEY"] = getpass.getpass()
 ```
 
 
-## Set up the backend
+## 设置后端
 
-Deep Agents use [backends](/oss/python/deepagents/backends) to execute code in sandboxed environments.
+深度智能体使用[后端](/oss/python/deepagents/backends)在沙箱化环境中执行代码。
 
-See [available providers](/oss/python/deepagents/sandboxes#available-providers) for setup details.
+设置详情请参见[可用提供商](/oss/python/deepagents/sandboxes#available-providers)。
 
 <Tabs>
   <Tab title="Daytona">
@@ -180,9 +180,9 @@ backend = LocalShellBackend(root_dir=".", env={"PATH": "/usr/bin:/bin"})
 </Tab>
 </Tabs>
 
-### Upload sample data
+### 上传示例数据
 
-Create and upload sample sales data to the backend:
+创建并上传示例销售数据到后端：
 ```python
 import csv
 import io
@@ -208,11 +208,11 @@ text_buf.close()
 backend.upload_files([("/home/daytona/data/sales_data.csv", csv_bytes)])
 ```
 
-## Implement custom tools
+## 实现自定义工具
 
-Data analysis tasks might produce artefacts, like reports or plots.
-The following simple [tool](/oss/python/langchain/tools) downloads them with `backend.download_files` and then uploads them using the Slack SDK.
-We could also ask our agent to list the relevant file paths instead of uploading them, so interested parties can obtain them separately as needed.
+数据分析任务可能会生成产物，如报告或图表。
+下面这个简单的[工具](/oss/python/langchain/tools)使用 `backend.download_files` 下载它们，然后使用 Slack SDK 上传。
+我们也可以让智能体列出相关文件路径而不是上传，这样相关人员可以根据需要单独获取。
 
 ```python
 from langchain.tools import tool
@@ -247,9 +247,9 @@ def slack_send_message(text: str, file_path: str | None = None) -> str:
 It is generally good practice to avoid adding credentials and other secrets to the sandbox. Here we manage the Slack token outside the sandbox in a tool.
 </Note>
 
-## Run the agent
+## 运行智能体
 
-Let's instantiate an agent:
+让我们实例化一个智能体：
 
 ```python
 from langchain_core.utils.uuid import uuid7
@@ -649,9 +649,9 @@ The analysis reveals that Widget A is the top performer, while Widget C shows ro
 
 View the full [LangSmith trace](https://smith.langchain.com/public/ac2443a8-16ad-4e00-8f02-afde6a737534/r) for this execution.
 
-## Results
+## 结果
 
-The agent successfully analyzes the data and shares a comprehensive report with visualizations to Slack:
+智能体成功分析了数据，并将包含可视化的全面报告分享到了 Slack：
 
 <Frame caption="Agent-generated analysis report and visualization dashboard delivered to Slack">
   ![Sales analysis results in Slack](/images/data_analysis_slack_response.png)
@@ -668,9 +668,9 @@ backend.download_files(list_of_filepaths)
 See [provider guides](/oss/python/deepagents/sandboxes#available-providers) for how to clean up the sandbox once finished.
 </Note>
 
-## 后续步骤
+## 下一步
 
-Now that you've built a data analysis agent, explore these resources to extend its capabilities:
+现在你已经构建了数据分析智能体，探索以下资源来扩展其能力：
 
 - [Backends](/oss/python/deepagents/backends): Learn about the Deep Agents backend system
 - [Sandboxes](/oss/python/deepagents/sandboxes): Review backends for sandboxed code execution, including security considerations and advanced configurations
@@ -686,6 +686,6 @@ Now that you've built a data analysis agent, explore these resources to extend i
     [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/data-analysis.mdx) 或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/data-analysis.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 </div>

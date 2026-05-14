@@ -1,12 +1,12 @@
 ---
-title: 使用按需技能构建 SQL 助手
-sidebarTitle: 技能：SQL 助手
+title: 构建按需技能的 SQL 助手
+sidebarTitle: "技能：SQL 助手"
 ---
 
 import ChatModelTabsPy from '/snippets/chat-model-tabs.mdx';
 import ChatModelTabsJs from '/snippets/chat-model-tabs-js.mdx';
 
-This tutorial shows how to use **progressive disclosure** - a context management technique where the agent loads information on-demand rather than upfront - to implement **skills** (specialized prompt-based instructions). The agent loads skills via tool calls, rather than dynamically changing the system prompt, discovering and loading only the skills it needs for each task.
+本教程展示如何使用**渐进式披露** - 一种上下文管理技术，智能体按需加载信息而非预先加载 - 来实现**技能**（基于提示词的专门指令）。 The agent loads skills via tool calls, rather than dynamically changing the system prompt, discovering and loading only the skills it needs for each task.
 
 **Use case:** Imagine building an agent to help write SQL queries across different business verticals in a large enterprise. Your organization might have separate datastores for each vertical, or a single monolithic database with thousands of tables. Either way, loading all schemas upfront would overwhelm the context window. Progressive disclosure solves this by loading only the relevant schema when needed. This architecture also enables different product owners and stakeholders to independently contribute and maintain skills for their specific business verticals.
 
@@ -20,7 +20,7 @@ For a complete example of a SQL agent with query execution, error correction, an
 Progressive disclosure was popularized by Anthropic as a technique for building scalable agent skills systems. This approach uses a three-level architecture (metadata → core content → detailed resources) where agents load information only as needed. For more on this technique, see [Equipping agents for the real world with Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills).
 </Tip>
 
-## 工作原理
+## How it works
 
 Here's the flow when a user asks for a SQL query:
 
@@ -80,9 +80,9 @@ When building your own skills implementation (as we do in this tutorial), the co
 This flexibility lets you optimize for your specific requirements around performance, storage, and workflow control.
 </Tip>
 
-## 设置
+## Setup
 
-### 安装
+### Installation
 
 This tutorial requires the `langchain` package:
 
@@ -101,7 +101,7 @@ conda install langchain -c conda-forge
 
 
 
-更多详情请参阅 our [Installation guide](/oss/python/langchain/install).
+For more details, see our [Installation guide](/oss/python/langchain/install).
 
 ### LangSmith
 
@@ -1000,7 +1000,7 @@ This combination of progressive disclosure (loading schemas on-demand) and dynam
 
 </Accordion>
 
-## 后续步骤
+## Next steps
 
 - Learn about [middleware](/oss/python/langchain/middleware) for more dynamic agent behaviors
 - Explore [context engineering](/oss/python/langchain/context-engineering) techniques for managing agent context
@@ -1016,6 +1016,6 @@ This combination of progressive disclosure (loading schemas on-demand) and dynam
     [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/multi-agent/skills-sql-assistant.mdx) 或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/multi-agent/skills-sql-assistant.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 </div>

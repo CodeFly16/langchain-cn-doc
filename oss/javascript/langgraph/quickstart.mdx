@@ -9,17 +9,17 @@ title: 快速入门
 <Tip>
     **正在使用 AI 编码助手？**
 
-    - 安装 [LangChain Docs MCP 服务器](/use-these-docs)，让你的智能体可以访问最新的 LangChain 文档和示例。
-    - 安装 [LangChain Skills](https://github.com/langchain-ai/langchain-skills) 来提高你的智能体在 LangChain 生态系统任务上的表现。
+    - 安装 [LangChain Docs MCP 服务器](/use-these-docs)，让您的智能体访问最新的 LangChain 文档和示例。
+    - 安装 [LangChain Skills](https://github.com/langchain-ai/langchain-skills) 以提升您的智能体在 LangChain 生态系统任务上的表现。
 </Tip>
 
-- [使用图 API](#use-the-graph-api)，如果你更喜欢将智能体定义为节点和边的图。
-- [使用函数式 API](#use-the-functional-api)，如果你更喜欢将智能体定义为单个函数。
+- [使用图 API](#use-the-graph-api)：如果您偏好将智能体定义为节点和边的图。
+- [使用函数式 API](#use-the-functional-api)：如果您偏好将智能体定义为单个函数。
 
 有关概念信息，请参阅[图 API 概述](/oss/javascript/langgraph/graph-api)和[函数式 API 概述](/oss/javascript/langgraph/functional-api)。
 
 <Info>
-在此示例中，你需要设置一个 [Claude (Anthropic)](https://www.anthropic.com/) 账户并获取 API 密钥。然后在终端中设置 `ANTHROPIC_API_KEY` 环境变量。
+在此示例中，您需要设置一个 [Claude (Anthropic)](https://www.anthropic.com/) 账户并获取 API 密钥。然后在终端中设置 `ANTHROPIC_API_KEY` 环境变量。
 </Info>
 
 <Tabs>
@@ -27,7 +27,7 @@ title: 快速入门
 
 ## 1. 定义工具和模型
 
-在此示例中，我们将使用 Claude Sonnet 4.5 模型，并定义加法、乘法和除法工具。
+在此示例中，我们将使用 Claude Sonnet 4.5 模型并定义加法、乘法和除法工具。
 
 
 
@@ -87,10 +87,11 @@ const modelWithTools = model.bindTools(tools);
 
 
 <Tip>
-    LangGraph 中的状态在智能体执行过程中持续存在。
+    LangGraph 中的状态在智能体执行期间持续存在。
 
-    `MessagesValue` 提供了用于追加消息的内置归约器。`llmCalls` 字段使用带有 `(x, y) => x + y` 的 `ReducedValue` 来累积计数。
+    `MessagesValue` 提供了一个内置的 reducer 用于追加消息。`llmCalls` 字段使用 `ReducedValue` 和 `(x, y) => x + y` 来累积计数。
 </Tip>
+
 
 
 
@@ -180,7 +181,7 @@ const toolNode: GraphNode<typeof MessagesState> = async (state) => {
 const shouldContinue: ConditionalEdgeRouter<typeof MessagesState, "toolNode"> = (state) => {
   const lastMessage = state.messages.at(-1);
 
-  // 检查是否是 AIMessage 后再访问 tool_calls
+  // 检查是否为 AIMessage 后再访问 tool_calls
   if (!lastMessage || !AIMessage.isInstance(lastMessage)) {
     return END;
   }
@@ -190,7 +191,7 @@ const shouldContinue: ConditionalEdgeRouter<typeof MessagesState, "toolNode"> = 
     return "toolNode";
   }
 
-  // 否则，停止（回复用户）
+  // 否则，我们停止（回复用户）
   return END;
 };
 ```
@@ -224,10 +225,10 @@ for (const message of result.messages) {
 
 
 <Tip>
-使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-quickstart) 追踪和调试你的智能体。按照[追踪快速入门](/langsmith/trace-with-langgraph)开始设置。准备好投入生产时，请参阅[部署](/langsmith/deployment)了解托管选项。
+使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-quickstart) 追踪和调试您的智能体。按照[追踪快速入门](/langsmith/trace-with-langgraph)进行设置。准备好投入生产时，请参阅[部署](/langsmith/deployment)了解托管选项。
 </Tip>
 
-恭喜！你已经使用 LangGraph 图 API 构建了第一个智能体。
+恭喜！您已经使用 LangGraph 图 API 构建了第一个智能体。
 
 <Accordion title="完整代码示例">
 
@@ -347,7 +348,7 @@ import { ConditionalEdgeRouter, END } from "@langchain/langgraph";
 const shouldContinue: ConditionalEdgeRouter<typeof MessagesState, "toolNode"> = (state) => {
   const lastMessage = state.messages.at(-1);
 
-  // 检查是否是 AIMessage 后再访问 tool_calls
+  // 检查是否为 AIMessage 后再访问 tool_calls
   if (!lastMessage || !AIMessage.isInstance(lastMessage)) {
     return END;
   }
@@ -357,7 +358,7 @@ const shouldContinue: ConditionalEdgeRouter<typeof MessagesState, "toolNode"> = 
     return "toolNode";
   }
 
-  // 否则，停止（回复用户）
+  // 否则，我们停止（回复用户）
   return END;
 };
 ```
@@ -391,7 +392,7 @@ for (const message of result.messages) {
 
 ## 1. 定义工具和模型
 
-在此示例中，我们将使用 Claude Sonnet 4.5 模型，并定义加法、乘法和除法工具。
+在此示例中，我们将使用 Claude Sonnet 4.5 模型并定义加法、乘法和除法工具。
 
 
 
@@ -521,10 +522,10 @@ for (const message of result) {
 
 
 <Tip>
-使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-quickstart) 追踪和调试你的智能体。按照[追踪快速入门](/langsmith/trace-with-langgraph)开始设置。准备好投入生产时，请参阅[部署](/langsmith/deployment)了解托管选项。
+使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-quickstart) 追踪和调试您的智能体。按照[追踪快速入门](/langsmith/trace-with-langgraph)进行设置。准备好投入生产时，请参阅[部署](/langsmith/deployment)了解托管选项。
 </Tip>
 
-恭喜！你已经使用 LangGraph 函数式 API 构建了第一个智能体。
+恭喜！您已经使用 LangGraph 函数式 API 构建了第一个智能体。
 
 <Accordion title="完整代码示例" icon="code">
 
@@ -648,6 +649,6 @@ for (const message of result) {
     [将这些文档连接](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/quickstart.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/quickstart.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

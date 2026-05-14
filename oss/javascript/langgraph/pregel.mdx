@@ -6,42 +6,41 @@ sidebarTitle: 运行时
 
 
 
-
 [`Pregel`](https://reference.langchain.com/javascript/langchain-langgraph/index/Pregel) 实现了 LangGraph 的运行时，管理 LangGraph 应用的执行。
 
-编译 [StateGraph](https://reference.langchain.com/javascript/langchain-langgraph/index/StateGraph) 或创建 [entrypoint](https://reference.langchain.com/javascript/langchain-langgraph/index/entrypoint) 会生成一个 [`Pregel`](https://reference.langchain.com/javascript/langchain-langgraph/index/Pregel) 实例，可以用输入来调用。
+编译 [StateGraph](https://reference.langchain.com/javascript/langchain-langgraph/index/StateGraph) 或创建 [entrypoint](https://reference.langchain.com/javascript/langchain-langgraph/index/entrypoint) 会生成一个 [`Pregel`](https://reference.langchain.com/javascript/langchain-langgraph/index/Pregel) 实例，可以通过输入来调用。
 
 
-本指南在高层次上解释运行时，并提供直接使用 Pregel 实现应用的说明。
+本指南从高层次解释运行时，并提供直接使用 Pregel 实现应用的说明。
 
 
 
-> **注意：** [`Pregel`](https://reference.langchain.com/javascript/langchain-langgraph/index/Pregel) 运行时以 [Google 的 Pregel 算法](https://research.google/pubs/pub37252/)命名，该算法描述了一种使用图进行大规模并行计算的高效方法。
+> **注意：** [`Pregel`](https://reference.langchain.com/javascript/langchain-langgraph/index/Pregel) 运行时以 [Google 的 Pregel 算法](https://research.google/pubs/pub37252/) 命名，该算法描述了一种使用图进行大规模并行计算的高效方法。
 
 
 ## 概述
 
-在 LangGraph 中，Pregel 将[**Actor**](https://en.wikipedia.org/wiki/Actor_model)和**通道**组合成一个单一的应用程序。**Actor** 从通道读取数据并向通道写入数据。Pregel 按照 **Pregel 算法**/**批量同步并行**模型将应用程序的执行组织成多个步骤。
+在 LangGraph 中，Pregel 将 [**actors**](https://en.wikipedia.org/wiki/Actor_model) 和 **channels** 组合到单个应用中。**Actors** 从 channels 读取数据并向 channels 写入数据。Pregel 按照 **Pregel 算法**/**批量同步并行** 模型将应用的执行组织为多个步骤。
 
-每个步骤由三个阶段组成：
+每个步骤包含三个阶段：
 
-* **规划**：确定此步骤中要执行哪些 **Actor**。例如，在第一步中，选择订阅特殊**输入**通道的 **Actor**；在后续步骤中，选择订阅在上一步中更新过的通道的 **Actor**。
-* **执行**：并行执行所有选中的 **Actor**，直到全部完成、某个失败或达到超时。在此阶段，通道更新对 Actor 不可见，直到下一步。
-* **更新**：使用 **Actor** 在此步骤中写入的值更新通道。
+* **计划**：确定此步骤中要执行哪些 **actors**。例如，在第一步中，选择订阅特殊 **input** channels 的 **actors**；在后续步骤中，选择订阅上一步中更新的 channels 的 **actors**。
+* **执行**：并行执行所有选中的 **actors**，直到全部完成、某个失败或达到超时。在此阶段，channel 更新对 actors 不可见，直到下一步。
+* **更新**：使用此步骤中 **actors** 写入的值更新 channels。
 
-重复执行，直到没有 **Actor** 被选中执行，或达到最大步数。
+重复以上过程，直到没有 **actors** 被选择执行，或达到最大步骤数。
 
-## Actor
+## Actors
 
-**Actor** 是一个 `PregelNode`。它订阅通道，从中读取数据，并向其写入数据。它可以被视为 Pregel 算法中的一个 **Actor**。`PregelNodes` 实现了 LangChain 的 Runnable 接口。
+**actor** 是一个 `PregelNode`。它订阅 channels，从中读取数据，并向其写入数据。可以将其视为 Pregel 算法中的 **actor**。`PregelNodes` 实现了 LangChain 的 Runnable 接口。
 
-## 通道
+## Channels
 
-通道用于 Actor（PregelNode）之间的通信。每个通道有一个值类型、一个更新类型和一个更新函数——该函数接受一系列更新并修改存储的值。通道可用于从一个链向另一个链发送数据，或从一个链向自身在未来步骤中发送数据。
+Channels 用于在 actors（PregelNodes）之间通信。每个 channel 有一个值类型、一个更新类型和一个更新函数——该函数接收一系列更新并修改存储的值。Channels 可用于从一个链向另一个链发送数据，或从一个链在未来步骤中向自身发送数据。
 
 ### LastValue
 
-[`LastValue`](https://reference.langchain.com/javascript/classes/_langchain_langgraph.channels.LastValue.html) 是默认的通道类型。它存储写入它的最后一个值，覆盖任何先前的值。用于输入和输出值，或在步骤之间传递数据。
+[`LastValue`](https://reference.langchain.com/javascript/classes/_langchain_langgraph.channels.LastValue.html) 是默认的 channel 类型。它存储写入的最后一个值，覆盖任何先前的值。用于输入和输出值，或在步骤之间传递数据。
 
 
 
@@ -54,7 +53,7 @@ const channel = new LastValue<number>();
 
 ### Topic
 
-[`Topic`](https://reference.langchain.com/javascript/langchain-langgraph/channels/Topic) 是一个可配置的发布/订阅通道，用于在 Actor 之间发送多个值或在多个步骤中累积输出。它可以配置为去重值或累积运行期间写入的所有值。
+[`Topic`](https://reference.langchain.com/javascript/langchain-langgraph/channels/Topic) 是一个可配置的发布/订阅 channel，适用于在 actors 之间发送多个值或跨步骤累积输出。可以配置为去重值或累积运行期间写入的所有值。
 
 
 
@@ -75,7 +74,7 @@ const channel = new Topic<string>({ accumulate: true });
 ```typescript
 import { BinaryOperatorAggregate } from "@langchain/langgraph/channels";
 
-// 运行总计：每次写入都添加到当前值
+// 运行总计：每次写入将值加到当前值上
 const total = new BinaryOperatorAggregate<number>({ operator: (a, b) => a + b });
 ```
 
@@ -86,10 +85,10 @@ const total = new BinaryOperatorAggregate<number>({ operator: (a, b) => a + b })
 
 
 
-虽然大多数用户将通过 [StateGraph](https://reference.langchain.com/javascript/langchain-langgraph/index/StateGraph) API 或 [entrypoint](https://reference.langchain.com/javascript/langchain-langgraph/index/entrypoint) 装饰器与 Pregel 交互，但也可以直接与 Pregel 交互。
+虽然大多数用户会通过 [StateGraph](https://reference.langchain.com/javascript/langchain-langgraph/index/StateGraph) API 或 [entrypoint](https://reference.langchain.com/javascript/langchain-langgraph/index/entrypoint) 装饰器与 Pregel 交互，但也可以直接与 Pregel 交互。
 
 
-以下是一些不同的示例，让你对 Pregel API 有个了解。
+以下是几个不同的示例，让您了解 Pregel API。
 
 <Tabs>
     <Tab title="单节点">
@@ -195,7 +194,7 @@ const total = new BinaryOperatorAggregate<number>({ operator: (a, b) => a + b })
 
     </Tab>
     <Tab title="BinaryOperatorAggregate">
-    此示例演示如何使用 [`BinaryOperatorAggregate`](https://reference.langchain.com/javascript/langchain-langgraph/channels/BinaryOperatorAggregate) 通道来实现归约器。
+    此示例演示如何使用 [`BinaryOperatorAggregate`](https://reference.langchain.com/javascript/langchain-langgraph/channels/BinaryOperatorAggregate) channel 来实现 reducer。
 
 
 
@@ -239,7 +238,7 @@ const total = new BinaryOperatorAggregate<number>({ operator: (a, b) => a + b })
     <Tab title="循环">
 
 
-    此示例演示如何在图中引入循环，通过让一个链写入它订阅的通道。执行将持续进行，直到写入 `null` 值到该通道。
+    此示例演示如何在图中引入循环，方法是让一个链写入它所订阅的 channel。执行将继续直到向 channel 写入 `null` 值。
 
     ```typescript
     import { EphemeralValue } from "@langchain/langgraph/channels";
@@ -271,13 +270,13 @@ const total = new BinaryOperatorAggregate<number>({ operator: (a, b) => a + b })
 
 ## 高级 API
 
-LangGraph 提供了两个高级 API 来创建 Pregel 应用：[StateGraph（图 API）](/oss/javascript/langgraph/graph-api)和[函数式 API](/oss/javascript/langgraph/functional-api)。
+LangGraph 提供了两个高级 API 来创建 Pregel 应用：[StateGraph（图 API）](/oss/javascript/langgraph/graph-api) 和[函数式 API](/oss/javascript/langgraph/functional-api)。
 
 <Tabs>
     <Tab title="StateGraph（图 API）">
 
 
-    [StateGraph（图 API）](https://reference.langchain.com/javascript/langchain-langgraph/index/StateGraph)是一个更高级的抽象，简化了 Pregel 应用的创建。它允许你定义一个由节点和边组成的图。当你编译图时，StateGraph API 会自动为你创建 Pregel 应用。
+    [StateGraph（图 API）](https://reference.langchain.com/javascript/langchain-langgraph/index/StateGraph) 是一个更高级别的抽象，简化了 Pregel 应用的创建。它允许您定义节点和边的图。当您编译图时，StateGraph API 会自动为您创建 Pregel 应用。
 
     ```typescript
     import { START, StateGraph } from "@langchain/langgraph";
@@ -318,7 +317,7 @@ LangGraph 提供了两个高级 API 来创建 Pregel 应用：[StateGraph（图 
     ```
 
 
-    编译后的 Pregel 实例将关联一组节点和通道。你可以通过打印来检查节点和通道。
+    编译后的 Pregel 实例将关联一组节点和 channels。您可以通过打印来检查节点和 channels。
 
 
 
@@ -326,7 +325,7 @@ LangGraph 提供了两个高级 API 来创建 Pregel 应用：[StateGraph（图 
     console.log(graph.nodes);
     ```
 
-    你将看到类似这样的内容：
+    您将看到类似以下内容：
 
     ```console
     {
@@ -340,7 +339,7 @@ LangGraph 提供了两个高级 API 来创建 Pregel 应用：[StateGraph（图 
     console.log(graph.channels);
     ```
 
-    你应该看到类似这样的内容
+    您应该看到类似以下内容
 
     ```console
     {
@@ -364,7 +363,7 @@ LangGraph 提供了两个高级 API 来创建 Pregel 应用：[StateGraph（图 
     <Tab title="函数式 API">
 
 
-    在[函数式 API](/oss/javascript/langgraph/functional-api) 中，你可以使用 [`entrypoint`](https://reference.langchain.com/javascript/langchain-langgraph/index/entrypoint) 来创建 Pregel 应用。`entrypoint` 装饰器允许你定义一个接受输入并返回输出的函数。
+    在[函数式 API](/oss/javascript/langgraph/functional-api) 中，您可以使用 [`entrypoint`](https://reference.langchain.com/javascript/langchain-langgraph/index/entrypoint) 来创建 Pregel 应用。`entrypoint` 装饰器允许您定义一个接收输入并返回输出的函数。
 
     ```typescript
     import { MemorySaver } from "@langchain/langgraph";
@@ -414,6 +413,6 @@ LangGraph 提供了两个高级 API 来创建 Pregel 应用：[StateGraph（图 
     [将这些文档连接](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/pregel.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/pregel.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

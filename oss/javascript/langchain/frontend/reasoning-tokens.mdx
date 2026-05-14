@@ -1,9 +1,9 @@
 ---
 title: 推理 Token
-description: 在可折叠块中展示模型的思考和推理过程
+description: 在可折叠区块中展示模型的思考和推理过程
 ---
 
-推理 Token 暴露了高级模型（如 OpenAI 的 o1/o3 和 Anthropic 的 Claude 扩展思考）的内部思考过程。这些模型生成结构化内容块，将推理与最终答案分离，让你构建展示模型*如何*得出响应的 UI。
+推理 Token 揭示了高级模型（如 OpenAI 的 o1/o3 和 Anthropic 的 Claude 扩展思考功能）的内部思考过程。这些模型生成结构化的内容块，将推理与最终答案分离，让你能够构建展示模型*如何*得出响应的 UI 界面。
 
 import { PatternEmbed } from "/snippets/pattern-embed.jsx"
 
@@ -11,12 +11,12 @@ import { PatternEmbed } from "/snippets/pattern-embed.jsx"
 
 ## 什么是推理 Token？
 
-当具有推理能力的模型处理提示词时，它们会生成两种不同类型的内容：
+当具有推理能力的模型处理提示时，它们会生成两种不同类型的内容：
 
 1. **推理块**：模型的内部思维链、问题分解和逐步分析
-2. **文本块**：呈现给用户的最终精炼响应
+2. **文本块**：呈现给用户的最终、经过打磨的响应
 
-这些内容以类型化内容块的形式在 `AIMessage` 中传递，可通过 `contentBlocks` 属性访问：
+这些内容作为类型化的内容块在 `AIMessage` 中传递，可通过 `contentBlocks` 属性访问：
 
 ```ts
 // 推理块
@@ -27,20 +27,20 @@ import { PatternEmbed } from "/snippets/pattern-embed.jsx"
 ```
 
 <Note>
-并非所有模型都会生成推理 Token。此模式专门适用于支持扩展思考或思维链输出的模型。标准聊天模型仅返回文本块。
+并非所有模型都会产生推理 Token。此模式仅适用于支持扩展思考或思维链输出的模型。标准聊天模型仅返回文本块。
 </Note>
 
 ## 使用场景
 
-- **透明度**：向用户展示模型的推理过程以建立对其答案的信任
-- **调试**：检查模型的思考过程以识别出错之处
-- **教育工具**：通过展示 AI 如何处理问题来教学生解题方法
-- **决策支持**：让领域专家验证推荐背后的推理
-- **质量保证**：在受监管行业中审计推理链的合规性
+- **透明度**：向用户展示模型的推理过程，以建立对其答案的信任
+- **调试**：检查模型的思维过程，以识别出错的地方
+- **教育工具**：通过揭示 AI 如何处理问题来教授学生解题方法
+- **决策支持**：让领域专家验证建议背后的推理
+- **质量保证**：在受监管行业中审计推理链以确保合规
 
 ## 提取推理和文本块
 
-`AIMessage` 上的 `contentBlocks` 数组按生成顺序包含所有块。按 `type` 过滤以分离推理和文本：
+`AIMessage` 上的 `contentBlocks` 数组包含按生成顺序排列的所有块。按 `type` 过滤以分离推理和文本：
 
 ```ts
 import { AIMessage } from "@langchain/core/messages";
@@ -61,13 +61,13 @@ function extractBlocks(msg: AIMessage) {
 }
 ```
 
-单条消息可能包含多个推理块（例如，如果模型暂停推理、生成部分文本，然后继续推理）。将它们连接起来可以获得完整的思考过程。
+单条消息可能包含多个推理块（例如，当模型暂停推理、生成部分文本，然后继续推理时）。将它们连接起来可以获得完整的思考过程。
 
 ## 从 `useStream` 访问消息
 
 
 
-导入你的智能体并将 `typeof myAgent` 作为类型参数传递给 `useStream`，以获得类型安全的状态值访问：
+导入你的智能体并将 `typeof myAgent` 作为类型参数传递给 `useStream`，以获得对状态值的类型安全访问：
 
 ```ts
 import type { myAgent } from "./agent";
@@ -196,7 +196,7 @@ export class ChatComponent {
 
 ## 构建 ThinkingBubble 组件
 
-`ThinkingBubble` 在视觉上有区分的可折叠容器中呈现推理 Token。用户可以展开查看完整的思考过程，或折叠以专注于最终答案。
+`ThinkingBubble` 将推理 Token 呈现在一个视觉上有区分度的可折叠容器中。用户可以展开它查看完整的思考过程，或折叠它专注于最终答案。
 
 ```tsx
 import { useState } from "react";
@@ -231,7 +231,7 @@ function ThinkingBubble({
           )}
         </span>
         <span className="thinking-label">
-          {isStreaming ? "思考中..." : `思考过程 (${charCount} 字符)`}
+          {isStreaming ? "思考中..." : `思考过程（${charCount} 个字符）`}
         </span>
         <span className={`chevron ${isExpanded ? "expanded" : ""}`}>▶</span>
       </button>
@@ -250,9 +250,9 @@ function ThinkingBubble({
 }
 ```
 
-### 设置 ThinkingBubble 样式
+### ThinkingBubble 样式
 
-用独特的视觉处理方式将推理块与常规消息区分开来：
+使用独特的视觉处理方式将推理块与常规消息区分开来：
 
 ```css
 .thinking-bubble {
@@ -303,9 +303,9 @@ function ThinkingBubble({
 }
 ```
 
-## 推理的流式指示器
+## 推理的流式输出指示器
 
-当模型仍在生成推理 Token 时，显示一个动画指示器来表明思考正在进行中：
+当模型仍在生成推理 Token 时，显示动画指示器以传达思考正在进行中：
 
 ```css
 .thinking-spinner {
@@ -324,7 +324,7 @@ function ThinkingBubble({
 ```
 
 <Tip>
-在流式输出期间，默认保持 ThinkingBubble 折叠，仅显示加载动画。在流式输出中途展开可能会因为新 Token 到达而导致布局抖动。让用户在推理阶段完成后再展开。
+在流式输出期间，默认保持 ThinkingBubble 折叠状态并仅显示加载动画。在流式输出过程中展开可能会因为新 Token 到达而导致布局抖动。让用户在推理阶段完成后再展开。
 </Tip>
 
 ## 渲染完整的 AI 响应
@@ -374,24 +374,24 @@ function AIResponse({
 }
 ```
 
-## 处理边缘情况
+## 处理边界情况
 
 ### 没有推理的消息
 
-并非每条 AI 消息都包含推理块。当 `contentBlocks` 只有文本块时，渲染标准消息气泡而不使用 ThinkingBubble。
+并非每条 AI 消息都包含推理块。当 `contentBlocks` 只有文本块时，渲染标准消息气泡而不显示 ThinkingBubble。
 
-### 空的推理块
+### 空推理块
 
-某些模型会生成空的推理块作为占位符。过滤掉它们：
+某些模型会生成空的推理块作为占位符。将它们过滤掉：
 
 ```ts
 const meaningfulReasoning = message.contentBlocks
   .filter((b) => b.type === "reasoning" && b.reasoning.trim().length > 0);
 ```
 
-### 多个推理-文本循环
+### 多轮推理-文本循环
 
-单条消息可以在推理块和文本块之间交替。如果你需要保留这种交错，按顺序遍历 `contentBlocks` 而不是按类型分组：
+单条消息可以在推理块和文本块之间交替。如果你需要保留这种交错顺序，按顺序遍历 `contentBlocks` 而不是按类型分组：
 
 ```ts
 message.contentBlocks.forEach((block) => {
@@ -405,20 +405,20 @@ message.contentBlocks.forEach((block) => {
 
 ## 最佳实践
 
-- **默认折叠**：按需显示推理，而不是默认显示
-- **显示字符数**：让用户快速了解响应中投入了多少思考
-- **视觉上区分**：使用不同的颜色、边框或背景，使推理永远不会与实际答案混淆
-- **添加过渡动画**：平滑的展开/折叠动画提升感知质量
-- **考虑可访问性**：在切换按钮上使用正确的 ARIA 属性（`aria-expanded`、`aria-controls`）
-- **预览中截断**：折叠时显示推理的简短预览，以便用户决定是否展开
+- **默认折叠**：按需显示推理，而非默认显示
+- **显示字符数**：让用户快速了解模型在响应中投入了多少思考
+- **视觉区分**：使用不同的颜色、边框或背景，使推理永远不会与实际答案混淆
+- **过渡动画**：平滑的展开/折叠动画提升感知质量
+- **考虑无障碍**：在切换按钮上使用适当的 ARIA 属性（`aria-expanded`、`aria-controls`）
+- **预览时截断**：折叠时显示推理的简短预览，让用户决定是否展开
 
 ---
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    [将这些文档连接到](/use-these-docs) Claude、VSCode 等，通过 MCP 获取实时答案。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/frontend/reasoning-tokens.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/frontend/reasoning-tokens.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>
