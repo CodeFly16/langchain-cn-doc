@@ -1,0 +1,56 @@
+---
+title: 托管 Deep Agents API
+sidebarTitle: 概览
+description: 托管 Deep Agents 私有预览 API 的参考概览。
+icon: "api"
+tag: "PREVIEW"
+---
+
+托管 Deep Agents API 是用于创建、更新和调用托管 Deep Agents 的私有预览 API。
+
+<Note>
+    托管 Deep Agents 目前处于私有预览阶段。[加入候补名单](https://www.langchain.com/langsmith-managed-deep-agents-waitlist)以申请访问权限。有关使用指南，请参阅[部署托管 Deep Agents](/langsmith/deploy-managed-deep-agent)。
+</Note>
+
+有关包含请求示例的端到端工作流程，请参阅[部署托管 Deep Agents](/langsmith/deploy-managed-deep-agent)。
+
+在侧边栏中浏览托管 Deep Agents API 参考页面。生成的参考包括：
+
+- Agents：创建、列出、获取、更新和删除托管 Deep Agents。
+- Threads：创建、搜索、计数和检查持久线程状态。
+- Runs：在托管 Deep Agent 线程上启动和流式运行。
+
+## 认证
+
+请求需要一个拥有托管 Deep Agents 私有预览访问权限的工作区的 LangSmith API 密钥。每个请求都需要传递密钥：
+
+```txt
+X-Api-Key: <LANGSMITH_API_KEY>
+```
+
+## 基础路由
+
+私有预览 API 使用 `/v1/deepagents`。
+
+## 资源组
+
+| 资源组 | 用途 |
+| --- | --- |
+| Agents | 创建和管理托管 Deep Agent 资源。 |
+| Threads | 创建和管理托管 Deep Agents 的持久线程状态。 |
+| Runs | 在线程上启动和流式运行托管 Deep Agent。 |
+
+## 私有预览范围
+
+在私有预览阶段，托管 Deep Agents 并未镜像每个 LangSmith 部署端点。集成、认证、触发器、技能和 Sandbox 等端点组尚未被镜像。
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时回答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/langsmith/managed-deep-agents-api.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

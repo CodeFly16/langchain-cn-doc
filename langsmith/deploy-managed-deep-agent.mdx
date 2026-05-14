@@ -1,0 +1,277 @@
+---
+title: 托管 Deep Agents
+description: 使用私有预览 API 创建、运行和管理托管 Deep Agents。
+icon: "robot"
+tag: "PREVIEW"
+---
+
+托管 Deep Agents 是一个以 API 为核心的托管运行时，用于在 LangSmith 中创建、运行和管理 Deep Agents。本指南将介绍完整流程：定义 Agent、配置 Tool、创建托管 Agent、创建线程、流式运行，以及在 LangSmith 中检查结果。
+
+<Note>
+    托管 Deep Agents 目前处于私有预览阶段。[加入候补名单](https://www.langchain.com/langsmith-managed-deep-agents-waitlist)以申请访问权限。
+</Note>
+
+Deep Agents 为开发者提供了一个开源框架，用于构建能够规划、使用 Tool、委派给子 Agent、写入文件并在长时间范围内工作的 Agent。托管 Deep Agents 在该框架之上封装了运维层，让你可以专注于 Agent 的行为，而无需运行自定义的运行时基础设施。
+
+有关路由级别的详细信息，请参阅 [托管 Deep Agents API 参考](/langsmith/managed-deep-agents-api)。
+
+## 何时使用托管 Deep Agents
+
+在以下场景中使用托管 Deep Agents：
+
+- 以编程方式创建和管理 Deep Agents。
+- 运行长时间运行的 Agent，而无需搭建自定义 Agent 服务器。
+- 流式运行并保持持久的线程状态。
+- 使用托管文件和 Tool。
+- 在 LangSmith 中检查追踪和 Agent 行为。
+
+<Tip>
+    你也可以通过标准的 [LangSmith 部署](/langsmith/deployment-quickstart)来部署 Deep Agents。当你需要自定义应用代码、自定义路由、高级认证、完整的 Agent Server API、更强的隔离控制或最大的可扩展性时，请使用该方式。
+</Tip>
+
+## 前置条件
+
+在开始之前，请确保你具备：
+
+- 托管 Deep Agents 私有预览访问权限。
+- 一个拥有私有预览访问权限的工作区的 LangSmith API 密钥。
+- 一个 Deep Agent 定义，包括指令和你希望托管运行时使用的任何 Tool 配置。
+
+为本指南中的示例设置请求默认值：
+
+```bash
+export LANGSMITH_API_KEY="<LANGSMITH_API_KEY>"
+export LANGSMITH_API_URL="https://api.smith.langchain.com"
+export DEEPAGENTS_BASE_URL="$LANGSMITH_API_URL/v1/deepagents"
+```
+
+请求需要 `X-Api-Key` 头：
+
+```txt
+X-Api-Key: <LANGSMITH_API_KEY>
+```
+
+## 定义 Agent
+
+托管 Deep Agents 保持了熟悉的 Deep Agents 项目结构。将这些文件保存在你的源代码仓库中，以便你可以审查变更并在需要时重新创建托管 Agent：
+
+| 文件或目录 | 用途 |
+| --- | --- |
+| `AGENTS.md` | 定义 Agent 指令。 |
+| `skills/` | 包含 Agent 可使用的技能。 |
+| `subagents/` | 包含用于委派工作的子 Agent 定义。 |
+| `tools.json` | 为托管 Agent 配置 Tool。 |
+
+对于 API 请求，在创建 Agent 的载荷中直接传递 Agent 指令和 Tool 配置。配置 Tool 时使用相同的 `tools.json` 格式：
+
+```json
+{
+  "tools": [
+    {
+      "name": "tavily_web_search",
+      "mcp_server_url": "https://tools.langchain.com",
+      "mcp_server_name": "Fleet",
+      "display_name": "tavily_web_search"
+    }
+  ],
+  "interrupt_config": {
+    "https://tools.langchain.com::tavily_web_search::Fleet": true
+  }
+}
+```
+
+`interrupt_config` 映射允许你为选定的 Tool 要求人工审批。键由 MCP 服务器 URL、Tool 名称和 MCP 服务器名称组合而成。
+
+## 创建托管 Agent
+
+使用 `POST /v1/deepagents/agents` 创建 Agent。载荷定义了托管资源、运行时设置、指令和 Tool。
+
+```bash
+curl --request POST \
+  --url "$DEEPAGENTS_BASE_URL/agents" \
+  --header "X-Api-Key: $LANGSMITH_API_KEY" \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "name": "research-assistant",
+    "description": "Research assistant that can search the web and summarize sources.",
+    "runtime": {
+      "model": {
+        "model_id": "anthropic:claude-sonnet-4-6"
+      }
+    },
+    "instructions": "You are a careful research assistant. Search for sources, keep notes, and return concise answers with citations.",
+    "tools": {
+      "tools": [
+        {
+          "name": "tavily_web_search",
+          "mcp_server_url": "https://tools.langchain.com",
+          "mcp_server_name": "Fleet",
+          "display_name": "tavily_web_search"
+        }
+      ],
+      "interrupt_config": {
+        "https://tools.langchain.com::tavily_web_search::Fleet": true
+      }
+    }
+  }'
+```
+
+响应包含托管 Agent ID。请保存它以便后续请求使用：
+
+```bash
+export AGENT_ID="<AGENT_ID>"
+```
+
+## 创建线程
+
+在运行 Agent 之前创建一个线程。线程会为长时间运行的工作保持会话和执行状态。
+
+```bash
+curl --request POST \
+  --url "$DEEPAGENTS_BASE_URL/threads" \
+  --header "X-Api-Key: $LANGSMITH_API_KEY" \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "agent_id": "'"$AGENT_ID"'",
+    "options": {
+      "test_run": false,
+      "skip_memory_write_protection": false
+    }
+  }'
+```
+
+响应包含线程 ID：
+
+```bash
+export THREAD_ID="<THREAD_ID>"
+```
+
+## 流式运行
+
+使用 `POST /v1/deepagents/threads/{thread_id}/runs/stream` 在线程上启动工作。在请求体中包含 `agent_id` 并设置 `Accept: text/event-stream`，以便客户端通过服务器发送事件（Server-Sent Events）接收进度。
+
+```bash
+curl --request POST \
+  --url "$DEEPAGENTS_BASE_URL/threads/$THREAD_ID/runs/stream" \
+  --header "X-Api-Key: $LANGSMITH_API_KEY" \
+  --header 'Accept: text/event-stream' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "agent_id": "'"$AGENT_ID"'",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Research recent approaches to agent memory and summarize the main tradeoffs."
+      }
+    ],
+    "stream_mode": ["values", "updates", "messages-tuple"],
+    "stream_subgraphs": true,
+    "user_timezone": "America/Los_Angeles"
+  }'
+```
+
+根据你想要构建的体验选择流模式：
+
+| 流模式 | 用途 |
+| --- | --- |
+| `values` | 步骤完成后的完整状态快照。 |
+| `updates` | Agent 工作时的增量状态更新。 |
+| `messages-tuple` | 用于聊天 UI 的 Token 级别消息输出。 |
+
+运行会在 LangSmith 中被追踪。打开追踪记录可以检查消息、工具调用、文件、子 Agent 活动和运行时行为。
+
+## 更新 Agent
+
+当需要更新指令、运行时设置或 Tool 配置时，使用 `PATCH /v1/deepagents/agents/{agent_id}`。
+
+```bash
+curl --request PATCH \
+  --url "$DEEPAGENTS_BASE_URL/agents/$AGENT_ID" \
+  --header "X-Api-Key: $LANGSMITH_API_KEY" \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "description": "Research assistant that searches the web, reads URLs, and summarizes sources.",
+    "runtime": {
+      "model": {
+        "model_id": "anthropic:claude-sonnet-4-6"
+      }
+    },
+    "instructions": "You are a careful research assistant. Search for sources, read relevant pages, keep notes, and return concise answers with citations.",
+    "tools": {
+      "tools": [
+        {
+          "name": "tavily_web_search",
+          "mcp_server_url": "https://tools.langchain.com",
+          "mcp_server_name": "Fleet",
+          "display_name": "tavily_web_search"
+        },
+        {
+          "name": "read_url_content",
+          "mcp_server_url": "https://tools.langchain.com",
+          "mcp_server_name": "Fleet",
+          "display_name": "read_url_content"
+        }
+      ],
+      "interrupt_config": {
+        "https://tools.langchain.com::tavily_web_search::Fleet": true,
+        "https://tools.langchain.com::read_url_content::Fleet": false
+      }
+    }
+  }'
+```
+
+## 管理现有 Agent
+
+列出 Agent：
+
+```bash
+curl --request GET \
+  --url "$DEEPAGENTS_BASE_URL/agents" \
+  --header "X-Api-Key: $LANGSMITH_API_KEY"
+```
+
+获取单个 Agent：
+
+```bash
+curl --request GET \
+  --url "$DEEPAGENTS_BASE_URL/agents/$AGENT_ID" \
+  --header "X-Api-Key: $LANGSMITH_API_KEY"
+```
+
+删除 Agent：
+
+```bash
+curl --request DELETE \
+  --url "$DEEPAGENTS_BASE_URL/agents/$AGENT_ID" \
+  --header "X-Api-Key: $LANGSMITH_API_KEY"
+```
+
+## 在 LangSmith 中检查结果
+
+托管 Deep Agents 的运行会在 LangSmith 中被追踪，因此团队可以调试行为并检查工具调用。使用追踪记录来审查：
+
+- 用户的输入和 Agent 的最终响应。
+- 模型调用和工具调用。
+- 子 Agent 活动。
+- 运行期间创建的文件和运行时状态。
+
+## 基于开源 Deep Agents 构建
+
+Deep Agents 仍然是开源的。托管 Deep Agents 是为那些希望获得 Deep Agents 框架加上 LangSmith 托管运行时基础设施的团队提供的托管路径。
+
+你可以将 Agent 定义保存在你的代码仓库中，然后使用托管 Deep Agents API 在 LangSmith 中创建和运营托管 Agent。
+
+## 私有预览范围
+
+在私有预览阶段，托管 Deep Agents 并未镜像每个 LangSmith 部署端点。集成、认证、触发器、技能和 Sandbox 等端点组尚未被镜像。
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时回答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/langsmith/deploy-managed-deep-agent.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

@@ -1,0 +1,162 @@
+<CodeGroup>
+    ```python Google
+    from deepagents import create_deep_agent
+    from deepagents.backends import FilesystemBackend
+    from langgraph.checkpoint.memory import MemorySaver
+    
+    # 人机协作（human-in-the-loop）必须配置 Checkpointer
+    checkpointer = MemorySaver()
+    
+    agent = create_deep_agent(
+        model="google_genai:gemini-3.1-pro-preview",
+        backend=FilesystemBackend(root_dir="/Users/user/{project}"),
+        memory=[
+            "./AGENTS.md"
+        ],
+        interrupt_on={
+            "write_file": True,  # 默认：批准、编辑、拒绝
+            "read_file": False,  # 无需中断
+            "edit_file": True,   # 默认：批准、编辑、拒绝
+        },
+        checkpointer=checkpointer,  # 必需！
+    )
+    ```
+
+    ```python OpenAI
+    from deepagents import create_deep_agent
+    from deepagents.backends import FilesystemBackend
+    from langgraph.checkpoint.memory import MemorySaver
+    
+    # 人机协作（human-in-the-loop）必须配置 Checkpointer
+    checkpointer = MemorySaver()
+    
+    agent = create_deep_agent(
+        model="openai:gpt-5.4",
+        backend=FilesystemBackend(root_dir="/Users/user/{project}"),
+        memory=[
+            "./AGENTS.md"
+        ],
+        interrupt_on={
+            "write_file": True,  # 默认：批准、编辑、拒绝
+            "read_file": False,  # 无需中断
+            "edit_file": True,   # 默认：批准、编辑、拒绝
+        },
+        checkpointer=checkpointer,  # 必需！
+    )
+    ```
+
+    ```python Anthropic
+    from deepagents import create_deep_agent
+    from deepagents.backends import FilesystemBackend
+    from langgraph.checkpoint.memory import MemorySaver
+    
+    # 人机协作（human-in-the-loop）必须配置 Checkpointer
+    checkpointer = MemorySaver()
+    
+    agent = create_deep_agent(
+        model="anthropic:claude-sonnet-4-6",
+        backend=FilesystemBackend(root_dir="/Users/user/{project}"),
+        memory=[
+            "./AGENTS.md"
+        ],
+        interrupt_on={
+            "write_file": True,  # 默认：批准、编辑、拒绝
+            "read_file": False,  # 无需中断
+            "edit_file": True,   # 默认：批准、编辑、拒绝
+        },
+        checkpointer=checkpointer,  # 必需！
+    )
+    ```
+
+    ```python OpenRouter
+    from deepagents import create_deep_agent
+    from deepagents.backends import FilesystemBackend
+    from langgraph.checkpoint.memory import MemorySaver
+    
+    # 人机协作（human-in-the-loop）必须配置 Checkpointer
+    checkpointer = MemorySaver()
+    
+    agent = create_deep_agent(
+        model="openrouter:anthropic/claude-sonnet-4-6",
+        backend=FilesystemBackend(root_dir="/Users/user/{project}"),
+        memory=[
+            "./AGENTS.md"
+        ],
+        interrupt_on={
+            "write_file": True,  # 默认：批准、编辑、拒绝
+            "read_file": False,  # 无需中断
+            "edit_file": True,   # 默认：批准、编辑、拒绝
+        },
+        checkpointer=checkpointer,  # 必需！
+    )
+    ```
+
+    ```python Fireworks
+    from deepagents import create_deep_agent
+    from deepagents.backends import FilesystemBackend
+    from langgraph.checkpoint.memory import MemorySaver
+    
+    # 人机协作（human-in-the-loop）必须配置 Checkpointer
+    checkpointer = MemorySaver()
+    
+    agent = create_deep_agent(
+        model="fireworks:accounts/fireworks/models/qwen3p5-397b-a17b",
+        backend=FilesystemBackend(root_dir="/Users/user/{project}"),
+        memory=[
+            "./AGENTS.md"
+        ],
+        interrupt_on={
+            "write_file": True,  # 默认：批准、编辑、拒绝
+            "read_file": False,  # 无需中断
+            "edit_file": True,   # 默认：批准、编辑、拒绝
+        },
+        checkpointer=checkpointer,  # 必需！
+    )
+    ```
+
+    ```python Baseten
+    from deepagents import create_deep_agent
+    from deepagents.backends import FilesystemBackend
+    from langgraph.checkpoint.memory import MemorySaver
+    
+    # 人机协作（human-in-the-loop）必须配置 Checkpointer
+    checkpointer = MemorySaver()
+    
+    agent = create_deep_agent(
+        model="baseten:zai-org/GLM-5",
+        backend=FilesystemBackend(root_dir="/Users/user/{project}"),
+        memory=[
+            "./AGENTS.md"
+        ],
+        interrupt_on={
+            "write_file": True,  # 默认：批准、编辑、拒绝
+            "read_file": False,  # 无需中断
+            "edit_file": True,   # 默认：批准、编辑、拒绝
+        },
+        checkpointer=checkpointer,  # 必需！
+    )
+    ```
+
+    ```python Ollama
+    from deepagents import create_deep_agent
+    from deepagents.backends import FilesystemBackend
+    from langgraph.checkpoint.memory import MemorySaver
+    
+    # 人机协作（human-in-the-loop）必须配置 Checkpointer
+    checkpointer = MemorySaver()
+    
+    agent = create_deep_agent(
+        model="ollama:devstral-2",
+        backend=FilesystemBackend(root_dir="/Users/user/{project}"),
+        memory=[
+            "./AGENTS.md"
+        ],
+        interrupt_on={
+            "write_file": True,  # 默认：批准、编辑、拒绝
+            "read_file": False,  # 无需中断
+            "edit_file": True,   # 默认：批准、编辑、拒绝
+        },
+        checkpointer=checkpointer,  # 必需！
+    )
+    ```
+</CodeGroup>

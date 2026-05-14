@@ -1,0 +1,150 @@
+---
+title: 使用 LangSmith Engine 发现并修复 Agent 的故障
+sidebarTitle: Engine
+description: 使用 LangSmith Engine 自动检测并解决追踪项目中的反复出现的问题。
+tag: Beta
+---
+
+<Note>Engine 目前处于 **Beta** 阶段，正在积极开发中。如需提供反馈或使用此功能，请联系 [LangChain 团队](https://forum.langchain.com/c/help/langsmith/)。</Note>
+
+LangSmith Engine 将你的追踪数据转化为持续改进的工作流程。它会发现反复出现的问题，诊断根本原因，并指导你修复问题和防止问题再次出现。
+
+每个问题都经历一个闭环：在追踪中检测到反复出现的故障 → 诊断根本原因 → 提出修复方案 → 部署评估器以捕获回归 → 如果问题在关闭后再次出现，它会自动重新打开。
+
+对于每个问题，LangSmith Engine 会展示相关的追踪记录，提出修复方案，生成自定义评估器以防止回归，并从生产追踪输入中创建自定义的标准答案[数据集样本](/langsmith/manage-datasets)，用于离线评估。
+
+## 你可以做什么
+
+<CardGroup cols={2}>
+  <Card title="构建：创建拉取请求" icon="git-pull-request" href="#open-a-pull-request">
+    通过在关联的代码仓库中创建拉取请求来应用建议的修复方案。
+  </Card>
+  <Card title="测试：将离线样本添加到数据集" icon="database" href="#add-offline-examples">
+    从生产追踪中生成自定义标准答案数据集样本，用于离线评估。
+  </Card>
+  <Card title="监控：创建在线评估器" icon="chart-line" href="#create-an-evaluator">
+    部署自定义评估器，在未来的追踪中捕获回归。
+  </Card>
+</CardGroup>
+
+## 设置 LangSmith Engine
+
+<Steps>
+  <Step title="打开 Issues 标签页">
+    在 [LangSmith 控制台](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=langsmith-engine)中，导航到 UI 侧边栏的 **Tracing**，选择一个项目，然后点击项目导航中的 **Issues** 标签页。
+  </Step>
+  <Step title="关联代码仓库（可选）">
+    在 **Connect your agent's code repository** 下，关联一个 GitHub 仓库。LangSmith Engine 使用你的源代码来诊断问题并生成修复方案。仅显示 GitHub 应用可以访问的仓库。点击 **Manage app access →** 来更新权限。
+  </Step>
+  <Step title="选择优先类别（可选）">
+    在 **What matters most to you?** 下，选择你需要优先审查的类别（例如 **Tool Call Failures** 或 **Latency**）。点击 **+ Add something specific** 来描述自定义关注点。
+  </Step>
+  <Step title="开始分析">
+    点击 **Start Analyzing**。分析最长需要 20 分钟。在等待期间，你可以在[设置面板](#configure-the-langsmith-engine)中配置提供商密钥和 Webhook，以便在发现不同优先级的问题时收到通知。
+  </Step>
+  <Step title="审查 Agent 概述文档">
+    在展示问题之前，LangSmith Engine 会根据你的追踪数据生成一份 Agent 概述文档，描述项目的目的、架构和关键指标。审查并编辑文档，然后点击 **Accept & Continue** 继续。如果概述不准确，请在继续之前进行编辑，因为 LangSmith Engine 将其作为所有分析的上下文，准确性会影响检测到的问题质量。你可以随时从 [Issue 设置](#configure-the-langsmith-engine)中更新它。
+  </Step>
+</Steps>
+
+<Frame caption="设置对话框">
+  <img
+    className="block dark:hidden"
+    src="/langsmith/images/langsmith-engine-setup-light.png"
+    alt="设置对话框，显示代码仓库字段和用于优先化问题类型的类别选择"
+  />
+  <img
+    className="hidden dark:block"
+    src="/langsmith/images/langsmith-engine-setup-dark.png"
+    alt="设置对话框，显示代码仓库字段和用于优先化问题类型的类别选择"
+  />
+</Frame>
+
+## 浏览和筛选问题
+
+设置完成后，**Issues** 标签页会在左侧面板显示自动检测到的问题列表。每个条目显示标题、简短描述、贡献追踪的数量以及最近观察到的时间。
+
+在列表顶部，你可以点击：
+
+- **Filter issues** 图标，按 **Priority**、**Status** 和 **Tags** 筛选。
+- **Sort issues** 图标，按 **Severity**、**Last Updated** 和 **Created** 排序。
+- **Issue Settings** 齿轮图标，[配置 LangSmith Engine](#configure-the-langsmith-engine)。
+
+点击任何问题可在右侧面板中显示其详情。
+
+如果设置完成后没有出现问题，说明 LangSmith Engine 在分析的追踪中未发现反复出现的模式。请在收集更多追踪数据后再次检查。
+
+## 审查问题
+
+点击列表中的任何问题以打开其详情面板。顶部会有一份诊断，描述问题及其影响。
+
+**Linked traces** 部分列出了支持该诊断的追踪记录。点击任何追踪可打开其详情面板。更多信息请参阅[管理追踪](/langsmith/manage-trace)。点击此部分右下角的 [**Add offline examples**](#add-offline-examples)，从生产追踪输入中生成自定义标准答案[数据集样本](/langsmith/manage-datasets)，用于离线评估。
+
+**Proposed Fix** 部分描述了问题并建议如何解决，如果已关联代码仓库，可能包括具体的代码或 Prompt 更改。
+
+**Suggested Evaluator** 部分提供了一个即用型评估器，你可以部署它来在未来的追踪中捕获该问题。如果评估器在你关闭问题后触发，问题会自动重新打开，表明问题仍然存在。
+
+**Offline Examples** 部分提出了从触发该问题的生产追踪输入中生成的数据集样本，用于离线评估。
+
+## 对问题采取操作
+
+### 更改优先级
+
+从优先级下拉菜单中选择 **Low**、**Medium** 或 **High** 来更新问题的优先级。你可以选择性地提供原因，这些反馈会回馈给 LangSmith Engine，帮助随着时间推移改进其分析。
+
+### 创建评估器
+
+1. 点击 **Create Evaluator** 为该问题部署建议的评估器。
+2. 配置名称、运行过滤器和采样率。如有需要，可在内置编辑器中直接编辑代码。
+3. 启用 **Apply to past runs** 以查看在部署前评估器会标记多少历史追踪。
+
+更多信息请参阅[评估器](/langsmith/evaluators)。
+
+### 添加离线样本
+
+1. 点击 **Linked traces** 列表底部的 **Add offline examples** 以打开 **Add as offline example** 对话框。
+2. 审查每条追踪。对话框显示输入、Agent 产生的错误输出，以及作为自定义标准答案样本的建议期望输出。
+3. 点击 **Add to Dataset** 直接添加，或点击 **Edit in annotation queue** 先进行审查。
+4. 在标注队列中，每个样本显示运行输入和 LangSmith Engine 建议的参考输出，以从追踪分析中生成的命名断言的形式呈现。根据需要编辑断言，使用 **+ Add assertion** 添加新断言，然后点击 **Add to Dataset & Continue** 逐个处理每个样本。
+
+更多信息请参阅[管理数据集](/langsmith/manage-datasets)和[使用标注队列](/langsmith/annotation-queues)。
+
+### 复制问题 Prompt
+
+点击 **Copy Fix Context** 复制图标，将包含问题详情的 Prompt 保存到剪贴板。然后你可以将其与 LLM 或编码助手一起使用，帮助解决问题。
+
+### 创建拉取请求
+
+点击 **Open PR** 在关联的代码仓库中创建包含建议修复的 GitHub 拉取请求。一旦拉取请求打开，按钮会变为 **View PR**。LangSmith Engine 可以对任何关联的代码仓库提出代码更改建议，包括使用 [Deep Agents](/oss/python/deepagents/overview)、[LangChain](/oss/python/langchain/overview) 和 [LangGraph](/oss/python/langgraph/overview) 构建的 Agent。
+
+### 解决或忽略问题
+
+点击 **Resolve** 将问题标记为已修复，或点击 **Ignore** 将其视为非真实问题或不值得修复而忽略。你可以选择性地为任一操作提供原因。
+
+### 重新打开问题
+
+要重新打开之前关闭的问题，请打开问题详情视图并点击 **Reopen**。
+
+## 配置 LangSmith Engine
+
+点击 **Issues** 标签页上的 **Issue Settings** 齿轮图标以打开 **Edit Issues** 面板。在此你可以配置：
+
+- **Agent Overview**：编辑你的 Agent 概述文档，确保 LangSmith Engine 对项目的理解随着应用的演进保持准确。
+- **Scan schedule**：LangSmith Engine 默认每 6 小时扫描一次追踪。点击 **Edit** 更改频率，点击 **Pause** 暂停扫描，或点击 **Resume** 恢复扫描。
+- **Priorities**：LangSmith Engine 在扫描追踪时应额外关注的领域。更改在下次扫描时生效。
+- **Current month spend**：当前日历月中该项目 LangSmith Engine 运行的总费用。
+- **Code repository**：更新关联的 GitHub 仓库或子文件夹。
+- **Provider & API keys**：选择提供商并提供其 API 密钥。LangSmith Engine 将为所选提供商使用匹配的重量级和轻量级模型。密钥作为工作区密钥存储，并与其他功能共享。
+- **Webhooks**：配置 Webhook，以便在发现不同优先级的新问题时收到通知。
+- **Delete all issues**：此操作不可撤销。所有问题和设置将被永久删除。
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时回答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/langsmith/engine.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>
