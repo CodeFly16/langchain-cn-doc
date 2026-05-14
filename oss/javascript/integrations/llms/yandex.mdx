@@ -1,0 +1,51 @@
+---
+title: "Yandexgpt 集成"
+description: "使用 LangChain JavaScript 集成 Yandexgpt LLM。"
+---
+
+LangChain.js supports calling [YandexGPT](https://cloud.yandex.com/en/services/yandexgpt) LLMs.
+
+## 设置
+
+First, you should [create service account](https://cloud.yandex.com/en/docs/iam/operations/sa/create) with the `ai.languageModels.user` role.
+
+Next, you have two authentication options:
+
+- [IAM token](https://cloud.yandex.com/en/docs/iam/operations/iam-token/create-for-sa).
+  You can specify the token in a constructor parameter `iam_token` or in an environment variable `YC_IAM_TOKEN`.
+- [API key](https://cloud.yandex.com/en/docs/iam/operations/api-key/create)
+  You can specify the key in a constructor parameter `api_key` or in an environment variable `YC_API_KEY`.
+
+## 用法
+
+<Tip>
+请参阅[此部分了解安装 LangChain 包的通用说明](/oss/javascript/langchain/install)。
+</Tip>
+
+```bash npm
+npm install @langchain/yandex @langchain/core
+```
+
+```typescript
+import { YandexGPT } from "@langchain/yandex/llms";
+
+const model = new YandexGPT();
+const res = await model.invoke(['Translate "I love programming" into French.']);
+console.log({ res });
+```
+
+## 相关内容
+
+
+- [Models guide](/oss/javascript/langchain/models)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/llms/yandex.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

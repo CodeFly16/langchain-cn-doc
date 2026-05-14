@@ -1,0 +1,44 @@
+---
+title: "Nibittensor 集成"
+description: "使用 LangChain JavaScript 集成 Nibittensor LLM。"
+---
+
+<Warning>
+This module has been deprecated and is no longer supported. The documentation below will not work in versions 0.2.0 or later.
+</Warning>
+
+LangChain.js offers experimental support for Neural Internet's Bittensor LLM models.
+
+以下是一个示例：
+
+```typescript
+import { NIBittensorLLM } from "@langchain/classic/experimental/llms/bittensor";
+
+const model = new NIBittensorLLM();
+
+const res = await model.invoke(`What is Bittensor?`);
+
+console.log({ res });
+
+/*
+  {
+    res: "\nBittensor is opensource protocol..."
+  }
+ */
+```
+
+## 相关内容
+
+
+- [Models guide](/oss/javascript/langchain/models)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/llms/ni_bittensor.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

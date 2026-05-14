@@ -1,0 +1,143 @@
+---
+title: "BasetenEmbeddings 集成"
+description: "使用 LangChain Python 集成 BasetenEmbeddings 向量嵌入模型。"
+---
+
+本指南将帮助您开始使用 Baseten 向量嵌入模型 using LangChain.
+
+## 概述
+
+Baseten provides inference designed for production applications. Built on the Baseten Inference Stack, these APIs deliver enterprise-grade performance and reliability for leading open-source or custom models: https://www.baseten.co/library/.
+
+### 集成详情
+
+<ItemTable category="embeddings" item="Baseten" />
+
+## 设置
+
+要访问 Baseten embedding 模型，您需要创建一个 Baseten 账户，获取 API 密钥，并安装 `langchain-baseten` 集成包。
+
+**Baseten embeddings are only available as dedicated models.** You must deploy an embedding model from the [Baseten model library](https://www.baseten.co/library/tag/embedding) before using this integration.
+
+The embeddings functionality uses Baseten's [Performance Client](https://www.baseten.co/blog/introducing-baseten-embeddings-inference-bei/) for optimized performance, which is automatically included as a dependency.
+
+### 凭证
+
+前往 [https://app.baseten.co](https://app.baseten.co) 注册 Baseten 并生成 API 密钥。 完成后设置 BASETEN_API_KEY 环境变量：
+
+```python
+import getpass
+import os
+
+if not os.getenv("BASETEN_API_KEY"):
+    os.environ["BASETEN_API_KEY"] = getpass.getpass("Enter your Baseten API key: ")
+```
+
+要启用模型调用的自动追踪，请设置您的 [LangSmith](/langsmith/home) API key:
+
+```python
+os.environ["LANGSMITH_TRACING"] = "true"
+os.environ["LANGSMITH_API_KEY"] = getpass.getpass("请输入您的 LangSmith API 密钥: ")
+```
+
+### 安装
+
+LangChain 的 Baseten 集成位于 `langchain-baseten` 包中：
+
+```python
+pip install -qU langchain-baseten
+```
+
+## 实例化
+
+Now we can instantiate our embeddings object using your deployed model's URL:
+
+```python
+from langchain_baseten import BasetenEmbeddings
+
+embeddings = BasetenEmbeddings(
+    model_url="https://model-<id>.api.baseten.co/environments/production/sync",  # Your model URL
+    api_key="your-api-key",  # 或设置 BASETEN_API_KEY env var
+)
+```
+
+## 索引与检索
+
+向量嵌入模型常用于检索增强生成 (RAG) 流程中, 既用于索引数据，也用于后续检索数据。 更详细的说明请参阅我们的 [RAG tutorials](/oss/python/langchain/rag).
+
+下面展示如何使用 `embeddings` 对象来索引和检索数据。 在此示例中，我们将在 `InMemoryVectorStore`.
+
+```python
+# 使用示例文本创建向量存储
+from langchain_core.vectorstores import InMemoryVectorStore
+
+text = "LangChain is the framework for building context-aware reasoning applications"
+
+vectorstore = InMemoryVectorStore.from_texts(
+    [text],
+    embedding=embeddings,
+)
+
+# Use the vectorstore as a retriever
+retriever = vectorstore.as_retriever()
+
+# Retrieve the most similar text
+retrieved_documents = retriever.invoke("What is LangChain?")
+
+# show the retrieved document's content
+retrieved_documents[0].page_content
+```
+
+```text
+'LangChain is the framework for building context-aware reasoning applications'
+```
+
+## 直接使用
+
+Under the hood, the vectorstore and retriever implementations are calling `embeddings.embed_documents(...)` and `embeddings.embed_query(...)` to create embeddings for the text(s) used in `from_texts` and retrieval `invoke` operations, respectively.
+
+You can directly call these methods to get embeddings for your own use cases.
+
+### Embed single texts
+
+You can embed single texts or documents with `embed_query`:
+
+```python
+single_vector = embeddings.embed_query(text)
+print(str(single_vector)[:100])  # Show the first 100 characters of the vector
+```
+
+```text
+[0.013201533816754818, 0.02222288027405739, -0.036066457629203796, 0.027374643832445145, -0.01692997
+```
+
+### Embed multiple texts
+
+You can embed multiple texts with `embed_documents`:
+
+```python
+text2 = (
+    "LangGraph is a library for building stateful, multi-actor applications with LLMs"
+)
+two_vectors = embeddings.embed_documents([text, text2])
+for vector in two_vectors:
+    print(str(vector)[:100])  # Show the first 100 characters of the vector
+```
+
+```text
+[0.013201533816754818, 0.02222288027405739, -0.036066457629203796, 0.027374643832445145, -0.01692997
+[0.018247194588184357, 0.007369577884674072, -0.005529594141989946, 0.022589316591620445, -0.0699259
+```
+
+---
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/embeddings/baseten.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

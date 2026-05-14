@@ -1,0 +1,61 @@
+---
+title: "Vectorize 集成"
+description: "使用 LangChain Python 与 Vectorize 集成。"
+---
+
+> [Vectorize](https://vectorize.io/) helps you build AI apps faster and with less hassle.
+> It automates data extraction, finds the best vectorization strategy using RAG evaluation,
+> and lets you quickly deploy real-time RAG pipelines for your unstructured data.
+> Your vector search indexes stay up-to-date, and it integrates with your existing vector database,
+> so you maintain full control of your data.
+> Vectorize handles the heavy lifting, freeing you to focus on building robust AI solutions without getting bogged down by data management.
+
+# 安装和设置
+
+安装以下 Python 包：
+
+<CodeGroup>
+```bash pip
+pip install langchain-vectorize
+```
+
+```bash uv
+uv add langchain-vectorize
+```
+</CodeGroup>
+
+[Sign up for a free Vectorize account](https://platform.vectorize.io/).
+Generate an access token in the [Access Token](https://docs.vectorize.io/rag-pipelines/retrieval-endpoint#access-tokens) section.
+Gather your organization ID. From the browser url, extract the UUID from the URL after `/organization/`.
+
+Set up the following variables:
+```python
+VECTORIZE_ORG_ID="your-organization-id"
+VECTORIZE_API_TOKEN="your-api-token"
+```
+
+## 检索器
+
+```python
+from langchain_vectorize import VectorizeRetriever
+
+retriever = VectorizeRetriever(
+    api_token=VECTORIZE_API_TOKEN,
+    organization=VECTORIZE_ORG_ID,
+    pipeline_id="...",
+)
+retriever.invoke("query")
+```
+
+Learn more in the [example notebook](/oss/python/integrations/retrievers/vectorize).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/vectorize.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

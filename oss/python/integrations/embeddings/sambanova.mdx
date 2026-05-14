@@ -1,0 +1,136 @@
+---
+title: "SambanovaEmbeddings 集成"
+description: "使用 LangChain Python 集成 SambanovaEmbeddings 向量嵌入模型。"
+---
+
+本指南将帮助您开始使用 SambaNova 向量嵌入模型 using LangChain. For detailed documentation on `SambaNovaEmbeddings` 功能和配置选项的详细文档，请参阅 [API reference](https://docs.sambanova.ai/cloud/docs/get-started/overview).
+
+**[SambaNova](https://sambanova.ai/)'s** [SambaCloud](https://cloud.sambanova.ai/) is a platform for performing inference with open-source models
+
+## 概述
+
+### 集成详情
+
+| 提供商 | 包 |
+|:--------:|:-------:|
+| [SambaNova](/oss/python/integrations/providers/sambanova/) | [`langchain-sambanova`](/oss/python/integrations/providers/sambanova/) |
+
+## 设置
+
+要访问 `SambaNovaEmbeddings` models you will need to create a [SambaCloud](http://cloud.sambanova.ai?utm_source=langchain&utm_medium=external&utm_campaign=cloud_signup) account, get an API key, install the `langchain_sambanova` 集成包。
+
+```bash
+pip install langchain-sambanova
+```
+
+### 凭证
+
+Get an API Key from [cloud.sambanova.ai](http://cloud.sambanova.ai/apis?utm_source=langchain&utm_medium=external&utm_campaign=cloud_signup).完成后设置 SAMBANOVA_API_KEY 环境变量：
+
+
+```python
+import getpass
+import os
+
+if not os.getenv("SAMBANOVA_API_KEY"):
+    os.environ["SAMBANOVA_API_KEY"] = getpass.getpass("Enter your SambaNova API key: ")
+```
+
+要启用模型调用的自动追踪，请设置您的 [LangSmith](/langsmith/home) API key:
+
+```python
+os.environ["LANGSMITH_TRACING"] = "true"
+os.environ["LANGSMITH_API_KEY"] = getpass.getpass("请输入您的 LangSmith API 密钥: ")
+```
+
+### 安装
+
+LangChain 的 SambaNova 集成位于 `langchain-sambanova` 包中：
+
+```python
+pip install -qU langchain-sambanova
+```
+
+## 实例化
+
+现在我们可以实例化模型对象并生成聊天补全：
+
+```python
+from langchain_sambanova import SambaNovaEmbeddings
+
+embeddings = SambaNovaEmbeddings(
+    model="E5-Mistral-7B-Instruct",
+)
+```
+
+## 索引与检索
+
+向量嵌入模型常用于检索增强生成 (RAG) 流程中, 既用于索引数据，也用于后续检索数据。 更详细的说明请参阅我们的 [RAG tutorials](/oss/python/langchain/rag).
+
+下面展示如何使用 `embeddings` 对象来索引和检索数据。 在此示例中，我们将在 `InMemoryVectorStore`.
+
+```python
+# 使用示例文本创建向量存储
+from langchain_core.vectorstores import InMemoryVectorStore
+
+text = "LangChain is the framework for building context-aware reasoning applications"
+
+vectorstore = InMemoryVectorStore.from_texts(
+    [text],
+    embedding=embeddings,
+)
+
+# Use the vectorstore as a retriever
+retriever = vectorstore.as_retriever()
+
+# Retrieve the most similar text
+retrieved_documents = retriever.invoke("What is LangChain?")
+
+# show the retrieved document's content
+retrieved_documents[0].page_content
+```
+
+## 直接使用
+
+Under the hood, the vectorstore and retriever implementations are calling `embeddings.embed_documents(...)` and `embeddings.embed_query(...)` to create embeddings for the text(s) used in `from_texts` and retrieval `invoke` operations, respectively.
+
+You can directly call these methods to get embeddings for your own use cases.
+
+### Embed single texts
+
+You can embed single texts or documents with `embed_query`:
+
+```python
+single_vector = embeddings.embed_query(text)
+print(str(single_vector)[:100])  # Show the first 100 characters of the vector
+```
+
+### Embed multiple texts
+
+You can embed multiple texts with `embed_documents`:
+
+```python
+text2 = (
+    "LangGraph is a library for building stateful, multi-actor applications with LLMs"
+)
+two_vectors = embeddings.embed_documents([text, text2])
+for vector in two_vectors:
+    print(str(vector)[:100])  # Show the first 100 characters of the vector
+```
+
+---
+
+## API 参考
+
+For detailed documentation on `SambaNovaEmbeddings` 功能和配置选项的详细文档，请参阅 [SambaNova Developer Guide](https://docs.sambanova.ai/cloud/docs/get-started/overview).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/embeddings/sambanova.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

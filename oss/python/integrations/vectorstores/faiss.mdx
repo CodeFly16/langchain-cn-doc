@@ -1,0 +1,323 @@
+---
+title: "Faiss 集成"
+description: "使用 LangChain Python 集成 Faiss 向量存储。"
+---
+
+>[Facebook AI Similarity Search (FAISS)](https://engineering.fb.com/2017/03/29/data-infrastructure/faiss-a-library-for-efficient-similarity-search/) is a library for efficient similarity search and clustering of dense vectors. It contains algorithms that search in sets of vectors of any size, up to ones that possibly do not fit in RAM. It also includes supporting code for evaluation and parameter tuning.
+>
+>See [The FAISS Library](https://arxiv.org/pdf/2401.08281) paper.
+
+您可以在[此页面](https://faiss.ai/)找到 FAISS 文档。
+
+本笔记展示如何使用与 `FAISS` 向量数据库相关的功能。它将展示此集成特有的功能。阅读完毕后，建议探索[相关用例页面](/oss/python/langchain/rag)以学习如何将此向量存储用作更大链的一部分。
+
+## 设置
+
+该集成位于 `langchain-community` 包中。我们还需要安装 `faiss` 包本身。 我们可以使用以下命令安装：
+
+请注意，如果您想使用 GPU 版本，也可以安装 `faiss-gpu`
+
+```python
+pip install -qU langchain-community faiss-cpu
+```
+
+如果您希望获得一流的模型调用自动追踪功能，还可以通过取消注释以下代码来设置 [LangSmith](/langsmith/home) API 密钥：
+
+```python
+os.environ["LANGSMITH_TRACING"] = "true"
+# os.environ["LANGSMITH_API_KEY"] = getpass.getpass()
+```
+
+## 初始化
+
+<EmbeddingTabs/>
+
+```python
+# | output: false
+# | echo: false
+from langchain_openai import OpenAIEmbeddings
+
+embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
+```
+
+```python
+import faiss
+from langchain_community.docstore.in_memory import InMemoryDocstore
+from langchain_community.vectorstores import FAISS
+
+index = faiss.IndexFlatL2(len(embeddings.embed_query("hello world")))
+
+vector_store = FAISS(
+    embedding_function=embeddings,
+    index=index,
+    docstore=InMemoryDocstore(),
+    index_to_docstore_id={},
+)
+```
+
+## 管理向量存储
+
+### 向向量存储添加项目
+
+```python
+from uuid import uuid4
+
+from langchain_core.documents import Document
+
+document_1 = Document(
+    page_content="I had chocolate chip pancakes and scrambled eggs for breakfast this morning.",
+    metadata={"source": "tweet"},
+)
+
+document_2 = Document(
+    page_content="The weather forecast for tomorrow is cloudy and overcast, with a high of 62 degrees.",
+    metadata={"source": "news"},
+)
+
+document_3 = Document(
+    page_content="Building an exciting new project with LangChain - come check it out!",
+    metadata={"source": "tweet"},
+)
+
+document_4 = Document(
+    page_content="Robbers broke into the city bank and stole $1 million in cash.",
+    metadata={"source": "news"},
+)
+
+document_5 = Document(
+    page_content="Wow! That was an amazing movie. I can't wait to see it again.",
+    metadata={"source": "tweet"},
+)
+
+document_6 = Document(
+    page_content="Is the new iPhone worth the price? Read this review to find out.",
+    metadata={"source": "website"},
+)
+
+document_7 = Document(
+    page_content="The top 10 soccer players in the world right now.",
+    metadata={"source": "website"},
+)
+
+document_8 = Document(
+    page_content="LangGraph is the best framework for building stateful, agentic applications!",
+    metadata={"source": "tweet"},
+)
+
+document_9 = Document(
+    page_content="The stock market is down 500 points today due to fears of a recession.",
+    metadata={"source": "news"},
+)
+
+document_10 = Document(
+    page_content="I have a bad feeling I am going to get deleted :(",
+    metadata={"source": "tweet"},
+)
+
+documents = [
+    document_1,
+    document_2,
+    document_3,
+    document_4,
+    document_5,
+    document_6,
+    document_7,
+    document_8,
+    document_9,
+    document_10,
+]
+uuids = [str(uuid4()) for _ in range(len(documents))]
+
+vector_store.add_documents(documents=documents, ids=uuids)
+```
+
+```python
+['22f5ce99-cd6f-4e0c-8dab-664128307c72',
+ 'dc3f061b-5f88-4fa1-a966-413550c51891',
+ 'd33d890b-baad-47f7-b7c1-175f5f7b4e59',
+ '6e6c01d2-6020-4a7b-95da-ef43d43f01b5',
+ 'e677223d-ad75-4c1a-bef6-b5912bd1de03',
+ '47e2a168-6462-4ed2-b1d9-d9edfd7391d6',
+ '1e4d66d6-e155-4891-9212-f7be97f36c6a',
+ 'c0663096-e1a5-4665-b245-1c2e6c4fb653',
+ '8297474a-7f7c-4006-9865-398c1781b1bc',
+ '44e4be03-0a8d-4316-b3c4-f35f4bb2b532']
+```
+
+### 从向量存储删除项目
+
+```python
+vector_store.delete(ids=[uuids[-1]])
+```
+
+```text
+True
+```
+
+## 查询向量存储
+
+一旦创建了向量存储并添加了相关文档，您很可能希望在链或智能体运行期间对其进行查询。
+
+### 直接查询
+
+#### 相似度搜索
+
+可以按以下方式执行带元数据过滤的简单相似度搜索：
+
+```python
+results = vector_store.similarity_search(
+    "LangChain provides abstractions to make working with LLMs easy",
+    k=2,
+    filter={"source": "tweet"},
+)
+for res in results:
+    print(f"* {res.page_content} [{res.metadata}]")
+```
+
+```text
+* Building an exciting new project with LangChain - come check it out! [{'source': 'tweet'}]
+* LangGraph is the best framework for building stateful, agentic applications! [{'source': 'tweet'}]
+```
+
+Some [MongoDB query and projection operators](https://www.mongodb.com/docs/manual/reference/mql/query-predicates/#alphabetical-list-of-operators) are supported for more advanced metadata filtering. The current list of supported operators are as follows:
+
+- `$eq` (equals)
+- `$neq` (not equals)
+- `$gt` (greater than)
+- `$lt` (less than)
+- `$gte` (greater than or equal)
+- `$lte` (less than or equal)
+- `$in` (membership in list)
+- `$nin` (not in list)
+- `$and` (all conditions must match)
+- `$or` (any condition must match)
+- `$not` (negation of condition)
+
+Performing the same above similarity search with advanced metadata filtering can be done as follows:
+
+```python
+results = vector_store.similarity_search(
+    "LangChain provides abstractions to make working with LLMs easy",
+    k=2,
+    filter={"source": {"$eq": "tweet"}},
+)
+for res in results:
+    print(f"* {res.page_content} [{res.metadata}]")
+```
+
+```text
+* Building an exciting new project with LangChain - come check it out! [{'source': 'tweet'}]
+* LangGraph is the best framework for building stateful, agentic applications! [{'source': 'tweet'}]
+```
+
+#### 带分数的相似度搜索
+
+您也可以进行带分数的搜索：
+
+```python
+results = vector_store.similarity_search_with_score(
+    "Will it be hot tomorrow?", k=1, filter={"source": "news"}
+)
+for res, score in results:
+    print(f"* [SIM={score:3f}] {res.page_content} [{res.metadata}]")
+```
+
+```text
+* [SIM=0.893688] The weather forecast for tomorrow is cloudy and overcast, with a high of 62 degrees. [{'source': 'news'}]
+```
+
+#### 其他搜索方法
+
+还有多种其他方式可以搜索 FAISS 向量存储。
+
+### 转换为检索器进行查询
+
+您还可以将向量存储转换为检索器，以便在链中更方便地使用。
+
+```python
+retriever = vector_store.as_retriever(search_type="mmr", search_kwargs={"k": 1})
+retriever.invoke("Stealing from the bank is a crime", filter={"source": "news"})
+```
+
+```text
+[Document(metadata={'source': 'news'}, page_content='Robbers broke into the city bank and stole $1 million in cash.')]
+```
+
+## 用于检索增强生成
+
+有关如何将此向量存储用于检索增强生成 (RAG) 的指南，请参阅以下部分：
+
+- [Tutorials](/oss/python/langchain/rag)
+- [How-to: Question and answer with RAG](https://python.langchain.com/docs/how_to/#qa-with-rag)
+- [Retrieval conceptual docs](https://python.langchain.com/docs/concepts/retrieval)
+
+## 保存和加载
+
+您还可以保存和加载 FAISS 索引。这很有用，因为您不必每次使用时都重新创建它。
+
+```python
+vector_store.save_local("faiss_index")
+
+new_vector_store = FAISS.load_local(
+    "faiss_index", embeddings, allow_dangerous_deserialization=True
+)
+
+docs = new_vector_store.similarity_search("qux")
+```
+
+```python
+docs[0]
+```
+
+```text
+Document(metadata={'source': 'tweet'}, page_content='Building an exciting new project with LangChain - come check it out!')
+```
+
+## 合并
+
+您还可以合并两个 FAISS 向量存储
+
+```python
+db1 = FAISS.from_texts(["foo"], embeddings)
+db2 = FAISS.from_texts(["bar"], embeddings)
+
+db1.docstore._dict
+```
+
+```python
+{'b752e805-350e-4cf5-ba54-0883d46a3a44': Document(page_content='foo')}
+```
+
+```python
+db2.docstore._dict
+```
+
+```python
+{'08192d92-746d-4cd1-b681-bdfba411f459': Document(page_content='bar')}
+```
+
+```python
+db1.merge_from(db2)
+```
+
+```python
+db1.docstore._dict
+```
+
+```text
+{'b752e805-350e-4cf5-ba54-0883d46a3a44': Document(page_content='foo'),
+ '08192d92-746d-4cd1-b681-bdfba411f459': Document(page_content='bar')}
+```
+
+---
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/vectorstores/faiss.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

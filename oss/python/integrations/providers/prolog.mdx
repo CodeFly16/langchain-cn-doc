@@ -1,0 +1,44 @@
+---
+title: "Swi-prolog 集成"
+description: "使用 LangChain Python 与 Swi-prolog 集成。"
+---
+
+SWI-Prolog offers a comprehensive free Prolog environment.
+
+## 安装和设置
+
+Once SWI-Prolog has been installed, install lanchain-prolog using pip:
+
+<CodeGroup>
+```bash pip
+pip install langchain-prolog
+```
+
+```bash uv
+uv add langchain-prolog
+```
+</CodeGroup>
+
+## 工具
+
+The `PrologTool` class allows the generation of langchain tools that use Prolog rules to generate answers.
+
+```python
+from langchain_prolog import PrologConfig, PrologTool
+```
+
+查看[使用示例](/oss/python/integrations/tools/prolog_tool).
+
+See the same guide for usage examples of `PrologRunnable`, which allows the generation
+of LangChain runnables that use Prolog rules to generate answers.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/prolog.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

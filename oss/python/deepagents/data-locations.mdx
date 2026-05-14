@@ -1,0 +1,138 @@
+---
+title: 数据位置
+sidebarTitle: 应用数据
+description: 深度智能体 CLI 存储配置、会话和自定义文件的位置
+---
+
+深度智能体 CLI 在两个目录层次结构中存储数据：
+
+- **`~/.deepagents/`** — 深度智能体特定数据（智能体记忆、技能、会话）
+- **`~/.agents/`** — 工具无关数据（跨 AI CLI 工具共享的技能）
+
+## 目录结构
+
+```text
+~/.deepagents/
+├── .state/                  # 每台机器的 CLI 状态（自动管理）
+│   ├── sessions.db          #   对话检查点的 SQLite 数据库
+│   ├── history.jsonl        #   命令输入历史
+│   ├── ...                  #   其他标记和凭证
+└── {agent}/                 # 每个智能体的目录（默认："agent"）
+    ├── AGENTS.md            # 用户对智能体指令的自定义
+    ├── skills/              # 用户级技能
+    │   └── {skill-name}/
+    │       └── SKILL.md
+    └── agents/              # 自定义子智能体定义
+        └── {subagent-name}/
+            └── AGENTS.md
+
+~/.agents/                   # 工具无关别名（跨 AI CLI 共享）
+└── skills/                  # 对任何兼容工具可用的技能
+    └── {skill-name}/
+        └── SKILL.md
+
+{project}/                   # 项目级（在 git 仓库根目录）
+├── AGENTS.md                # 项目指令（根级）
+└── .deepagents/
+│   ├── AGENTS.md            # 项目指令（推荐位置）
+│   ├── skills/              # 项目特定技能
+│   │   └── {skill-name}/
+│   │       └── SKILL.md
+│   └── agents/              # 项目特定子智能体
+│       └── {subagent-name}/
+│           └── AGENTS.md
+└── .agents/                 # 工具无关的项目技能
+    └── skills/
+        └── {skill-name}/
+            └── SKILL.md
+```
+
+## 数据存放位置
+
+| 数据 | 位置 | 读/写 | 说明 |
+|------|------|-------|------|
+| **会话** | `~/.deepagents/.state/sessions.db` | 读/写 | SQLite 检查点数据库 |
+| **输入历史** | `~/.deepagents/.state/history.jsonl` | 读/写 | JSON 行格式，上/下箭头回溯 |
+| **基础指令** | 包内 `default_agent_prompt.md` | 只读 | 不可变，随 CLI 升级更新 |
+| **用户自定义** | `~/.deepagents/{agent}/AGENTS.md` | 读/写 | 追加到基础指令 |
+| **项目指令** | `.deepagents/AGENTS.md` 或 `AGENTS.md` | 只读 | 存在时两者都加载 |
+| **用户技能** | `~/.deepagents/{agent}/skills/` | 读/写 | 智能体特定技能 |
+| **共享技能** | `~/.agents/skills/` | 只读 | 工具无关，跨 CLI |
+| **项目技能** | `.deepagents/skills/` 或 `.agents/skills/` | 只读 | 项目范围 |
+| **自定义子智能体** | `~/.deepagents/{agent}/agents/` | 读/写 | 用户定义的子智能体 |
+| **项目子智能体** | `.deepagents/agents/` | 只读 | 项目定义的子智能体 |
+
+## 优先级规则
+
+当同一项存在于多个位置时，**较高优先级完全生效**（不合并）。
+
+### 技能
+
+优先级顺序（从低到高）：
+
+1. `~/.deepagents/{agent}/skills/` — 用户 deepagents
+2. `~/.agents/skills/` — 用户工具无关
+3. `.deepagents/skills/` — 项目 deepagents
+4. `.agents/skills/` — 项目工具无关 *（最高）*
+
+加载技能时，CLI 会验证解析后的文件路径是否保持在这些目录之一内。解析到所有技能根目录外部的符号链接会被拒绝。要允许额外目录中的符号链接目标，请参阅 [`[skills].extra_allowed_dirs`](/oss/python/deepagents/cli/configuration#skills-extra-allowed-directories)。
+
+### 子智能体
+
+优先级顺序（从低到高）：
+
+1. `~/.deepagents/{agent}/agents/` — 用户级
+2. `.deepagents/agents/` — 项目级 *（最高）*
+
+每个子智能体是一个带有 YAML frontmatter（`name`、`description`、可选 `model`）和 markdown 正文作为系统提示词的 `AGENTS.md` 文件。参见[在 CLI 中使用子智能体](/oss/python/deepagents/cli/subagents)了解完整的格式参考。
+
+### 指令
+
+所有指令源**合并**（不覆盖）：
+
+1. 包内基础提示词 *（始终加载）*
+2. `~/.deepagents/{agent}/AGENTS.md` *（追加）*
+3. `.deepagents/AGENTS.md` *（追加）*
+4. 项目根目录的 `AGENTS.md` *（追加）*
+
+## `.deepagents` vs `.agents`
+
+| 目录 | 用途 | 何时使用 |
+|------|------|---------|
+| `.deepagents/` | 深度智能体 CLI 特定 | 使用 CLI 特定功能的技能和配置 |
+| `.agents/` | 工具无关 | 你想跨不同 AI CLI 工具共享的技能 |
+
+<Tip>
+对于适用于任何 AI 编程助手的技能，使用 `.agents/skills/`。
+对于依赖深度智能体特定工具或约定的技能，使用 `.deepagents/skills/`。
+</Tip>
+
+## 清理
+
+| 需求 | 操作 |
+|------|------|
+| 重置所有数据 | `rm -rf ~/.deepagents` |
+| 仅清除会话 | `rm ~/.deepagents/.state/sessions.db*` |
+| 清除输入历史 | `rm ~/.deepagents/.state/history.jsonl` |
+| 清除已存储的 API 密钥 | `rm ~/.deepagents/.state/auth.json` |
+| 清除 MCP OAuth 令牌 | `rm -rf ~/.deepagents/.state/mcp-tokens` |
+| 重新运行首次使用引导 | `rm ~/.deepagents/.state/onboarding_complete` |
+| 重置智能体指令 | `deepagents agents reset --agent {name}` |
+| 移除技能 | `rm -rf ~/.deepagents/{agent}/skills/{skill-name}` |
+
+<Warning>
+    删除 `~/.deepagents/.state/sessions.db` 将移除所有对话历史和检查点。
+
+    除非你有 `sessions.db` 文件的备份，否则此操作不可撤销。
+</Warning>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/data-locations.mdx) 或[提交 Issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

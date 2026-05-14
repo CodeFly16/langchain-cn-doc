@@ -1,0 +1,54 @@
+---
+title: INVALID_TOOL_RESULTS
+---
+
+<Note>
+    目前仅在 `langchainjs`（JavaScript/TypeScript）中使用。
+</Note>
+
+此错误发生在工具调用操作期间传入不匹配、不足或过多的 [`ToolMessage`](https://reference.langchain.com/python/langchain-core/messages/tool/ToolMessage) 对象时。
+
+该错误源于一个基本要求：包含 `tool_calls` 的助手消息后面必须跟随针对每个 `tool_call_id` 的工具消息响应。
+
+当模型返回包含工具调用的 [`AIMessage`](https://reference.langchain.com/python/langchain-core/messages/ai/AIMessage) 时，你必须为每个工具调用提供恰好一个对应的 [`ToolMessage`](https://reference.langchain.com/python/langchain-core/messages/tool/ToolMessage)，且 `tool_call_id` 值必须匹配。
+
+## 常见原因
+
+* **响应不足**：如果模型请求执行两个工具但你只提供了一个响应消息，模型会拒绝不完整的消息链
+* **重复响应**：为同一工具调用 ID 提供多个 [`ToolMessage`](https://reference.langchain.com/python/langchain-core/messages/tool/ToolMessage) 对象会导致拒绝，ID 不匹配也是如此
+* **孤立的工具消息**：发送 [`ToolMessage`](https://reference.langchain.com/python/langchain-core/messages/tool/ToolMessage) 但前面没有包含工具调用的 [`AIMessage`](https://reference.langchain.com/python/langchain-core/messages/ai/AIMessage) 违反了协议要求
+
+以下是一个有问题的模式示例：
+
+```python
+# 模型请求两个工具调用
+response_message.tool_calls  # 返回 2 个调用
+
+# 但只提供了一个 ToolMessage
+chat_history.append(ToolMessage(
+    content=str(tool_response),
+    tool_call_id=tool_call.get("id")
+))
+
+model_with_tools.invoke(chat_history)
+```
+
+
+
+## 故障排除
+
+要解决此错误：
+
+* **检查匹配对数**：确保前面的 [`AIMessage`](https://reference.langchain.com/python/langchain-core/messages/ai/AIMessage) 中的每个工具调用都有一个对应的 [`ToolMessage`](https://reference.langchain.com/python/langchain-core/messages/tool/ToolMessage)
+* **验证 ID**：确认每个 `ToolMessage.tool_call_id` 与实际的工具调用标识符匹配
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时回答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/errors/INVALID_TOOL_RESULTS.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

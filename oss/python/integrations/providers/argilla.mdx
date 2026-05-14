@@ -1,0 +1,45 @@
+---
+title: "Argilla 集成"
+description: "使用 LangChain Python 与 Argilla 集成。"
+---
+
+>[Argilla](https://argilla.io/) 是一个开源的 data curation platform for LLMs.
+> Using `Argilla`, everyone can build robust language models through faster data curation
+> using both human and machine feedback. `Argilla` provides support for each step in the MLOps cycle,
+> from data labeling to model monitoring.
+
+## 安装和设置
+
+Get your [API key](https://platform.openai.com/account/api-keys).
+
+安装 Python 包：
+
+<CodeGroup>
+```bash pip
+pip install argilla
+```
+
+```bash uv
+uv add argilla
+```
+</CodeGroup>
+
+## 回调
+
+
+```python
+from langchain.callbacks import ArgillaCallbackHandler
+```
+
+See an [example](/oss/python/integrations/callbacks/argilla).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/argilla.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,45 @@
+---
+title: "Yahoo 集成"
+description: "使用 LangChain Python 与 Yahoo 集成。"
+---
+
+>[Yahoo (Wikipedia)](https://en.wikipedia.org/wiki/Yahoo) is an American web services provider.
+>
+> 它提供 a web portal, search engine Yahoo Search, and related
+> services, including `My Yahoo`, `Yahoo Mail`, `Yahoo News`,
+> `Yahoo Finance`, `Yahoo Sports` and its advertising platform, `Yahoo Native`.
+
+
+## 工具
+
+### Yahoo finance news
+
+我们需要安装一个 Python 包：
+
+<CodeGroup>
+```bash pip
+pip install yfinance
+```
+
+```bash uv
+uv add yfinance
+```
+</CodeGroup>
+
+查看[使用示例](/oss/python/integrations/tools/yahoo_finance_news).
+
+
+```python
+from langchain_community.tools import YahooFinanceNewsTool
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/yahoo.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

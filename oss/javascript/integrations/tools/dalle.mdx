@@ -1,0 +1,35 @@
+---
+title: "Dall-e 集成"
+description: "使用 LangChain JavaScript 集成 Dall-e tool。"
+---
+
+```typescript
+/* eslint-disable no-process-env */
+import { DallEAPIWrapper } from "@langchain/openai";
+
+const tool = new DallEAPIWrapper({
+  n: 1, // Default
+  model: "dall-e-3", // Default
+  apiKey: process.env.OPENAI_API_KEY, // Default
+});
+
+const imageURL = await tool.invoke("a painting of a cat");
+
+console.log(imageURL);
+```
+
+## 相关内容
+
+- Tool [conceptual guide](/oss/javascript/langchain/tools)
+- Tool [how-to guides](/oss/javascript/langchain/tools)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/tools/dalle.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

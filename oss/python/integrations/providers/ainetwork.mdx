@@ -1,0 +1,42 @@
+---
+title: "Ainetwork 集成"
+description: "使用 LangChain Python 与 Ainetwork 集成。"
+---
+
+>[AI Network](https://www.ainetwork.ai/build-on-ain) is a layer 1 blockchain designed to accommodate
+> large-scale AI models, utilizing a decentralized GPU network powered by the
+> [$AIN token](https://www.ainetwork.ai/token), enriching AI-driven `NFTs` (`AINFTs`).
+
+
+## 安装和设置
+
+您需要安装 `ain-py` Python 包.
+
+<CodeGroup>
+```bash pip
+pip install ain-py
+```
+
+```bash uv
+uv add ain-py
+```
+</CodeGroup>
+You need to set the `AIN_BLOCKCHAIN_ACCOUNT_PRIVATE_KEY` environmental variable to your AIN Blockchain Account Private Key.
+## 工具包
+
+查看[使用示例](/oss/python/integrations/tools/ainetwork).
+
+```python
+from langchain_community.agent_toolkits.ainetwork.toolkit import AINetworkToolkit
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/ainetwork.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

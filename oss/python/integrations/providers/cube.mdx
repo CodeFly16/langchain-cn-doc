@@ -1,0 +1,35 @@
+---
+title: "Cube 集成"
+description: "使用 LangChain Python 与 Cube 集成。"
+---
+
+>[Cube](https://cube.dev/) is the Semantic Layer for building data apps. 它帮助
+> data engineers and application developers access data from modern data stores,
+> organize it into consistent definitions, and deliver it to every application.
+
+## 安装和设置
+
+We have to get the API key and the URL of the Cube instance. See
+[these instructions](https://cube.dev/docs/product/apis-integrations/rest-api#configuration-base-path).
+
+
+## 文档加载器
+
+### Cube Semantic layer
+
+查看[使用示例](/oss/python/integrations/document_loaders/cube_semantic).
+
+```python
+from langchain_community.document_loaders import CubeSemanticLoader
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/cube.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,121 @@
+---
+title: "MongoDB atlas 集成"
+description: "使用 LangChain Python 与 MongoDB atlas 集成。"
+---
+
+>[MongoDB Atlas](https://www.mongodb.com/docs/atlas/) is a fully-managed cloud
+> database available in AWS, Azure, and GCP.  It now has support for native
+> Vector Search on the MongoDB document data.
+
+## 安装和设置
+
+查看[详细配置说明](/oss/python/integrations/vectorstores/mongodb_atlas).
+
+我们需要安装 `langchain-mongodb` Python 包.
+
+<CodeGroup>
+```bash pip
+pip install langchain-mongodb
+```
+
+```bash uv
+uv add langchain-mongodb
+```
+</CodeGroup>
+
+## 向量存储
+
+查看[使用示例](/oss/python/integrations/vectorstores/mongodb_atlas).
+
+```python
+from langchain_mongodb import MongoDBAtlasVectorSearch
+```
+
+## 检索器
+
+### Full text search retriever
+
+>`Hybrid Search Retriever` performs full-text searches using
+> Lucene’s standard (`BM25`) analyzer.
+
+```python
+from langchain_mongodb.retrievers import MongoDBAtlasFullTextSearchRetriever
+```
+
+### Hybrid search retriever
+
+>`Hybrid Search Retriever` combines vector and full-text searches weighting
+> them the via `Reciprocal Rank Fusion` (`RRF`) algorithm.
+
+```python
+from langchain_mongodb.retrievers import MongoDBAtlasHybridSearchRetriever
+```
+
+## Model caches
+
+### MongoDBCache
+
+An abstraction to store a simple cache in MongoDB. This does not use Semantic Caching, nor does it require an index to be made on the collection before generation.
+
+要导入此缓存：
+```python
+from langchain_mongodb.cache import MongoDBCache
+```
+
+要将此缓存与您的大语言模型一起使用：
+```python
+from langchain_core.globals import set_llm_cache
+
+# use any embedding provider...
+from tests.integration_tests.vectorstores.fake_embeddings import FakeEmbeddings
+
+mongodb_atlas_uri = "<YOUR_CONNECTION_STRING>"
+COLLECTION_NAME="<YOUR_CACHE_COLLECTION_NAME>"
+DATABASE_NAME="<YOUR_DATABASE_NAME>"
+
+set_llm_cache(MongoDBCache(
+    connection_string=mongodb_atlas_uri,
+    collection_name=COLLECTION_NAME,
+    database_name=DATABASE_NAME,
+))
+```
+
+
+### MongoDBAtlasSemanticCache
+Semantic caching allows users to retrieve cached prompts based on semantic similarity between the user input and previously cached results. Under the hood it blends MongoDBAtlas as both a cache and a vectorstore.
+The MongoDBAtlasSemanticCache inherits from `MongoDBAtlasVectorSearch` and needs an Atlas Vector Search Index defined to work. Please look at the [usage example](/oss/python/integrations/vectorstores/mongodb_atlas) on how to set up the index.
+
+要导入此缓存：
+```python
+from langchain_mongodb.cache import MongoDBAtlasSemanticCache
+```
+
+要将此缓存与您的大语言模型一起使用：
+```python
+from langchain_core.globals import set_llm_cache
+
+# use any embedding provider...
+from tests.integration_tests.vectorstores.fake_embeddings import FakeEmbeddings
+
+mongodb_atlas_uri = "<YOUR_CONNECTION_STRING>"
+COLLECTION_NAME="<YOUR_CACHE_COLLECTION_NAME>"
+DATABASE_NAME="<YOUR_DATABASE_NAME>"
+
+set_llm_cache(MongoDBAtlasSemanticCache(
+    embedding=FakeEmbeddings(),
+    connection_string=mongodb_atlas_uri,
+    collection_name=COLLECTION_NAME,
+    database_name=DATABASE_NAME,
+))
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/mongodb_atlas.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

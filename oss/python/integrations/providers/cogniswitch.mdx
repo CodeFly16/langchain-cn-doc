@@ -1,0 +1,65 @@
+---
+title: "Cogniswitch 集成"
+description: "使用 LangChain Python 与 Cogniswitch 集成。"
+---
+
+>[CogniSwitch](https://www.cogniswitch.ai/aboutus) is an API based data platform that
+> enhances enterprise data by extracting entities, concepts and their relationships
+> thereby converting this data into a multidimensional format and storing it in
+> a database that can accommodate these enhancements. In our case the data is stored
+> in a knowledge graph. This enhanced data is now ready for consumption by LLMs and
+> other GenAI applications ensuring the data is consumable and context can be maintained.
+> Thereby eliminating hallucinations and delivering accuracy.
+
+## 工具包
+
+See [installation instructions and usage example](/oss/python/integrations/tools/cogniswitch).
+
+```python
+from langchain_community.agent_toolkits import CogniswitchToolkit
+```
+
+## 工具
+
+### CogniswitchKnowledgeRequest
+
+>Tool that uses the CogniSwitch service to answer questions.
+
+```python
+from langchain_community.tools.cogniswitch.tool import CogniswitchKnowledgeRequest
+```
+
+### CogniswitchKnowledgeSourceFile
+
+>Tool that uses the CogniSwitch services to store data from file.
+
+```python
+from langchain_community.tools.cogniswitch.tool import CogniswitchKnowledgeSourceFile
+```
+
+### CogniswitchKnowledgeSourceURL
+
+>Tool that uses the CogniSwitch services to store data from a URL.
+
+```python
+from langchain_community.tools.cogniswitch.tool import CogniswitchKnowledgeSourceURL
+```
+
+### CogniswitchKnowledgeStatus
+
+>Tool that uses the CogniSwitch services to get the status of the document or url uploaded.
+
+```python
+from langchain_community.tools.cogniswitch.tool import CogniswitchKnowledgeStatus
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/cogniswitch.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

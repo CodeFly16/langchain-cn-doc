@@ -1,0 +1,47 @@
+---
+title: "Gutenberg 集成"
+description: "使用 LangChain Python 集成 Gutenberg 文档加载器。"
+---
+
+>[Project Gutenberg](https://www.gutenberg.org/about/) is an online library of free eBooks.
+
+本 notebook 介绍如何load links to `Gutenberg` e-books into a document format that we can use downstream.
+
+```python
+from langchain_community.document_loaders import GutenbergLoader
+```
+
+```python
+loader = GutenbergLoader("https://www.gutenberg.org/cache/epub/69972/pg69972.txt")
+```
+
+```python
+data = loader.load()
+```
+
+```python
+data[0].page_content[:300]
+```
+
+```text
+'The Project Gutenberg eBook of The changed brides, by Emma Dorothy\r\n\n\nEliza Nevitte Southworth\r\n\n\n\r\n\n\nThis eBook is for the use of anyone anywhere in the United States and\r\n\n\nmost other parts of the world at no cost and with almost no restrictions\r\n\n\nwhatsoever. You may copy it, give it away or re-u'
+```
+
+```python
+data[0].metadata
+```
+
+```python
+{'source': 'https://www.gutenberg.org/cache/epub/69972/pg69972.txt'}
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [通过 MCP 将这些文档连接到](/use-these-docs) Claude、VSCode 等工具以获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/document_loaders/gutenberg.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

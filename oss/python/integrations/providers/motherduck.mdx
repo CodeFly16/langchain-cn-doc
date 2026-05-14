@@ -1,0 +1,69 @@
+---
+title: "Motherduck 集成"
+description: "使用 LangChain Python 与 Motherduck 集成。"
+---
+
+>[MotherDuck](https://motherduck.com/) is a cloud data warehouse powered by DuckDB.
+
+## 安装和设置
+
+First, you need to install `duckdb` Python 包.
+
+<CodeGroup>
+```bash pip
+pip install duckdb
+```
+
+```bash uv
+uv add duckdb
+```
+</CodeGroup>
+
+You will also need to sign up for an account at [MotherDuck](https://motherduck.com/)
+
+After that, you should set up a connection string - we mostly integrate with Motherduck through SQLAlchemy.
+The connection string is likely in the form:
+
+```
+token="..."
+
+conn_str = f"duckdb:///md:my_db?motherduck_token={token}"
+```
+
+For more authentication options, see the [MotherDuck SQLAlchemy documentation](https://motherduck.com/docs/integrations/language-apis-and-drivers/python/sqlalchemy/).
+
+## SQLChain
+
+您可以使用 SQLChain to query data in your MotherDuck instance in natural language.
+
+```
+from langchain_openai import OpenAI
+from langchain_community.utilities import SQLDatabase
+from langchain_experimental.sql import SQLDatabaseChain
+db = SQLDatabase.from_uri(conn_str)
+db_chain = SQLDatabaseChain.from_llm(OpenAI(temperature=0), db, verbose=True)
+```
+
+
+## LLMCache
+
+您也可以轻松地 use MotherDuck to cache LLM requests.
+Once again this is done through the SQLAlchemy wrapper.
+
+```
+import sqlalchemy
+from langchain.globals import set_llm_cache
+eng = sqlalchemy.create_engine(conn_str)
+set_llm_cache(SQLAlchemyCache(engine=eng))
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/motherduck.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

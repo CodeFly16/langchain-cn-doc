@@ -1,0 +1,44 @@
+---
+title: "Iugu 集成"
+description: "使用 LangChain Python 集成 Iugu 文档加载器。"
+---
+
+>[Iugu](https://www.iugu.com/) is a Brazilian services and software as a service (SaaS) company. It offers payment-processing software and application programming interfaces for e-commerce websites and mobile applications.
+
+本 notebook 介绍如何load data from the `Iugu REST API` into a format that can be ingested into LangChain, along with example usage for vectorization.
+
+```python
+from langchain.indexes import VectorstoreIndexCreator
+from langchain_community.document_loaders import IuguLoader
+```
+
+The Iugu API requires an access token, which can be found inside of the Iugu dashboard.
+
+此文档加载器还需要一个 `resource` 选项来定义你想要加载的数据。
+
+以下资源可用：
+
+`Documentation` [Documentation](https://dev.iugu.com/reference/metadados)
+
+```python
+iugu_loader = IuguLoader("charges")
+```
+
+```python
+# Create a vectorstore retriever from the loader
+# see https://python.langchain.com/en/latest/modules/data_connection/getting_started.html for more details
+
+index = VectorstoreIndexCreator().from_loaders([iugu_loader])
+iugu_doc_retriever = index.vectorstore.as_retriever()
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [通过 MCP 将这些文档连接到](/use-these-docs) Claude、VSCode 等工具以获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/document_loaders/iugu.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

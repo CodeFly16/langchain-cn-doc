@@ -1,0 +1,98 @@
+---
+title: "SearchAPI 集成"
+description: "使用 LangChain Python 与 SearchAPI 集成。"
+---
+
+This page covers how to use the [SearchApi](https://www.searchapi.io/) Google Search API within LangChain. SearchApi is a real-time SERP API for easy SERP scraping.
+
+## 设置
+
+- Go to [https://www.searchapi.io/](https://www.searchapi.io/) to sign up for a free account
+- Get the api key and set it as an environment variable (`SEARCHAPI_API_KEY`)
+
+## Wrappers
+
+### 工具类
+
+There is a SearchApiAPIWrapper utility which wraps this API. To import this utility:
+
+```python
+from langchain_community.utilities import SearchApiAPIWrapper
+```
+
+您可以将其作为带搜索工具的智能体的一部分使用：
+
+```python
+from langchain_community.utilities import SearchApiAPIWrapper
+from langchain_openai import OpenAI
+from langchain.agents import create_agent, Tool
+
+import os
+
+os.environ["SEARCHAPI_API_KEY"] = ""
+os.environ["OPENAI_API_KEY"] = ""
+
+llm = OpenAI(temperature=0)
+search = SearchApiAPIWrapper()
+
+tools = [
+    Tool(
+        name="Intermediate Answer",
+        func=search.run,
+        description="useful for when you need to ask with search",
+    )
+]
+
+agent = create_agent(
+    model=llm,
+    tools=tools,
+)
+
+agent.invoke("Who lived longer: Plato, Socrates, or Aristotle?")
+```
+
+#### Output
+
+```
+> Entering new AgentExecutor chain...
+ Yes.
+Follow up: How old was Plato when he died?
+Intermediate answer: eighty
+Follow up: How old was Socrates when he died?
+Intermediate answer: | Socrates |
+| -------- |
+| Born | c. 470 BC Deme Alopece, Athens |
+| Died | 399 BC (aged approximately 71) Athens |
+| Cause of death | Execution by forced suicide by poisoning |
+| Spouse(s) | Xanthippe, Myrto |
+
+Follow up: How old was Aristotle when he died?
+Intermediate answer: 62 years
+So the final answer is: Plato
+
+> Finished chain.
+'Plato'
+```
+
+### 工具
+
+您也可以轻松地将此封装器加载为工具（与智能体一起使用）。
+您可以通过以下方式完成：
+
+```python
+from langchain_community.agent_toolkits.load_tools import load_tools
+tools = load_tools(["searchapi"])
+```
+
+有关工具的更多信息，请参阅 [Tools](/oss/python/integrations/tools).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/searchapi.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,32 @@
+---
+title: "Lakefs 集成"
+description: "使用 LangChain Python 与 Lakefs 集成。"
+---
+
+>[lakeFS](https://docs.lakefs.io/) provides scalable version control over
+> the data lake, and uses Git-like semantics to create and access those versions.
+
+## 安装和设置
+
+Get the `ENDPOINT`, `LAKEFS_ACCESS_KEY`, and `LAKEFS_SECRET_KEY`.
+您可以找到 installation instructions in the [lakeFS quickstart guide](https://docs.lakefs.io/quickstart/launch.html).
+
+
+## 文档加载器
+
+查看[使用示例](/oss/python/integrations/document_loaders/lakefs).
+
+```python
+from langchain_community.document_loaders import LakeFSLoader
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/lakefs.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

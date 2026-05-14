@@ -1,0 +1,60 @@
+---
+title: "Kùzu 集成"
+description: "使用 LangChain Python 与 Kùzu 集成。"
+---
+
+> [Kùzu](https://kuzudb.com/) is an embeddable, scalable, extremely fast graph database.
+> It is permissively licensed with an MIT license, and you can see its source code on [GitHub](https://github.com/kuzudb/kuzu).
+
+> Key characteristics of Kùzu:
+>- Performance and scalability: Implements modern, state-of-the-art join algorithms for graphs.
+>- Usability: Very easy to set up and get started with, as there are no servers (embedded architecture).
+>- Interoperability: Can conveniently scan and copy data from external columnar formats, CSV, JSON and relational databases.
+>- Structured property graph model: Implements the property graph model, with added structure.
+>- Cypher support: Allows convenient querying of the graph in Cypher, a declarative query language.
+
+> Get started with Kùzu by visiting their [documentation](https://docs.kuzudb.com/).
+
+
+## 安装和设置
+
+Install the Python SDK as follows:
+
+<CodeGroup>
+```bash pip
+pip install -U langchain-kuzu
+```
+
+```bash uv
+uv add langchain-kuzu
+```
+</CodeGroup>
+
+## 使用方法
+
+## 图
+
+查看[使用示例](/oss/python/integrations/graphs/kuzu_db).
+
+```python
+from langchain_kuzu.graphs.kuzu_graph import KuzuGraph
+```
+
+## 链
+
+查看[使用示例](/oss/python/integrations/graphs/kuzu_db/#creating-kuzuqachain).
+
+```python
+from langchain_kuzu.chains.graph_qa.kuzu import KuzuQAChain
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/kuzu.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,114 @@
+---
+title: "Galaxia 集成"
+description: "使用 LangChain Python 集成 Galaxia 检索器。"
+---
+
+Galaxia is GraphRAG solution, which automates document processing, knowledge base (Graph Language Model) creation and retrieval:
+[galaxia-rag](https://smabbler.gitbook.io/smabbler/api-rag/smabblers-api-rag)
+
+To use Galaxia first upload your texts and create a Graph Language Model here: [smabbler-cloud](https://beta.cloud.smabbler.com)
+
+After the model is built and activated, you will be able to use this integration to retrieve what you need.
+
+The module repository is located here: [github](https://github.com/rrozanski-smabbler/galaxia-langchain)
+
+### 集成详情
+
+| 检索器 | 自托管 | 云服务 | 包 |
+| :--- | :--- | :---: | :---: |
+[Galaxia Retriever](https://github.com/rrozanski-smabbler/galaxia-langchain) | ❌ | ✅ | __langchain-galaxia-retriever__ |
+
+## 设置
+
+Before you can retrieve anything you need to create your Graph Language Model here: [smabbler-cloud](https://beta.cloud.smabbler.com)
+
+following these 3 simple steps: [rag-instruction](https://smabbler.gitbook.io/smabbler/api-rag/build-rag-model-in-3-steps)
+
+Don't forget to activate the model after building it!
+
+### 安装
+
+The retriever is implemented in the following package: [pypi](https://pypi.org/project/langchain-galaxia-retriever/)
+
+```python
+pip install -qU langchain-galaxia-retriever
+```
+
+## 实例化
+
+```python
+from langchain_galaxia_retriever.retriever import GalaxiaRetriever
+
+gr = GalaxiaRetriever(
+    api_url="beta.api.smabbler.com",
+    api_key="<key>",  # you can find it here: https://beta.cloud.smabbler.com/user/account
+    knowledge_base_id="<knowledge_base_id>",  # you can find it in https://beta.cloud.smabbler.com , in the model table
+    n_retries=10,
+    wait_time=5,
+)
+```
+
+## 用法
+
+```python
+result = gr.invoke("<test question>")
+print(result)
+```
+
+## 在链中使用
+
+```python
+# | output: false
+# | echo: false
+
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
+```
+
+```python
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+
+prompt = ChatPromptTemplate.from_template(
+    """Answer the question based only on the context provided.
+
+Context: {context}
+
+Question: {question}"""
+)
+
+
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+
+
+chain = (
+    {"context": gr | format_docs, "question": RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+```
+
+```python
+chain.invoke("<test question>")
+```
+
+---
+
+## API 参考
+
+For more information about Galaxia Retriever check its implementation on [GitHub](https://github.com/rrozanski-smabbler/galaxia-langchain)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/retrievers/galaxia-retriever.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

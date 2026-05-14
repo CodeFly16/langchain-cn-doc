@@ -1,0 +1,116 @@
+---
+title: "Cassandra 集成"
+description: "使用 LangChain Python 与 Cassandra 集成。"
+---
+
+> [Apache Cassandra®](https://cassandra.apache.org/) is a NoSQL, row-oriented, highly scalable and highly available database.
+> Starting with version 5.0, the database ships with [vector search capabilities](https://cassandra.apache.org/doc/trunk/cassandra/vector-search/overview.html).
+
+The integrations outlined in this page can be used with `Cassandra` as well as other CQL-compatible databases,
+i.e. those 使用 `Cassandra Query Language` protocol.
+
+
+## 安装和设置
+
+安装以下 Python 包：
+
+<CodeGroup>
+```bash pip
+pip install "cassio>=0.1.6"
+```
+
+```bash uv
+uv add "cassio>=0.1.6"
+```
+</CodeGroup>
+
+## 向量存储
+
+```python
+from langchain_community.vectorstores import Cassandra
+```
+
+Learn more in the [example notebook](/oss/python/integrations/vectorstores/cassandra).
+
+## LLM cache
+
+```python
+from langchain.globals import set_llm_cache
+from langchain_community.cache import CassandraCache
+set_llm_cache(CassandraCache())
+```
+
+## Semantic LLM cache
+
+```python
+from langchain.globals import set_llm_cache
+from langchain_community.cache import CassandraSemanticCache
+set_llm_cache(CassandraSemanticCache(
+    embedding=my_embedding,
+    table_name="my_store",
+))
+```
+
+## 文档加载器
+
+```python
+from langchain_community.document_loaders import CassandraLoader
+```
+
+Learn more in the [example notebook](/oss/python/integrations/document_loaders/cassandra).
+
+#### Attribution statement
+
+> Apache Cassandra, Cassandra and Apache are either registered trademarks or trademarks of
+> the [Apache Software Foundation](http://www.apache.org/) in the United States and/or other countries.
+
+## 工具包
+
+The `Cassandra Database toolkit` enables AI engineers to efficiently integrate agents
+with Cassandra data.
+
+```python
+from langchain_community.agent_toolkits.cassandra_database.toolkit import (
+    CassandraDatabaseToolkit,
+)
+```
+
+Learn more in the [example notebook](/oss/python/integrations/tools/cassandra_database).
+
+
+Cassandra Database individual tools:
+
+### Get schema
+
+Tool for getting the schema of a keyspace in an Apache Cassandra database.
+
+```python
+from langchain_community.tools import GetSchemaCassandraDatabaseTool
+```
+
+### Get table data
+
+Tool for getting data from a table in an Apache Cassandra database.
+
+```python
+from langchain_community.tools import GetTableDataCassandraDatabaseTool
+```
+
+### Query
+
+Tool for querying an Apache Cassandra database with provided CQL.
+
+```python
+from langchain_community.tools import QueryCassandraDatabaseTool
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/cassandra.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

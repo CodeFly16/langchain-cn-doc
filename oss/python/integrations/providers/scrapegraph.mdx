@@ -1,0 +1,63 @@
+---
+title: "ScrapeGraph AI 集成"
+description: "使用 LangChain Python 与 ScrapeGraph AI 集成。"
+---
+
+>[ScrapeGraph AI](https://scrapegraphai.com) is a service that provides AI-powered web scraping capabilities.
+>它提供 tools for extracting structured data, converting webpages to markdown, and processing local HTML content
+>using natural language prompts.
+
+## 安装和设置
+
+Install the required packages:
+
+<CodeGroup>
+```bash pip
+pip install langchain-scrapegraph
+```
+
+```bash uv
+uv add langchain-scrapegraph
+```
+</CodeGroup>
+
+Set up your API key:
+
+```bash
+export SGAI_API_KEY="your-scrapegraph-api-key"
+```
+
+## 工具
+
+查看[使用示例](/oss/python/integrations/tools/scrapegraph).
+
+There are four tools available:
+
+```python
+from langchain_scrapegraph.tools import (
+    SmartScraperTool,    # Extract structured data from websites
+    SmartCrawlerTool,    # Extract data from multiple pages with crawling
+    MarkdownifyTool,     # Convert webpages to markdown
+    AgenticScraperTool,  # Extract specifying steps
+    GetCreditsTool,      # Check remaining API credits
+)
+```
+
+Each tool serves a specific purpose:
+
+- `SmartScraperTool`: Extract structured data from websites given a URL, prompt and optional output schema
+- `SmartCrawlerTool`: Extract data from multiple pages with advanced crawling options like depth control, page limits, and domain restrictions
+- `MarkdownifyTool`: Convert any webpage to clean markdown format
+- `AgenticScraperTool`: Extract specifying steps
+- `GetCreditsTool`: Check your remaining ScrapeGraph AI credits
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/scrapegraph.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

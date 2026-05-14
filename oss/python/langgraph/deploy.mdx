@@ -1,0 +1,121 @@
+---
+title: LangSmith 部署
+---
+
+本指南向你展示如何将智能体部署到 **[LangSmith Cloud](/langsmith/deploy-to-cloud)**，这是一个专为智能体工作负载设计的全托管托管平台。通过 Cloud 部署，你可以直接从 GitHub 仓库进行部署——LangSmith 会处理基础设施、扩展和运维事务。
+
+传统的托管平台是为无状态、短期运行的 Web 应用构建的。LangSmith Cloud **专为有状态、长时间运行的智能体**而构建，这些智能体需要持久化状态和后台执行。
+
+<Tip>
+LangSmith 提供多种部署选项，除了 Cloud 之外，还包括使用[控制平面（混合/自托管）](/langsmith/deploy-with-control-plane)部署或作为[独立服务器](/langsmith/deploy-standalone-server)部署。更多信息请参阅[部署概述](/langsmith/deployment)。
+</Tip>
+
+## 前提条件
+
+开始之前，请确保你具备以下条件：
+
+- 一个 [GitHub 账户](https://github.com/)
+- 一个 [LangSmith 账户](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-deploy)（免费注册）
+
+## 部署你的智能体
+
+### 1. 在 GitHub 上创建仓库
+
+你的应用代码必须存放在 GitHub 仓库中才能在 LangSmith 上部署。支持公开和私有仓库。在本快速开始中，请先按照[本地服务器设置指南](/oss/python/langgraph/studio#set-up-local-agent-server)确保你的应用与 LangGraph 兼容。然后，将代码推送到仓库。
+
+
+### 2. 部署到 LangSmith
+
+<Steps>
+<Step title="进入 LangSmith 部署页面">
+    登录 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-deploy)。在左侧边栏中，选择 **Deployments**。
+</Step>
+<Step title="创建新部署">
+    点击 **+ New Deployment** 按钮。将打开一个面板，你可以在其中填写所需字段。
+</Step>
+<Step title="关联仓库">
+    如果你是首次使用或要添加之前未连接的私有仓库，请点击 **Add new account** 按钮并按照说明连接你的 GitHub 账户。
+</Step>
+<Step title="部署仓库">
+    选择你的应用仓库。点击 **Submit** 进行部署。部署可能需要大约 15 分钟完成。你可以在 **Deployment details** 视图中查看状态。
+</Step>
+</Steps>
+
+### 3. 在 Studio 中测试你的应用
+
+应用部署完成后：
+
+1. 选择刚创建的部署以查看更多详情。
+2. 点击右上角的 **Studio** 按钮。Studio 将打开并显示你的图。
+
+### 4. 获取部署的 API URL
+
+1. 在 LangGraph 的 **Deployment details** 视图中，点击 **API URL** 将其复制到剪贴板。
+2. 点击 `URL` 将其复制到剪贴板。
+
+### 5. 测试 API
+
+现在你可以测试 API：
+
+<Tabs>
+<Tab title="Python">
+1. 安装 LangGraph SDK：
+```shell
+pip install langgraph-sdk
+```
+2. 向智能体发送消息：
+```python
+from langgraph_sdk import get_sync_client # 或使用 get_client 进行异步调用
+
+client = get_sync_client(url="your-deployment-url", api_key="your-langsmith-api-key")
+
+for chunk in client.runs.stream(
+    None,    # 无线程运行
+    "agent", # 智能体名称。在 langgraph.json 中定义。
+    input={
+        "messages": [{
+            "role": "human",
+            "content": "What is LangGraph?",
+        }],
+    },
+    stream_mode="updates",
+):
+    print(f"接收到新事件，类型为：{chunk.event}...")
+    print(chunk.data)
+    print("\n\n")
+```
+</Tab>
+
+
+<Tab title="Rest API">
+```bash
+curl -s --request POST \
+    --url <DEPLOYMENT_URL>/runs/stream \
+    --header 'Content-Type: application/json' \
+    --header "X-Api-Key: <LANGSMITH API KEY> \
+    --data "{
+        \"assistant_id\": \"agent\", `# 智能体名称。在 langgraph.json 中定义。`
+        \"input\": {
+            \"messages\": [
+                {
+                    \"role\": \"human\",
+                    \"content\": \"What is LangGraph?\"
+                }
+            ]
+        },
+        \"stream_mode\": \"updates\"
+    }"
+```
+</Tab>
+</Tabs>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/deploy.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

@@ -1,0 +1,49 @@
+---
+title: "Jupyter notebook 集成"
+description: "使用 LangChain Python 集成 Jupyter notebook 文档加载器。"
+---
+
+>[Jupyter Notebook](https://en.wikipedia.org/wiki/Project_Jupyter#Applications) (formerly `IPython Notebook`) is a web-based interactive computational environment for creating notebook documents.
+
+本 notebook 介绍如何load data from a `Jupyter notebook (.ipynb)` into a format suitable by LangChain.
+
+```python
+from langchain_community.document_loaders import NotebookLoader
+```
+
+```python
+loader = NotebookLoader(
+    "example_data/notebook.ipynb",
+    include_outputs=True,
+    max_output_length=20,
+    remove_newline=True,
+)
+```
+
+`NotebookLoader.load()` loads the `.ipynb` notebook file into a [`Document`](https://reference.langchain.com/python/langchain-core/documents/base/Document) object.
+
+**参数**：
+
+* `include_outputs` (bool): whether to include cell outputs in the resulting document (default is False).
+* `max_output_length` (int): the maximum number of characters to include from each cell output (default is 10).
+* `remove_newline` (bool): whether to remove newline characters from the cell sources and outputs (default is False).
+* `traceback` (bool): whether to include full traceback (default is False).
+
+```python
+loader.load()
+```
+
+```python
+[Document(page_content='\'markdown\' cell: \'[\'# Notebook\', \'\', \'This notebook covers how to load data from an .html notebook into a format suitable by LangChain.\']\'\n\n \'code\' cell: \'[\'from langchain_community.document_loaders import NotebookLoader\']\'\n\n \'code\' cell: \'[\'loader = NotebookLoader("example_data/notebook.html")\']\'\n\n \'markdown\' cell: \'[\'`NotebookLoader.load()` loads the `.html` notebook file into a @[`Document`] object.\', \'\', \'**参数**：\', \'\', \'* `include_outputs` (bool): whether to include cell outputs in the resulting document (default is False).\', \'* `max_output_length` (int): the maximum number of characters to include from each cell output (default is 10).\', \'* `remove_newline` (bool): whether to remove newline characters from the cell sources and outputs (default is False).\', \'* `traceback` (bool): whether to include full traceback (default is False).\']\'\n\n \'code\' cell: \'[\'loader.load(include_outputs=True, max_output_length=20, remove_newline=True)\']\'\n\n', metadata={'source': 'example_data/notebook.html'})]
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [通过 MCP 将这些文档连接到](/use-these-docs) Claude、VSCode 等工具以获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/document_loaders/jupyter_notebook.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

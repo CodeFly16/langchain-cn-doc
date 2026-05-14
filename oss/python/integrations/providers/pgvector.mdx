@@ -1,0 +1,43 @@
+---
+title: "PGVector 集成"
+description: "使用 LangChain Python 与 PGVector 集成。"
+---
+
+This page covers how to use the Postgres [PGVector](https://github.com/pgvector/pgvector) ecosystem within LangChain
+It is broken into two parts: installation and setup, and then references to specific PGVector wrappers.
+
+## 安装
+- Install the Python 包 with `pip install pgvector`
+
+
+## 设置
+1. The first step is to create a database with the `pgvector` extension installed.
+
+    Follow the steps at [PGVector Installation Steps](https://github.com/pgvector/pgvector#installation) to install the database and the extension. The docker image is the easiest way to get started.
+
+## Wrappers
+
+### 向量存储
+
+存在一个围绕 Postgres 向量数据库的封装器，允许您将其用作向量存储，
+无论是用于语义搜索还是示例选择。
+
+要导入此向量存储：
+```python
+from langchain_community.vectorstores.pgvector import PGVector
+```
+
+### 使用方法
+
+有关 PGVector Wrapper, see [this notebook](/oss/python/integrations/vectorstores/pgvector)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/pgvector.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

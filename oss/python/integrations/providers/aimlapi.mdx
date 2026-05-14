@@ -1,0 +1,58 @@
+---
+title: "AI/ML API 集成"
+description: "使用 LangChain Python 与 AI/ML API 集成。"
+---
+
+>[AI/ML API](https://aimlapi.com/app/?utm_source=langchain&utm_medium=github&utm_campaign=integration) provides a single API for accessing 300+ hosted foundation models (DeepSeek, Gemini, GPT, and more) with enterprise-grade uptime and throughput.
+
+## 安装和设置
+
+- Install the AI/ML API integration 包。
+
+  ```bash
+  pip install langchain-aimlapi
+  ```
+
+- Create an account at [aimlapi.com](https://aimlapi.com/app/?utm_source=langchain&utm_medium=github&utm_campaign=integration) and generate an API key.
+- Authenticate by setting the `AIMLAPI_API_KEY` environment variable.
+
+```python
+import os
+
+os.environ["AIMLAPI_API_KEY"] = "aimlapi_..."
+```
+
+## 聊天模型
+
+查看[使用示例](/oss/python/integrations/chat/aimlapi).
+
+```python
+from langchain_aimlapi import ChatAIMLAPI
+```
+
+## 大语言模型 (LLM)
+
+查看[使用示例](/oss/python/integrations/llms/aimlapi).
+
+```python
+from langchain_aimlapi import AIMLAPILLM
+```
+
+## 向量嵌入模型
+
+查看[使用示例](/oss/python/integrations/embeddings/aimlapi).
+
+```python
+from langchain_aimlapi import AIMLAPIEmbeddings
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/aimlapi.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

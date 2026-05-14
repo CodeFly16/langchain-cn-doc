@@ -1,0 +1,164 @@
+---
+title: 深度智能体概述
+sidebarTitle: 概述
+description: 构建能够规划、使用子智能体并利用文件系统处理复杂任务的智能体
+---
+
+构建由 LLM 驱动的智能体和应用程序的最简单方式——内置任务规划、文件系统上下文管理、子智能体生成和长期记忆等功能。
+你可以使用深度智能体完成任何任务，包括复杂的多步骤任务。
+
+我们将 `deepagents` 视为一个["智能体框架"](/oss/javascript/concepts/products#agent-harnesses-like-the-deep-agents-sdk)。它与其他智能体框架具有相同的核心工具调用循环，但内置了更多工具和功能。
+
+
+
+[`deepagents`](https://www.npmjs.com/package/deepagents) 是一个独立库，构建在 [LangChain](/oss/javascript/langchain/) 的智能体核心构建模块之上，并使用 [LangGraph](/oss/javascript/langgraph/) 的工具在生产环境中运行智能体。
+
+
+[`deepagents` 代码仓库](https://github.com/langchain-ai/deepagents) 包含：
+- **深度智能体 SDK**：一个用于构建能处理任何任务的智能体的包
+- [**深度智能体 CLI**](/oss/javascript/deepagents/cli)：基于深度智能体 SDK 构建的终端编程智能体
+- [**ACP 集成**](/oss/javascript/deepagents/acp)：用于在 Zed 等代码编辑器中使用深度智能体的 Agent Client Protocol 连接器
+
+[LangChain](/oss/javascript/langchain/) 是为你的智能体提供核心构建模块的框架。
+要了解 LangChain、LangGraph 和深度智能体之间的区别，请参阅[框架、运行时和框架](/oss/javascript/concepts/products)。要查看与 Anthropic 框架的并排比较，请参阅[深度智能体 vs. Claude Agent SDK](/oss/javascript/deepagents/comparison)。
+
+## <Icon icon="wand" /> 创建一个深度智能体
+
+
+
+```ts
+import * as z from "zod";
+// npm install deepagents langchain @langchain/core
+import { createDeepAgent } from "deepagents";
+import { tool } from "langchain";
+
+const getWeather = tool(
+  ({ city }) => `${city}总是阳光明媚！`,
+  {
+    name: "get_weather",
+    description: "获取指定城市的天气",
+    schema: z.object({
+      city: z.string(),
+    }),
+  },
+);
+
+const agent = createDeepAgent({
+  tools: [getWeather],
+  systemPrompt: "You are a helpful assistant",
+});
+
+console.log(
+  await agent.invoke({
+    messages: [{ role: "user", content: "东京的天气怎么样？" }],
+  })
+);
+```
+
+
+请参阅[快速入门](/oss/javascript/deepagents/quickstart/)和[自定义指南](/oss/javascript/deepagents/customization/)，开始构建你自己的智能体和应用程序。
+
+<Tip>
+使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-deepagents-overview) 跟踪请求、调试智能体行为并评估输出。按照[跟踪快速入门](/langsmith/trace-with-langchain)进行设置。准备好投入生产时，[部署到 LangSmith Cloud](/langsmith/deploy-to-cloud) 以获得托管服务。
+</Tip>
+
+## 何时使用深度智能体
+
+当你想构建能够执行以下操作的智能体时，请使用**深度智能体 SDK**：
+
+- **处理复杂的多步骤任务**，需要规划和分解
+- **管理大量上下文**，通过文件系统工具和[摘要](/oss/javascript/deepagents/context-engineering#summarization)
+- **切换文件系统后端**，使用内存状态、本地磁盘、持久化存储、[沙箱](/oss/javascript/deepagents/sandboxes)或[自定义后端](/oss/javascript/deepagents/backends)
+- **执行 Shell 命令**，在使用[沙箱后端](/oss/javascript/deepagents/sandboxes)时通过 `execute` 工具
+- **运行解释器代码**，使用[解释器](/oss/javascript/deepagents/interpreters)进行工具组合、子智能体编排和结构化数据转换
+- **委派工作**给专门的子智能体以实现上下文隔离
+- **持久化记忆**，跨对话和线程
+- **控制文件系统访问**，使用声明式[权限规则](/oss/javascript/deepagents/permissions)限制智能体可以读写的文件
+- **要求人工审批**，通过[人机协作](/oss/javascript/deepagents/human-in-the-loop)工作流处理敏感操作
+- **使用任何模型**——[提供商无关](/oss/javascript/deepagents/models)，支持前沿和开源模型
+
+
+
+对于构建更简单的智能体，可以考虑使用 LangChain 的 [`createAgent`](/oss/javascript/langchain/agents) 或构建自定义的 [LangGraph](/oss/javascript/langgraph/overview) 工作流。
+
+
+## 核心能力
+
+<Card title="规划和任务分解" icon="timeline">
+    深度智能体包含内置的 [`write_todos`](/oss/javascript/langchain/middleware/built-in#to-do-list) 工具，使智能体能够将复杂任务分解为离散步骤、跟踪进度，并在获得新信息时调整计划。
+</Card>
+<Card title="上下文管理" icon="scissors">
+    文件系统工具（[`ls`](/oss/javascript/deepagents/harness#virtual-filesystem-access)、[`read_file`](/oss/javascript/deepagents/harness#virtual-filesystem-access)、[`write_file`](/oss/javascript/deepagents/harness#virtual-filesystem-access)、[`edit_file`](/oss/javascript/deepagents/harness#virtual-filesystem-access)）允许智能体将大量上下文卸载到内存或文件系统存储中，防止上下文窗口溢出，并支持处理可变长度的工具结果。自动摘要功能会在上下文窗口增长时压缩较早的对话消息，使智能体在长时间会话中保持有效。
+</Card>
+<Card title="Shell 执行" icon="terminal">
+    使用[沙箱后端](/oss/javascript/deepagents/sandboxes)时，智能体可以获得 `execute` 工具来运行 Shell 命令，用于测试、构建、git 操作和系统任务。沙箱后端提供隔离环境，智能体可以执行代码而不会影响你的主机系统。
+</Card>
+<Card title="解释器" icon="code">
+    添加[解释器](/oss/javascript/deepagents/interpreters)以在内存运行时中运行 JavaScript。解释器让智能体能够以编程方式组合工具、编排子智能体，以及在没有完整 Shell 环境的情况下转换结构化数据。
+</Card>
+<Card title="可插拔的文件系统后端" icon="plug">
+    虚拟文件系统由[可插拔后端](/oss/javascript/deepagents/backends)驱动，你可以根据用例进行切换。可从内存状态、本地磁盘、用于跨线程持久化的 LangGraph 存储、用于隔离代码执行的[沙箱](/oss/javascript/deepagents/sandboxes)（Modal、Daytona、Deno）中选择，或使用复合路由组合多个后端。你也可以实现自己的自定义后端。
+</Card>
+<Card title="子智能体生成" icon="users-group">
+    内置的 `task` 工具使智能体能够生成专门的子智能体以实现上下文隔离。这可以保持主智能体的上下文整洁，同时仍然可以深入处理特定子任务。
+</Card>
+<Card title="长期记忆" icon="database">
+    使用 LangGraph 的 [Memory Store](/oss/javascript/langgraph/persistence#memory-store) 扩展智能体以实现跨线程的持久记忆。智能体可以保存和检索之前对话中的信息。
+</Card>
+<Card title="文件系统权限" icon="lock">
+    声明[权限规则](/oss/javascript/deepagents/permissions)来控制智能体可以读写的文件和目录。子智能体可以继承或覆盖父级的规则。
+</Card>
+<Card title="人机协作" icon="user-check">
+    使用 LangGraph 的中断功能为敏感工具操作配置[人工审批](/oss/javascript/deepagents/human-in-the-loop)。控制哪些工具在执行前需要确认。
+</Card>
+<Card title="技能" icon="puzzle">
+    使用可复用的[技能](/oss/javascript/deepagents/skills)扩展智能体，提供专门的工作流、领域知识和自定义指令。
+</Card>
+<Card title="智能默认值" icon="wand">
+    附带有见解的系统提示，教模型如何有效使用其工具——在行动前规划、验证工作并管理上下文。可根据需要自定义或替换默认值。
+</Card>
+
+## 开始使用
+
+
+
+<CardGroup cols={2}>
+    <Card title="快速入门" icon="rocket" href="/oss/javascript/deepagents/quickstart">
+        构建你的第一个深度智能体
+    </Card>
+    <Card title="自定义" icon="adjustments" href="/oss/javascript/deepagents/customization">
+        了解自定义选项
+    </Card>
+    <Card title="模型" icon="cpu" href="/oss/javascript/deepagents/models">
+        配置模型和提供商
+    </Card>
+    <Card title="后端" icon="plug" href="/oss/javascript/deepagents/backends">
+        选择和配置可插拔的文件系统后端
+    </Card>
+    <Card title="解释器" icon="code" href="/oss/javascript/deepagents/interpreters">
+        在 QuickJS 中组合工具和转换数据
+    </Card>
+    <Card title="权限" icon="lock" href="/oss/javascript/deepagents/permissions">
+        使用权限规则控制文件系统访问
+    </Card>
+    <Card title="人机协作" icon="user-check" href="/oss/javascript/deepagents/human-in-the-loop">
+        为敏感操作配置审批
+    </Card>
+    <Card title="CLI" icon="terminal" href="/oss/javascript/deepagents/cli/overview">
+        使用深度智能体 CLI
+    </Card>
+    <Card title="参考文档" icon="external-link" href="https://reference.langchain.com/javascript/modules/deepagents.html">
+        查看 `deepagents` API 参考文档
+    </Card>
+</CardGroup>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/overview.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

@@ -1,0 +1,36 @@
+---
+title: "Outline 集成"
+description: "使用 LangChain Python 与 Outline 集成。"
+---
+
+> [Outline](https://www.getoutline.com/) 是一个开源的 collaborative knowledge base platform designed for team information sharing.
+
+## 设置
+
+You first need to [create an api key](https://www.getoutline.com/developers#section/Authentication) for your Outline instance. Then you need to set the following environment variables:
+
+```python
+import os
+
+os.environ["OUTLINE_API_KEY"] = "xxx"
+os.environ["OUTLINE_INSTANCE_URL"] = "https://app.getoutline.com"
+```
+
+## 检索器
+
+查看[使用示例](/oss/python/integrations/retrievers/outline).
+
+```python
+from langchain_classic.retrievers import OutlineRetriever
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/outline.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

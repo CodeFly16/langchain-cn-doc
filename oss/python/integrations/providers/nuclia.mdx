@@ -1,0 +1,104 @@
+---
+title: "Nuclia 集成"
+description: "使用 LangChain Python 与 Nuclia 集成。"
+---
+
+>[Nuclia](https://nuclia.com) automatically indexes your unstructured data from any internal
+> and external source, providing optimized search results and generative answers.
+> It can handle video and audio transcription, image content extraction, and document parsing.
+
+
+
+## 安装和设置
+
+我们需要安装 `nucliadb-protos` package to use the `Nuclia Understanding API`
+
+<CodeGroup>
+```bash pip
+pip install nucliadb-protos
+```
+
+```bash uv
+uv add nucliadb-protos
+```
+</CodeGroup>
+
+We need to have a `Nuclia account`.
+We can create one for free at [https://nuclia.cloud](https://nuclia.cloud),
+and then [create a NUA key](https://docs.nuclia.dev/docs/docs/using/understanding/intro).
+
+
+## 文档转换器
+
+### Nuclia
+
+>`Nuclia Understanding API` document transformer splits text into paragraphs and sentences,
+> identifies entities, provides a summary of the text and generates embeddings for all the sentences.
+
+To use the Nuclia document transformer, we need to instantiate a `NucliaUnderstandingAPI`
+tool with `enable_ml` set to `True`:
+
+```python
+from langchain_community.tools.nuclia import NucliaUnderstandingAPI
+
+nua = NucliaUnderstandingAPI(enable_ml=True)
+```
+
+查看[使用示例](/oss/python/integrations/document_transformers/nuclia_transformer).
+
+```python
+from langchain_community.document_transformers.nuclia_text_transform import NucliaTextTransformer
+```
+
+## 文档加载器
+
+### Nuclea loader
+
+查看[使用示例](/oss/python/integrations/document_loaders/nuclia).
+
+```python
+from langchain_community.document_loaders.nuclia import NucliaLoader
+```
+
+## 向量存储
+
+### NucliaDB
+
+我们需要安装 a Python 包:
+
+<CodeGroup>
+```bash pip
+pip install nuclia
+```
+
+```bash uv
+uv add nuclia
+```
+</CodeGroup>
+
+查看[使用示例](/oss/python/integrations/vectorstores/nucliadb).
+
+```python
+from langchain_community.vectorstores.nucliadb import NucliaDB
+```
+
+## 工具
+
+### Nuclia understanding
+
+查看[使用示例](/oss/python/integrations/tools/nuclia).
+
+```python
+from langchain_community.tools.nuclia import NucliaUnderstandingAPI
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/nuclia.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

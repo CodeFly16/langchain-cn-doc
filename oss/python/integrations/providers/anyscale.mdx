@@ -1,0 +1,54 @@
+---
+title: "Anyscale 集成"
+description: "使用 LangChain Python 与 Anyscale 集成。"
+---
+
+>[Anyscale](https://www.anyscale.com) is a platform to run, fine tune and scale LLMs via production-ready APIs.
+> [Anyscale Endpoints](https://docs.anyscale.com/endpoints/overview) serve many open-source models in a cost-effective way.
+
+`Anyscale` also provides [an example](https://docs.anyscale.com/endpoints/model-serving/examples/langchain-integration)
+how to setup `LangChain` with `Anyscale` for advanced chat agents.
+
+## 安装和设置
+
+- Get an Anyscale Service URL, route and API key and set them as environment variables (`ANYSCALE_SERVICE_URL`,`ANYSCALE_SERVICE_ROUTE`, `ANYSCALE_SERVICE_TOKEN`).
+- Please see [the Anyscale docs](https://www.anyscale.com/get-started) for more details.
+
+我们需要安装 the `openai` package:
+
+<CodeGroup>
+```bash pip
+pip install openai
+```
+
+```bash uv
+uv add openai
+```
+</CodeGroup>
+
+## 大语言模型 (LLM)
+
+查看[使用示例](/oss/python/integrations/llms/anyscale).
+
+```python
+from langchain_community.llms.anyscale import Anyscale
+```
+
+## 向量嵌入
+
+查看[使用示例](/oss/python/integrations/embeddings/anyscale).
+
+```python
+from langchain_community.embeddings import AnyscaleEmbeddings
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/anyscale.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

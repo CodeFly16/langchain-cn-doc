@@ -1,0 +1,135 @@
+---
+title: 理念
+description: LangChain 致力于成为使用 LLM 构建应用的最简单起点，同时兼顾灵活性和生产就绪性。
+mode: wide
+---
+
+LangChain 由几个核心信念驱动：
+
+- 大语言模型 (LLM) 是伟大的、强大的新技术。
+- 当你将 LLM 与外部数据源结合时，它们会更加强大。
+- LLM 将改变未来应用的形态。具体来说，未来的应用将越来越具有智能体特征。
+- 这一转变仍处于非常早期的阶段。
+- 虽然构建这些智能体应用的原型很容易，但构建足够可靠以投入生产的智能体仍然非常困难。
+
+如今，开发者可以选择如何构建智能体：使用 [LangChain](/oss/javascript/langchain/overview) 获得最大的灵活性和控制力，或者使用 [Deep Agents](/oss/javascript/langchain/overview)，它提供类似的灵活性和控制力，但内置了规划、文件系统工具、子智能体和上下文管理等功能。两者都基于 [LangGraph](/oss/javascript/langgraph/overview) 构建。
+
+LangChain 有两个核心关注点：
+
+<Steps>
+    <Step title="我们希望让开发者能够使用最好的模型进行构建。">
+        不同的提供商暴露了不同的 API，具有不同的模型参数和不同的消息格式。
+        标准化这些模型的输入和输出是核心关注点，使开发者能够轻松切换到最新的先进模型，避免供应商锁定。
+    </Step>
+    <Step title="我们希望让使用模型来编排与其他数据和计算交互的更复杂流程变得容易。">
+        模型不应该仅用于*文本生成*——它们还应该用于编排与其他数据交互的更复杂流程。LangChain 使定义 LLM 可以动态使用的[工具](/oss/javascript/langchain/tools)变得简单，同时帮助解析和访问非结构化数据。
+    </Step>
+</Steps>
+
+## 历史
+
+鉴于该领域不断变化的速度，LangChain 也随着时间不断演进。以下是 LangChain 多年来变化的简要时间线，与使用 LLM 构建应用的含义一起演进：
+
+<Update label="2022-10-24" description="v0.0.1">
+    在 ChatGPT 发布前一个月，**LangChain 作为一个 Python 包发布**。它由两个主要组件组成：
+
+    - LLM 抽象
+    - "链"，即预定义的计算步骤序列，用于常见用例。例如——RAG：先运行检索步骤，然后运行生成步骤。
+
+    LangChain 的名称来源于"Language"（如语言模型）和"Chains"（链）。
+</Update>
+
+<Update label="2022-12">
+    第一批通用智能体被添加到 LangChain 中。
+
+    这些通用智能体基于 [ReAct 论文](https://arxiv.org/abs/2210.03629)（ReAct 代表推理和行动）。它们使用 LLM 生成表示工具调用的 JSON，然后解析该 JSON 来确定要调用哪些工具。
+</Update>
+
+<Update label="2023-01">
+    OpenAI 发布了 'Chat Completion' API。
+
+    之前，模型接收字符串输入并返回字符串。在 ChatCompletions API 中，它们演进为接收消息列表并返回消息。其他模型提供商也纷纷效仿，LangChain 也更新为支持消息列表。
+</Update>
+
+<Update label="2023-01">
+    LangChain 发布了 JavaScript 版本。
+
+    LLM 和智能体将改变应用的构建方式，而 JavaScript 是应用开发者的语言。
+</Update>
+
+<Update label="2023-02">
+    **LangChain Inc. 围绕开源 LangChain 项目成立为公司。**
+
+    主要目标是"让智能代理无处不在"。团队认识到，虽然 LangChain 是关键组成部分（LangChain 让使用 LLM 变得简单），但还需要其他组件。
+</Update>
+
+<Update label="2023-03">
+    OpenAI 在其 API 中发布了'函数调用'功能。
+
+    这允许 API 显式生成表示工具调用的载荷。其他模型提供商也纷纷效仿，LangChain 也更新为使用此作为工具调用的首选方法（而非解析 JSON）。
+</Update>
+
+<Update label="2023-06">
+    **LangSmith** 作为 LangChain Inc. 的闭源平台发布，提供可观测性和评估功能。
+
+    构建智能体的主要问题是让它们变得可靠，而提供可观测性和评估的 LangSmith 就是为解决这一需求而构建的。LangChain 更新为与 LangSmith 无缝集成。
+</Update>
+
+<Update label="2024-01" description="v0.1.0">
+    **LangChain 发布 0.1.0**，其第一个非 0.0.x 版本。
+
+    随着行业从原型走向生产，LangChain 加大了对稳定性的关注。
+</Update>
+
+<Update label="2024-02">
+    **LangGraph** 作为开源库发布。
+
+    最初的 LangChain 有两个重点：LLM 抽象和用于常见应用入门的高级接口；然而，它缺少一个允许开发者控制其智能体确切流程的底层编排层。于是：LangGraph 诞生了。
+
+    在构建 LangGraph 时，我们从构建 LangChain 中学到了经验教训，并添加了我们发现所需的功能：流式输出、持久执行、短期记忆、人机协作等。
+</Update>
+
+<Update label="2024-06">
+    **LangChain 拥有超过 700 个集成。**
+
+    集成从核心 LangChain 包中分离出来，要么移入各自独立的包（用于核心集成），要么移入 `@langchain/community`。
+</Update>
+
+<Update label="2024-10">
+    LangGraph 成为构建任何超出单次 LLM 调用的 AI 应用的首选方式。
+
+    随着开发者试图提高应用的可靠性，他们需要比高级接口更多的控制。LangGraph 提供了底层的灵活性。大多数链和智能体在 LangChain 中被标记为弃用，并附有迁移到 LangGraph 的指南。在 LangGraph 中仍有一个高级抽象：智能体抽象。它建立在底层 LangGraph 之上，与 LangChain 的 ReAct 智能体具有相同的接口。
+</Update>
+
+<Update label="2025-04">
+    模型 API 变得更加多模态。
+
+    模型开始接受文件、图像、视频等。我们相应地更新了 `@langchain/core` 消息格式，允许开发者以标准方式指定这些多模态输入。
+</Update>
+
+<Update label="2025-10-20" description="v1.0.0">
+    **LangChain 发布 1.0**，有两个重大变化：
+
+    1. 完全重构了 `langchain` 中的所有链和智能体。所有链和智能体现在被替换为唯一一个高级抽象：基于 LangGraph 构建的智能体抽象。这是最初在 LangGraph 中创建的高级抽象，只是移到了 LangChain 中。
+
+        对于仍在使用旧版 LangChain 链/智能体且不想升级的用户（注意：我们建议您升级），可以通过安装 `@langchain/classic` 包继续使用旧版 LangChain。
+
+    2. 标准消息内容格式：模型 API 从返回简单内容字符串的消息演进为更复杂的输出类型——推理块、引用、服务端工具调用等。LangChain 演进了其消息格式以跨提供商标准化这些内容。
+</Update>
+
+<Update label="2026-03-15" description="v0.5.3">
+    **Deep Agents** 作为基于 LangGraph 构建的开源智能体框架发布。
+
+    虽然 LangChain 为自定义智能体架构提供了灵活的构建块，但 [Deep Agents](/oss/javascript/langchain/overview) 为研究和编码等复杂、长时间运行的任务提供了开箱即用的选项。它添加了内置的规划工具、具有可插拔后端（内存、磁盘、LangGraph 存储、沙箱）的虚拟文件系统以及用于上下文隔离的子智能体生成。使用 Deep Agents 获取带有预定义工具的更自主的智能体；使用 LangChain 完全控制你的智能体架构。
+</Update>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时解答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/philosophy.mdx) 或 [提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

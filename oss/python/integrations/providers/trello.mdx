@@ -1,0 +1,42 @@
+---
+title: "Trello 集成"
+description: "使用 LangChain Python 与 Trello 集成。"
+---
+
+>[Trello](https://www.atlassian.com/software/trello) is a web-based project management and collaboration tool that allows individuals and teams to organize and track their tasks and projects. 它提供 a visual interface known as a "board" where users can create lists and cards to represent their tasks and activities.
+>The TrelloLoader allows us to load cards from a `Trello` board.
+
+
+## 安装和设置
+
+<CodeGroup>
+```bash pip
+pip install py-trello beautifulsoup4
+```
+
+```bash uv
+uv add py-trello beautifulsoup4
+```
+</CodeGroup>
+
+See [setup instructions](/oss/python/integrations/document_loaders/trello).
+
+
+## 文档加载器
+
+查看[使用示例](/oss/python/integrations/document_loaders/trello).
+
+```python
+from langchain_community.document_loaders import TrelloLoader
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/trello.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

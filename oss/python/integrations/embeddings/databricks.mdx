@@ -1,0 +1,159 @@
+---
+title: "DatabricksEmbeddings 集成"
+description: "使用 LangChain Python 集成 DatabricksEmbeddings 向量嵌入模型。"
+---
+
+> [Databricks](https://www.databricks.com/) Lakehouse Platform unifies data, analytics, and AI on one platform.
+
+本指南提供了开始使用 `DatabricksEmbeddings` [向量嵌入模型](/oss/python/integrations/embeddings). 有关所有 `DatabricksEmbeddings` 功能和配置的详细文档，请前往 [API reference](https://reference.langchain.com/python/langchain-community/embeddings/databricks/DatabricksEmbeddings).
+
+## 概述
+
+### 集成详情
+
+| 类 | 包 |
+| :--- | :--- |
+| [`DatabricksEmbeddings`](https://reference.langchain.com/python/langchain-community/embeddings/databricks/DatabricksEmbeddings) | [databricks-langchain](https://python.langchain.com/docs/integrations/providers/databricks/) |
+
+### Supported methods
+
+`DatabricksEmbeddings` supports all methods of [`Embeddings`](https://reference.langchain.com/python/langchain-core/embeddings/embeddings/Embeddings) class including async APIs.
+
+### Endpoint requirement
+
+The serving endpoint `DatabricksEmbeddings` wraps must have OpenAI-compatible embedding input/output format ([reference](https://mlflow.org/docs/latest/llms/deployments/index.html#embeddings)). As long as the input format is compatible, `DatabricksEmbeddings` can be used for any endpoint type hosted on [Databricks Model Serving](https://docs.databricks.com/en/machine-learning/model-serving/index.html):
+
+1. Foundation Models - Curated list of 先进的 foundation models such as BAAI General Embedding (BGE). These endpoint are ready to use in your Databricks workspace without any set up.
+2. Custom Models - You can also deploy custom 向量嵌入模型 to a serving endpoint via MLflow with
+your choice of framework such as LangChain, Pytorch, Transformers, etc.
+3. External Models - Databricks endpoints can serve models that are hosted outside Databricks as a proxy, such as proprietary model service like OpenAI text-embedding-3.
+
+## 设置
+
+要访问 Databricks 模型，您需要创建一个 Databricks account, set up credentials (only if you are outside Databricks workspace), and install required packages.
+
+### Credentials (only if you are outside databricks)
+
+If you are running LangChain app inside Databricks, you can skip this step.
+
+Otherwise, you need manually set the Databricks workspace hostname and personal access token to `DATABRICKS_HOST` and `DATABRICKS_TOKEN` environment variables, respectively. See [Authentication Documentation](https://docs.databricks.com/en/dev-tools/auth/index.html#databricks-personal-access-tokens) for how to get an access token.
+
+```python
+import getpass
+import os
+
+os.environ["DATABRICKS_HOST"] = "https://your-workspace.cloud.databricks.com"
+if "DATABRICKS_TOKEN" not in os.environ:
+    os.environ["DATABRICKS_TOKEN"] = getpass.getpass(
+        "Enter your Databricks access token: "
+    )
+```
+
+### 安装
+
+LangChain 的 Databricks 集成位于 `databricks-langchain` 包中：
+
+```python
+pip install -qU databricks-langchain
+```
+
+## 实例化
+
+```python
+from databricks_langchain import DatabricksEmbeddings
+
+embeddings = DatabricksEmbeddings(
+    endpoint="databricks-bge-large-en",
+    # Specify parameters for embedding queries and documents if needed
+    # query_params={...},
+    # document_params={...},
+)
+```
+
+## 索引与检索
+
+向量嵌入模型常用于检索增强生成 (RAG) 流程中, 既用于索引数据，也用于后续检索数据。 更详细的说明请参阅我们的 [RAG tutorials](/oss/python/langchain/rag).
+
+下面展示如何使用 `embeddings` 对象来索引和检索数据。 在此示例中，我们将在 `InMemoryVectorStore`.
+
+```python
+# 使用示例文本创建向量存储
+from langchain_core.vectorstores import InMemoryVectorStore
+
+text = "LangChain is the framework for building context-aware reasoning applications"
+
+vectorstore = InMemoryVectorStore.from_texts(
+    [text],
+    embedding=embeddings,
+)
+
+# Use the vectorstore as a retriever
+retriever = vectorstore.as_retriever()
+
+# Retrieve the most similar text
+retrieved_document = retriever.invoke("What is LangChain?")
+
+# show the retrieved document's content
+retrieved_document[0].page_content
+```
+
+## 直接使用
+
+Under the hood, the vectorstore and retriever implementations are calling `embeddings.embed_documents(...)` and `embeddings.embed_query(...)` to create embeddings for the text(s) used in `from_texts` and retrieval `invoke` operations, respectively.
+
+You can directly call these methods to get embeddings for your own use cases.
+
+### Embed single texts
+
+You can embed single texts or documents with `embed_query`:
+
+```python
+single_vector = embeddings.embed_query(text)
+print(str(single_vector)[:100])  # Show the first 100 characters of the vector
+```
+
+### Embed multiple texts
+
+You can embed multiple texts with `embed_documents`:
+
+```python
+text2 = (
+    "LangGraph is a library for building stateful, multi-actor applications with LLMs"
+)
+two_vectors = embeddings.embed_documents([text, text2])
+for vector in two_vectors:
+    print(str(vector)[:100])  # Show the first 100 characters of the vector
+```
+
+### Async usage
+
+You can also use `aembed_query` and `aembed_documents` for producing embeddings asynchronously:
+
+```python
+import asyncio
+
+
+async def async_example():
+    single_vector = await embeddings.aembed_query(text)
+    print(str(single_vector)[:100])  # Show the first 100 characters of the vector
+
+
+asyncio.run(async_example())
+```
+
+---
+
+## API 参考
+
+For detailed documentation on `DatabricksEmbeddings` 功能和配置选项的详细文档，请参阅 [API reference](https://reference.langchain.com/python/langchain-community/embeddings/databricks/DatabricksEmbeddings).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/embeddings/databricks.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

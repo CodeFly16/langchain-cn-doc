@@ -1,0 +1,58 @@
+---
+title: "Iflytek 集成"
+description: "使用 LangChain Python 与 Iflytek 集成。"
+---
+
+>[iFlytek](https://www.iflytek.com) is a Chinese information technology company
+> established in 1999. It creates voice recognition software and
+> voice-based internet/mobile products covering education, communication,
+> music, intelligent toys industries.
+
+
+## 安装和设置
+
+- Get `SparkLLM` app_id, api_key and api_secret from [iFlyTek SparkLLM API Console](https://console.xfyun.cn/services/bm3) (for more info, see [iFlyTek SparkLLM Intro](https://xinghuo.xfyun.cn/sparkapi)).
+- Install the Python 包 (not for the embedding models):
+
+<CodeGroup>
+```bash pip
+pip install websocket-client
+```
+
+```bash uv
+uv add websocket-client
+```
+</CodeGroup>
+
+## 大语言模型 (LLM)
+
+查看[使用示例](/oss/python/integrations/llms/sparkllm).
+
+```python
+from langchain_community.llms import SparkLLM
+```
+
+## 聊天模型
+
+查看[使用示例](/oss/python/integrations/chat/sparkllm).
+
+```python
+from langchain_community.chat_models import ChatSparkLLM
+```
+
+## 向量嵌入模型
+
+```python
+from langchain_community.embeddings import SparkLLMTextEmbeddings
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/iflytek.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

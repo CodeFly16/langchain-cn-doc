@@ -1,0 +1,45 @@
+---
+title: "Falkordb 集成"
+description: "使用 LangChain Python 与 Falkordb 集成。"
+---
+
+>What is `FalkorDB`?
+
+>- FalkorDB is an `open-source database management system` that specializes in graph database technology.
+>- FalkorDB allows you to represent and store data in nodes and edges, making it ideal for handling connected data and relationships.
+>- FalkorDB Supports OpenCypher query language with proprietary extensions, making it easy to interact with and query your graph data.
+>- With FalkorDB, you can achieve high-performance `graph traversals and queries`, suitable for production-level systems.
+
+>Get started with FalkorDB by visiting [their website](https://docs.falkordb.com/).
+
+## 安装和设置
+
+- Install the Python SDK with `pip install falkordb langchain-falkordb`
+
+## 向量存储
+
+The FalkorDB vector index is used as a vectorstore,
+无论是用于语义搜索还是示例选择。
+
+```python
+from langchain_community.vectorstores.falkordb_vector import FalkorDBVector
+```
+
+or
+
+```python
+from langchain_falkordb.vectorstore import FalkorDBVector
+```
+
+查看[使用示例](/oss/python/integrations/vectorstores/falkordbvector.ipynb)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/falkordb.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

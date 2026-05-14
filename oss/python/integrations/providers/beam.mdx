@@ -1,0 +1,48 @@
+---
+title: "Beam 集成"
+description: "使用 LangChain Python 与 Beam 集成。"
+---
+
+>[Beam](https://www.beam.cloud/) is a cloud computing platform that allows you to run your code
+> on remote servers with GPUs.
+
+
+## 安装和设置
+
+- [Create an account](https://www.beam.cloud/)
+- Install the Beam CLI with `curl https://raw.githubusercontent.com/slai-labs/get-beam/main/get-beam.sh -sSfL | sh`
+- Register API keys with `beam configure`
+- Set environment variables (`BEAM_CLIENT_ID`) and (`BEAM_CLIENT_SECRET`)
+- Install the Beam SDK:
+
+<CodeGroup>
+```bash pip
+pip install beam-sdk
+```
+
+```bash uv
+uv add beam-sdk
+```
+</CodeGroup>
+
+
+## 大语言模型 (LLM)
+
+查看[使用示例](/oss/python/integrations/llms/beam).
+
+See another example in the [Beam documentation](https://docs.beam.cloud/examples/langchain).
+
+```python
+from langchain_community.llms.beam import Beam
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/beam.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

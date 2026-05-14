@@ -1,0 +1,164 @@
+---
+title: 事件流式输出
+description: 从 LangChain 智能体运行中流式传输实时更新，支持类型化投影。
+---
+
+LangChain 智能体构建在 LangGraph 之上，因此它们支持相同的事件流式输出模型，并提供面向智能体的消息、工具调用、状态和自定义更新的投影。
+
+对于大多数应用和前端用例，请通过 `stream_events(..., version="v3")` 使用事件流式输出。事件流式输出返回一个带有类型化投影的运行对象，因此您可以选择所需的视图，而不是解析 stream-mode 元组。
+
+<Tip>
+查看[流式输出 cookbook](https://github.com/langchain-ai/streaming-cookbook) 获取可运行的示例和详细参考文档的链接。
+</Tip>
+
+<Note>
+对直接使用 Pregel 模式（如 `updates`、`messages` 或 `custom`）的流式输出感兴趣？请参阅[流式输出页面](/oss/javascript/langchain/streaming)。
+</Note>
+
+
+
+```typescript
+import { createAgent, tool } from "langchain";
+import * as z from "zod";
+
+const getWeather = tool(
+  async ({ city }) => `It's always sunny in ${city}!`,
+  {
+    name: "get_weather",
+    description: "Get weather for a city.",
+    schema: z.object({ city: z.string() }),
+  }
+);
+
+const agent = createAgent({
+  model: "gpt-5-nano",
+  tools: [getWeather],
+});
+
+const run = await agent.streamEvents(
+  { messages: [{ role: "user", content: "What is the weather in SF?" }] },
+  { version: "v3" }
+);
+
+for await (const message of run.messages) {
+  for await (const delta of message.text) {
+    process.stdout.write(delta);
+  }
+}
+
+const finalState = await run.output;
+```
+
+
+## 可以流式传输的内容
+
+| 投影 | 用途 |
+| ---------- | --- |
+| `for event in run` | 当您需要精确到达顺序时的原始协议事件。 |
+| `run.messages` | 模型消息流，每次 LLM 调用一个。 |
+| `message.text` | 消息的文本增量和最终文本。 |
+| `message.reasoning` | 对于暴露推理内容的模型的推理增量。 |
+| `message.tool_calls` | 工具调用参数块和最终化的工具调用。 |
+| `message.output` | 模型调用完成后的最终消息对象。 |
+| `message.usage` | 提供商返回时的 Token 使用量元数据。 |
+| `run.values` | 智能体状态快照。 |
+| `run.output` | 最终智能体状态。 |
+| `run.extensions` | 自定义转换器投影。 |
+
+| `run.toolCalls` | 工具执行生命周期、输入、输出增量、最终输出和错误。 |
+
+
+
+
+`run.messages` 产生消息流。每个消息流暴露 `.text`、`.reasoning`、`.toolCalls`、`.output` 和 `.usage`。异步投影可以被迭代以获取实时增量，或被 await 以获取最终值。
+
+
+## 流式传输智能体消息
+
+当您想要每次 LLM 调用的模型输出时，使用 `run.messages`。
+
+
+
+```typescript
+const run = await agent.streamEvents(input, { version: "v3" });
+
+for await (const message of run.messages) {
+  process.stdout.write(`[${message.node}] `);
+  for await (const delta of message.text) {
+    process.stdout.write(delta);
+  }
+
+  const fullMessage = await message.output;
+  console.log(fullMessage.content);
+
+  const usage = await message.usage;
+  if (usage) {
+    console.log(usage);
+  }
+}
+```
+
+
+## 流式传输工具调用
+
+有两个有用的工具调用投影：
+
+- `message.tool_calls` 在模型生成工具调用时流式传输工具调用参数块。
+- `run.tool_calls` 在工具调用开始后流式传输工具执行的生命周期。
+
+
+
+```typescript
+const run = await agent.streamEvents(input, { version: "v3" });
+
+await Promise.all([
+  (async () => {
+    for await (const message of run.messages) {
+      for await (const chunk of message.toolCalls) {
+        console.log("tool call chunk", chunk);
+      }
+    }
+  })(),
+  (async () => {
+    for await (const call of run.toolCalls) {
+      console.log(call.name, call.input);
+      console.log(await call.output, await call.error);
+    }
+  })(),
+]);
+```
+
+
+## 流式传输状态和最终输出
+
+使用 `run.values` 获取状态快照，使用 `run.output` 获取最终智能体状态。
+
+
+
+```typescript
+const run = await agent.streamEvents(input, { version: "v3" });
+
+for await (const snapshot of run.values) {
+  console.log(snapshot);
+}
+
+const finalState = await run.output;
+```
+
+
+## 相关资源
+
+- [流式输出 cookbook](https://github.com/langchain-ai/streaming-cookbook) 展示可运行的事件流式输出示例。
+- [LangChain 流式输出](/oss/javascript/langchain/streaming) 涵盖底层 Pregel 流模式。
+- [LangGraph 事件流式输出](/oss/javascript/langgraph/streaming/event-streaming) 解释底层图流式模型。
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/event-streaming.mdx) 或 [提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

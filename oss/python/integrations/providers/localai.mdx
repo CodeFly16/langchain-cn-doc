@@ -1,0 +1,47 @@
+---
+title: "Localai 集成"
+description: "使用 LangChain Python 与 Localai 集成。"
+---
+
+>[LocalAI](https://localai.io/) is the free, Open Source OpenAI alternative.
+> `LocalAI` act as a drop-in replacement REST API that’s compatible with OpenAI API
+> specifications for local inferencing. 它允许 you to run LLMs, generate images,
+> audio (and not only) locally or on-prem with consumer grade hardware,
+> supporting multiple model families and architectures.
+
+<Info>
+`langchain-localai` is a 3rd party integration package for LocalAI. 它提供 a simple way to use LocalAI services在 LangChain 中。
+The source code is available on [GitHub](https://github.com/mkhludnev/langchain-localai)
+</Info>
+
+## 安装和设置
+
+<CodeGroup>
+```bash pip
+pip install langchain-localai
+```
+
+```bash uv
+uv add langchain-localai
+```
+</CodeGroup>
+
+
+## 向量嵌入模型
+
+查看[使用示例](/oss/python/integrations/embeddings/localai).
+
+## Reranker
+
+查看[使用示例](/oss/python/integrations/document_transformers/localai_rerank).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/localai.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

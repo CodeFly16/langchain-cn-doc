@@ -1,0 +1,181 @@
+---
+title: 版本管理
+---
+
+我们的 OSS 版本号遵循以下格式：`MAJOR.MINOR.PATCH`，由[语义化版本](https://semver.org/)定义。
+
+- **Major**：需要修改代码的破坏性 API 更新。
+- **Minor**：保持向后兼容的新功能和改进。
+- **Patch**：Bug 修复和小幅改进。
+
+例如：
+
+- `1.0.0`：首个稳定版本，包含生产就绪的 API
+- `1.1.0`：以向后兼容的方式添加新功能
+- `1.0.1`：向后兼容的 Bug 修复
+
+## API 稳定性
+
+我们通过以下方式传达 API 的稳定性：
+
+### 稳定 API
+
+所有没有特殊前缀的 API 都被视为稳定且可用于生产环境。我们为稳定功能保持向后兼容性，仅在主版本发布时引入破坏性变更。
+
+### Beta API
+
+标记为 `beta` 的 API 功能已完整，但可能会根据用户反馈进行小幅调整。它们可以安全用于生产环境，但在未来版本中可能需要少量调整。
+
+### Alpha API
+
+标记为 `alpha` 的 API 是实验性的，可能会发生重大变更。请在生产环境中谨慎使用。
+
+### 已弃用 API
+
+标记为 `deprecated` 的 API 将在未来的主版本中移除。在可能的情况下，我们会指定计划移除的版本。处理弃用的方法：
+
+1. 切换到推荐的替代 API
+2. 遵循迁移指南（随主版本一起发布）
+3. 在可用时使用自动迁移工具
+
+### 内部 API
+
+某些 API 通过以下方式明确标记为"内部"：
+
+- 某些文档提及内部实现并将其标注为内部。如果文档说明某内容是内部的，它可能会变更。
+- 以前导下划线（**`_`**）为前缀的函数、方法和其他对象。这是 Python 表示某内容为私有的标准约定；如果任何方法以单个 **`_`** 开头，则它是内部 API。
+    - **例外情况：**某些方法以 `_` 为前缀，但不包含实现。这些方法*旨在*由提供实现的子类重写。这类方法通常属于 LangChain 的**公共 API** 的一部分。
+
+## 发布周期
+
+<AccordionGroup>
+    <Accordion title="主版本发布">
+        主版本发布（例如 `1.0.0` → `2.0.0`）可能包括：
+
+        - 破坏性 API 变更
+        - 移除已弃用的功能
+        - 重大架构改进
+
+        我们提供：
+
+        - 详细的迁移指南
+        - 在可能的情况下提供自动迁移工具
+        - 对前一主版本的延长支持期
+    </Accordion>
+
+    <Accordion title="次版本发布">
+        次版本发布（例如 `1.0.0` → `1.1.0`）包括：
+
+        - 新功能和能力
+        - 性能改进
+        - 新的可选参数
+        - 向后兼容的增强
+    </Accordion>
+
+    <Accordion title="补丁版本发布">
+        补丁版本发布（例如 `1.0.0` → `1.0.1`）包括：
+
+        - Bug 修复
+        - 安全更新
+        - 文档改进
+        - 无 API 变更的性能优化
+    </Accordion>
+</AccordionGroup>
+
+## 版本支持政策
+
+- **最新主版本**：全面支持，处于活跃开发状态（ACTIVE 状态）
+- **上一主版本**：在下一主版本发布后 12 个月内提供安全更新和关键 Bug 修复（MAINTENANCE 状态）
+- **更早版本**：仅社区支持
+
+### 长期支持（LTS）版本
+
+LangChain 和 LangGraph 1.0 均被指定为 LTS 版本：
+
+- 1.0 版本将保持 ACTIVE 状态，直到 2.0 版本发布
+- 2.0 版本发布后，1.0 版本将进入 MAINTENANCE 模式至少 1 年
+- LTS 版本遵循语义化版本（semver），允许在次版本之间安全升级
+- 旧版本（LangChain 0.3 和 LangGraph 0.4）处于 MAINTENANCE 模式，直到 2026 年 12 月
+
+### 1.0 之前的包
+
+**深度智能体**（`deepagents`）是一个处于活跃开发阶段的 1.0 之前的包。作为一个快速迭代的包，API 可能会在次版本之间变更，但我们会尽量减少破坏性变更。深度智能体在达到 1.0 版本后将采用与 LangChain 和 LangGraph 相同的 LTS 政策。
+
+
+有关发布状态和支持时间表的详细信息，请参阅[发布政策](/oss/python/release-policy)。
+
+## 检查你的版本
+
+要检查已安装的版本：
+
+<CodeGroup>
+
+```python LangChain
+import langchain_core
+print(langchain_core.__version__)
+```
+
+```python LangGraph
+import langgraph
+print(langgraph.__version__)
+```
+
+</CodeGroup>
+
+
+
+
+## 升级
+
+<CodeGroup>
+
+```bash LangChain
+# 升级到最新版本
+pip install -U langchain-core langchain
+
+# 升级到特定版本
+pip install langchain-core==1.0.0
+```
+
+```bash LangGraph
+# 升级到最新版本
+pip install -U langgraph
+
+# 升级到特定版本
+pip install langgraph==1.0.0
+```
+
+```bash 深度智能体
+# 升级到最新版本
+pip install -U deepagents
+
+# 升级到特定版本
+pip install deepagents==0.1.0
+```
+</CodeGroup>
+
+
+
+
+## 预发布版本
+
+我们偶尔会发布 alpha 和 beta 版本以进行早期测试：
+
+- **Alpha**（例如 `1.0.0a1`）：早期预览，预计会有重大变更
+- **Beta**（例如 `1.0.0b1`）：功能完整，可能有小幅变更
+- **Release Candidate**（例如 `1.0.0rc1`）：稳定版发布前的最终测试
+
+## 另请参阅
+
+- [发布政策](/oss/python/release-policy) - 详细的发布和弃用政策
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/versioning.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

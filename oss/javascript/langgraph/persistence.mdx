@@ -1,0 +1,770 @@
+---
+title: 持久化
+---
+
+import StoreListNamespaceSearchPy from '/snippets/code-samples/store-list-namespace-search-py.mdx';
+import StoreListNamespaceSearchJs from '/snippets/code-samples/store-list-namespace-search-js.mdx';
+import StoreListNamespacePaginatePy from '/snippets/code-samples/store-list-namespace-paginate-py.mdx';
+import StoreListNamespacePaginateJs from '/snippets/code-samples/store-list-namespace-paginate-js.mdx';
+import StoreListNamespaceListPy from '/snippets/code-samples/store-list-namespace-list-py.mdx';
+import StoreListNamespaceListJs from '/snippets/code-samples/store-list-namespace-list-js.mdx';
+
+LangGraph 有一个内置的持久化层，将图状态保存为检查点。当你使用检查点器编译图时，图状态的快照在每个执行步骤被保存，并按线程组织。这支持人机协作工作流、对话记忆、时间旅行调试和容错执行。
+
+![Checkpoints](/oss/images/checkpoints.jpg)
+
+<Info>
+**Agent Server handles checkpointing automatically**
+使用[智能体服务器](/langsmith/agent-server)时，你不需要手动实现或配置检查点器。服务器在后台为你处理所有持久化基础设施。
+</Info>
+
+<Tip>
+使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-persistence) 追踪检查点状态并调试智能体如何跨会话恢复。按照[追踪快速入门](/langsmith/trace-with-langgraph)进行设置。
+</Tip>
+
+## Why use persistence
+
+Persistence is required for the following features:
+
+- **Human-in-the-loop**: Checkpointers facilitate [human-in-the-loop workflows](/oss/javascript/langgraph/interrupts) by allowing humans to inspect, interrupt, and approve graph steps. Checkpointers are needed for these workflows as the person has to be able to view the state of a graph at any point in time, and the graph has to be able to resume execution after the person has made any updates to the state. See [Interrupts](/oss/javascript/langgraph/interrupts) for examples.
+- **Memory**: Checkpointers allow for ["memory"](/oss/javascript/concepts/memory) between interactions. In the case of repeated human interactions (like conversations) any follow up messages can be sent to that thread, which will retain its memory of previous ones. See [Add memory](/oss/javascript/langgraph/add-memory) for information on how to add and manage conversation memory using checkpointers.
+- **Time travel**: Checkpointers allow for ["time travel"](/oss/javascript/langgraph/use-time-travel), allowing users to replay prior graph executions to review and / or debug specific graph steps. In addition, checkpointers make it possible to fork the graph state at arbitrary checkpoints to explore alternative trajectories.
+- **Fault-tolerance**: Checkpointing provides fault-tolerance and error recovery: if one or more nodes fail at a given superstep, you can restart your graph from the last successful step.
+<a id="pending-writes"></a>
+- **Pending writes**: When a graph node fails mid-execution at a given [super-step](#super-steps), LangGraph stores pending checkpoint writes from any other nodes that completed successfully at that super-step. When you resume graph execution from that super-step you don't re-run the successful nodes.
+
+## Core concepts
+
+### Threads
+
+A thread is a unique ID or thread identifier assigned to each checkpoint saved by a checkpointer. It contains the accumulated state of a sequence of [runs](/langsmith/runs). When a run is executed, the [state](/oss/javascript/langgraph/graph-api#state) of the underlying graph of the assistant will be persisted to the thread.
+
+When invoking a graph with a checkpointer, you **must** specify a `thread_id` as part of the `configurable` portion of the config:
+
+
+
+```typescript
+{
+  configurable: {
+    thread_id: "1";
+  }
+}
+```
+
+
+A thread's current and historical state can be retrieved. To persist state, a thread must be created prior to executing a run. The LangSmith API provides several endpoints for creating and managing threads and thread state. 请参阅 [API reference](https://reference.langchain.com/python/langsmith/) 了解更多详情.
+
+检查点器使用 `thread_id` 作为存储和检索检查点的主键。没有它，检查点器无法保存状态或在[中断](/oss/javascript/langgraph/interrupts)后恢复执行，因为检查点器使用 `thread_id` 来加载已保存的状态。
+
+### Checkpoints
+
+线程在特定时间点的状态称为检查点。检查点是在每个[超级步骤](#super-steps)保存的图状态快照，由 `StateSnapshot` 对象表示（完整字段参考请参阅 [StateSnapshot 字段](#statesnapshot-fields)）。
+
+#### Super-steps
+
+LangGraph 在每个**超级步骤**边界创建检查点。超级步骤是图的一次"滴答"，在该步骤中计划的所有节点执行（可能并行）。对于像 `START -> A -> B -> END` 这样的顺序图，输入、节点 A 和节点 B 各有单独的超级步骤——每个步骤后都会生成一个检查点。理解超级步骤边界对于[时间旅行](/oss/javascript/langgraph/use-time-travel)很重要，因为你只能从检查点（即超级步骤边界）恢复执行。
+
+In addition to super-step checkpoints, LangGraph also persists writes at the **node (task) level**. As each node within a super-step finishes, its outputs are written to the checkpointer's `checkpoint_writes` table as task entries linked to the in-progress checkpoint. These per-task writes are what enable [pending writes](#pending-writes) recovery: if another node in the same super-step fails, the successful nodes' writes are already durable and don't need to be re-run on resume. The full state snapshot is then committed once the super-step completes.
+
+LangGraph 还会持久化超级步骤内各个节点执行的写入。这些写入作为任务存储，用于容错：如果同一超级步骤中的另一个节点失败，成功的节点写入在恢复时不需要重新计算。这些任务写入不是完整的 `StateSnapshot` 检查点，因此时间旅行从超级步骤边界的完整检查点恢复。
+
+检查点被持久化保存，可用于在稍后恢复线程的状态。
+
+Let's see what checkpoints are saved when a simple graph is invoked as follows:
+
+
+
+```typescript
+import { StateGraph, StateSchema, ReducedValue, START, END, MemorySaver } from "@langchain/langgraph";
+import { z } from "zod/v4";
+
+const State = new StateSchema({
+  foo: z.string(),
+  bar: new ReducedValue(
+    z.array(z.string()).default(() => []),
+    {
+      inputSchema: z.array(z.string()),
+      reducer: (x, y) => x.concat(y),
+    }
+  ),
+});
+
+const workflow = new StateGraph(State)
+  .addNode("nodeA", (state) => {
+    return { foo: "a", bar: ["a"] };
+  })
+  .addNode("nodeB", (state) => {
+    return { foo: "b", bar: ["b"] };
+  })
+  .addEdge(START, "nodeA")
+  .addEdge("nodeA", "nodeB")
+  .addEdge("nodeB", END);
+
+const checkpointer = new MemorySaver();
+const graph = workflow.compile({ checkpointer });
+
+const config = { configurable: { thread_id: "1" } };
+await graph.invoke({ foo: "", bar: [] }, config);
+```
+
+
+
+
+After we run the graph, we expect to see exactly 4 checkpoints:
+
+* Empty checkpoint with [`START`](https://reference.langchain.com/javascript/langchain-langgraph/index/START) as the next node to be executed
+* Checkpoint with the user input `{'foo': '', 'bar': []}` and `nodeA` as the next node to be executed
+* Checkpoint with the outputs of `nodeA` `{'foo': 'a', 'bar': ['a']}` and `nodeB` as the next node to be executed
+* Checkpoint with the outputs of `nodeB` `{'foo': 'b', 'bar': ['a', 'b']}` and no next nodes to be executed
+
+Note that the `bar` channel values contain outputs from both nodes as we have a reducer for the `bar` channel.
+
+
+#### Checkpoint namespace
+
+Each checkpoint has a `checkpoint_ns` (checkpoint namespace) field that identifies which graph or subgraph it belongs to:
+
+- **`""`** (empty string): The checkpoint belongs to the parent (root) graph.
+- **`"node_name:uuid"`**: The checkpoint belongs to a subgraph invoked as the given node. For nested subgraphs, namespaces are joined with `|` separators (e.g., `"outer_node:uuid|inner_node:uuid"`).
+
+You can access the checkpoint namespace from within a node via the config:
+
+
+
+```typescript
+import { RunnableConfig } from "@langchain/core/runnables";
+
+function myNode(state: typeof State.Type, config: RunnableConfig) {
+  const checkpointNs = config.configurable?.checkpoint_ns;
+  // "" for the parent graph, "node_name:uuid" for a subgraph
+}
+```
+
+
+See [Subgraphs](/oss/javascript/langgraph/use-subgraphs) 了解更多详情 on working with subgraph state and checkpoints.
+
+## Get and update state
+
+### Get state
+
+
+
+与已保存的图状态交互时，你**必须**指定一个[线程标识符](#threads)。你可以通过调用 `graph.getState(config)` 来查看图的_最新_状态。这将返回一个 `StateSnapshot` 对象，对应于配置中提供的线程 ID 关联的最新检查点，或者如果提供了检查点 ID，则对应于该线程的特定检查点。
+
+```typescript
+// get the latest state snapshot
+const config = { configurable: { thread_id: "1" } };
+await graph.getState(config);
+
+// get a state snapshot for a specific checkpoint_id
+const config = {
+  configurable: {
+    thread_id: "1",
+    checkpoint_id: "1ef663ba-28fe-6528-8002-5a559208592c",
+  },
+};
+await graph.getState(config);
+```
+
+
+
+
+In our example, the output of `getState` will look like this:
+
+```
+StateSnapshot {
+  values: { foo: 'b', bar: ['a', 'b'] },
+  next: [],
+  config: {
+    configurable: {
+      thread_id: '1',
+      checkpoint_ns: '',
+      checkpoint_id: '1ef663ba-28fe-6528-8002-5a559208592c'
+    }
+  },
+  metadata: {
+    source: 'loop',
+    writes: { nodeB: { foo: 'b', bar: ['b'] } },
+    step: 2
+  },
+  createdAt: '2024-08-29T19:19:38.821749+00:00',
+  parentConfig: {
+    configurable: {
+      thread_id: '1',
+      checkpoint_ns: '',
+      checkpoint_id: '1ef663ba-28f9-6ec4-8001-31981c2c39f8'
+    }
+  },
+  tasks: []
+}
+```
+
+
+#### StateSnapshot fields
+
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `values` | `object` | State channel values at this checkpoint. |
+| `next` | `string[]` | Node names to execute next. Empty `[]` means the graph is complete. |
+| `config` | `object` | Contains `thread_id`, `checkpoint_ns`, and `checkpoint_id`. |
+| `metadata` | `object` | Execution metadata. Contains `source` (`"input"`, `"loop"`, or `"update"`), `writes` (node outputs), and `step` (super-step counter). |
+| `createdAt` | `string` | ISO 8601 timestamp of when this checkpoint was created. |
+| `parentConfig` | `object \| null` | Config of the previous checkpoint. `null` for the first checkpoint. |
+| `tasks` | `PregelTask[]` | Tasks to execute at this step. Each task has `id`, `name`, `error`, `interrupts`, and optionally `state` (subgraph snapshot, when using `subgraphs: true`). |
+
+
+
+### Get state history
+
+
+
+你可以通过调用 `graph.getStateHistory(config)` 来获取给定线程的完整图执行历史。这将返回与配置中提供的线程 ID 关联的 `StateSnapshot` 对象列表。重要的是，检查点将按时间顺序排列，最新的检查点/`StateSnapshot` 排在列表的第一位。
+
+```typescript
+const config = { configurable: { thread_id: "1" } };
+for await (const state of graph.getStateHistory(config)) {
+  console.log(state);
+}
+```
+
+
+
+
+In our example, the output of `getStateHistory` will look like this:
+
+```
+[
+  StateSnapshot {
+    values: { foo: 'b', bar: ['a', 'b'] },
+    next: [],
+    config: {
+      configurable: {
+        thread_id: '1',
+        checkpoint_ns: '',
+        checkpoint_id: '1ef663ba-28fe-6528-8002-5a559208592c'
+      }
+    },
+    metadata: {
+      source: 'loop',
+      writes: { nodeB: { foo: 'b', bar: ['b'] } },
+      step: 2
+    },
+    createdAt: '2024-08-29T19:19:38.821749+00:00',
+    parentConfig: {
+      configurable: {
+        thread_id: '1',
+        checkpoint_ns: '',
+        checkpoint_id: '1ef663ba-28f9-6ec4-8001-31981c2c39f8'
+      }
+    },
+    tasks: []
+  },
+  StateSnapshot {
+    values: { foo: 'a', bar: ['a'] },
+    next: ['nodeB'],
+    config: {
+      configurable: {
+        thread_id: '1',
+        checkpoint_ns: '',
+        checkpoint_id: '1ef663ba-28f9-6ec4-8001-31981c2c39f8'
+      }
+    },
+    metadata: {
+      source: 'loop',
+      writes: { nodeA: { foo: 'a', bar: ['a'] } },
+      step: 1
+    },
+    createdAt: '2024-08-29T19:19:38.819946+00:00',
+    parentConfig: {
+      configurable: {
+        thread_id: '1',
+        checkpoint_ns: '',
+        checkpoint_id: '1ef663ba-28f4-6b4a-8000-ca575a13d36a'
+      }
+    },
+    tasks: [
+      PregelTask {
+        id: '6fb7314f-f114-5413-a1f3-d37dfe98ff44',
+        name: 'nodeB',
+        error: null,
+        interrupts: []
+      }
+    ]
+  },
+  StateSnapshot {
+    values: { foo: '', bar: [] },
+    next: ['node_a'],
+    config: {
+      configurable: {
+        thread_id: '1',
+        checkpoint_ns: '',
+        checkpoint_id: '1ef663ba-28f4-6b4a-8000-ca575a13d36a'
+      }
+    },
+    metadata: {
+      source: 'loop',
+      writes: null,
+      step: 0
+    },
+    createdAt: '2024-08-29T19:19:38.817813+00:00',
+    parentConfig: {
+      configurable: {
+        thread_id: '1',
+        checkpoint_ns: '',
+        checkpoint_id: '1ef663ba-28f0-6c66-bfff-6723431e8481'
+      }
+    },
+    tasks: [
+      PregelTask {
+        id: 'f1b14528-5ee5-579c-949b-23ef9bfbed58',
+        name: 'node_a',
+        error: null,
+        interrupts: []
+      }
+    ]
+  },
+  StateSnapshot {
+    values: { bar: [] },
+    next: ['__start__'],
+    config: {
+      configurable: {
+        thread_id: '1',
+        checkpoint_ns: '',
+        checkpoint_id: '1ef663ba-28f0-6c66-bfff-6723431e8481'
+      }
+    },
+    metadata: {
+      source: 'input',
+      writes: { foo: '' },
+      step: -1
+    },
+    createdAt: '2024-08-29T19:19:38.816205+00:00',
+    parentConfig: null,
+    tasks: [
+      PregelTask {
+        id: '6d27aa2e-d72b-5504-a36f-8620e54a76dd',
+        name: '__start__',
+        error: null,
+        interrupts: []
+      }
+    ]
+  }
+]
+```
+
+
+![State](/oss/images/get_state.jpg)
+
+#### Find a specific checkpoint
+
+You can filter the state history to find checkpoints matching specific criteria:
+
+
+
+```typescript
+const history: StateSnapshot[] = [];
+for await (const state of graph.getStateHistory(config)) {
+  history.push(state);
+}
+
+// Find the checkpoint before a specific node executed
+const beforeNodeB = history.find((s) => s.next.includes("nodeB"));
+
+// Find a checkpoint by step number
+const step2 = history.find((s) => s.metadata.step === 2);
+
+// Find checkpoints created by updateState
+const forks = history.filter((s) => s.metadata.source === "update");
+
+// Find the checkpoint where an interrupt occurred
+const interrupted = history.find(
+  (s) => s.tasks.length > 0 && s.tasks.some((t) => t.interrupts.length > 0)
+);
+```
+
+
+### Replay
+
+重放从先前的检查点重新执行步骤。使用先前的 `checkpoint_id` 调用图来重新运行该检查点之后的节点。检查点之前的节点被跳过（它们的结果已经保存）。检查点之后的节点重新执行，包括任何 LLM 调用、API 请求或[中断](/oss/javascript/langgraph/interrupts)——这些在重放期间始终会被重新触发。
+
+See [Time travel](/oss/javascript/langgraph/use-time-travel) for full details and code examples on replaying past executions.
+
+![Replay](/oss/images/re_play.png)
+
+### Update state
+
+
+
+你可以使用 `graph.updateState()` 编辑图状态。这将使用更新后的值创建一个新的检查点——它不会修改原始检查点。更新的处理方式与节点更新相同：当定义了 [reducer](/oss/javascript/langgraph/graph-api#reducers) 函数时，值会通过 reducer 函数传递，因此带有 reducer 的通道会_累积_值而不是覆盖它们。
+
+You can optionally specify `asNode` to control which node the update is treated as coming from, which affects which node executes next. See [Time travel: `asNode`](/oss/javascript/langgraph/use-time-travel#from-a-specific-node) 了解详情.
+
+
+![Update](/oss/images/checkpoints_full_story.jpg)
+
+## Memory store
+
+![Model of shared state](/oss/images/shared_state.png)
+
+A [state schema](/oss/javascript/langgraph/graph-api#schema) specifies a set of keys that are populated as a graph is executed. As discussed above, state can be written by a checkpointer to a thread at each graph step, enabling state persistence.
+
+What if we want to retain some information _across threads_? Consider the case of a chatbot where we want to retain specific information about the user across _all_ chat conversations (e.g., threads) with that user!
+
+仅靠检查点器，我们无法在线程之间共享信息。这促使了对 [`Store`](https://reference.langchain.com/python/langgraph/store/) 接口的需求。作为说明，我们可以定义一个 `InMemoryStore` 来在线程之间存储用户信息。我们只需像以前一样使用检查点器编译图，并传入存储。
+
+<Info>
+**LangGraph API handles stores automatically**
+使用 LangGraph API 时，你不需要手动实现或配置存储。API 在后台为你处理所有存储基础设施。
+</Info>
+
+<Note>
+[InMemoryStore](https://reference.langchain.com/javascript/langchain-core/stores/InMemoryStore) is suitable for development and testing. For production, use a persistent store like `PostgresStore`, `MongoDBStore`, or `RedisStore`. All implementations extend [BaseStore](https://reference.langchain.com/javascript/langchain-core/stores/BaseStore), which is the type annotation to use in node function signatures.
+</Note>
+
+### Basic usage
+
+首先，让我们在不使用 LangGraph 的情况下单独展示。
+
+
+
+```typescript
+import { MemoryStore } from "@langchain/langgraph";
+
+const memoryStore = new MemoryStore();
+```
+
+
+记忆通过 `tuple` 进行命名空间划分，在这个具体示例中将是 `(<user_id>, "memories")`。命名空间可以是任意长度且代表任何内容，不必是用户特定的。
+
+
+
+```typescript
+const userId = "1";
+const namespaceForMemory = [userId, "memories"];
+```
+
+
+We use the `store.put` method to save memories to our namespace in the store. When we do this, we specify the namespace, as defined above, and a key-value pair for the memory: the key is simply a unique identifier for the memory (`memory_id`) and the value (a dictionary) is the memory itself.
+
+
+
+```typescript
+import { v4 as uuidv4 } from "uuid";
+
+const memoryId = uuidv4();
+const memory = { food_preference: "I like pizza" };
+await memoryStore.put(namespaceForMemory, memoryId, memory);
+```
+
+
+We can read out memories in our namespace using the `store.search` method, which will return memories for a given user as a list, up to the `limit` argument (default `10`). With `InMemoryStore`, items are returned in insertion order, so the most recent memory is last in the list; other backends may order differently (see [Listing items in a namespace](#listing-items-in-a-namespace)).
+
+
+
+```typescript
+const memories = await memoryStore.search(namespaceForMemory);
+memories[memories.length - 1];
+
+// {
+//   value: { food_preference: 'I like pizza' },
+//   key: '07e0caf4-1631-47b7-b15f-65515d4c1843',
+//   namespace: ['1', 'memories'],
+//   createdAt: '2024-10-02T17:22:31.590602+00:00',
+//   updatedAt: '2024-10-02T17:22:31.590605+00:00'
+// }
+```
+
+The attributes it has are:
+
+* `value`: The value of this memory
+* `key`: A unique key for this memory in this namespace
+* `namespace`: A tuple of strings, the namespace of this memory type
+
+    <Note>
+    While the type is `tuple`, it may be serialized as a list when converted to JSON (for example, `['1', 'memories']`).
+    </Note>
+
+* `createdAt`: Timestamp for when this memory was created
+* `updatedAt`: Timestamp for when this memory was updated
+
+
+
+### Listing items in a namespace
+
+
+
+不带 `query` 和 `filter` 调用 `store.search` 会返回存储在命名空间前缀下的项目，最多 `limit` 个。当你不需要语义排名时，使用此方法枚举命名空间中的所有内容。
+
+
+
+
+<StoreListNamespaceSearchJs />
+
+
+
+Three behaviors to keep in mind:
+
+- **`namespace_prefix` matches by prefix, not exactly.** `("alice",)` also returns items under `("alice", "memories")`, `("alice", "preferences")`, and so on. To restrict to a single level, pass the full namespace or filter the returned items client-side on `item.namespace`.
+- **Results past `limit` are silently truncated.** There is no overflow signal—set `limit` above your expected maximum, or paginate with `offset`.
+- **Default ordering depends on the store backend.** `PostgresStore` and `AsyncPostgresStore` return results ordered by `updated_at` descending (most recently updated first). `InMemoryStore` returns results in insertion order (most recently inserted last). Do not rely on a specific order across implementations—sort client-side on `item.updated_at` if order matters.
+
+
+
+To page through a large namespace:
+
+<StoreListNamespacePaginateJs />
+
+
+
+
+
+To discover which namespaces exist (for example, to iterate over every user before listing their memories), use `store.listNamespaces`:
+
+<StoreListNamespaceListJs />
+
+
+
+### Semantic search
+
+除了简单检索之外，存储还支持语义搜索，允许你根据含义而非精确匹配来查找记忆。要启用此功能，请使用嵌入模型配置存储：
+
+
+
+```typescript
+import { OpenAIEmbeddings } from "@langchain/openai";
+
+const store = new InMemoryStore({
+  index: {
+    embeddings: new OpenAIEmbeddings({ model: "text-embedding-3-small" }),
+    dims: 1536,
+    fields: ["food_preference", "$"], // Fields to embed
+  },
+});
+```
+
+
+Now when searching, you can use natural language queries to find relevant memories:
+
+
+
+```typescript
+// Find memories about food preferences
+// (This can be done after putting memories into the store)
+const memories = await store.search(namespaceForMemory, {
+  query: "What does the user like to eat?",
+  limit: 3, // Return top 3 matches
+});
+```
+
+
+You can control which parts of your memories get embedded by configuring the `fields` parameter or by specifying the `index` parameter when storing memories:
+
+
+
+```typescript
+// Store with specific fields to embed
+await store.put(
+  namespaceForMemory,
+  uuidv4(),
+  {
+    food_preference: "I love Italian cuisine",
+    context: "Discussing dinner plans",
+  },
+  { index: ["food_preference"] } // Only embed "food_preferences" field
+);
+
+// Store without embedding (still retrievable, but not searchable)
+await store.put(
+  namespaceForMemory,
+  uuidv4(),
+  { system_info: "Last updated: 2024-01-01" },
+  { index: false }
+);
+```
+
+
+### Using in LangGraph
+
+
+
+一切就绪后，我们在 LangGraph 中使用 `memoryStore`。`memoryStore` 与检查点器协同工作：如上所述，检查点器将状态保存到线程，而 `memoryStore` 允许我们存储任意信息以便_跨_线程访问。我们如下使用检查点器和 `memoryStore` 编译图。
+
+```typescript
+import { MemorySaver } from "@langchain/langgraph";
+
+// We need this because we want to enable threads (conversations)
+const checkpointer = new MemorySaver();
+
+// ... Define the graph ...
+
+// Compile the graph with the checkpointer and store
+const graph = workflow.compile({ checkpointer, store: memoryStore });
+```
+
+
+We invoke the graph with a `thread_id`, as before, and also with a `user_id`, which we'll use to namespace our memories to this particular user as we showed above.
+
+
+
+```typescript
+// Invoke the graph
+const userId = "1";
+const config = { configurable: { thread_id: "1" }, context: { userId } };
+
+// First let's just say hi to the AI
+for await (const update of await graph.stream(
+  { messages: [{ role: "user", content: "hi" }] },
+  { ...config, streamMode: "updates" }
+)) {
+  console.log(update);
+}
+```
+
+
+
+
+你可以通过 `runtime` 参数在_任何节点_中访问存储和 `userId`。以下是如何使用它来保存记忆：
+
+```typescript
+import { StateSchema, MessagesValue, Runtime } from "@langchain/langgraph";
+import { v4 as uuidv4 } from "uuid";
+
+const MessagesState = new StateSchema({
+  messages: MessagesValue,
+});
+
+const updateMemory: GraphNode<typeof MessagesState> = async (state, runtime) => {
+  // Get the user id from the config
+  const userId = runtime.context?.user_id;
+  if (!userId) throw new Error("User ID is required");
+
+  // Namespace the memory
+  const namespace = [userId, "memories"];
+
+  // ... Analyze conversation and create a new memory
+  const memory = "Some memory content";
+
+  // Create a new memory ID
+  const memoryId = uuidv4();
+
+  // We create a new memory
+  await runtime.store?.put(namespace, memoryId, { memory });
+};
+```
+
+
+As we showed above, we can also access the store in any node and use the `store.search` method to get memories. Recall the memories are returned as a list of objects that can be converted to a dictionary.
+
+
+
+```typescript
+memories[memories.length - 1];
+// {
+//   value: { food_preference: 'I like pizza' },
+//   key: '07e0caf4-1631-47b7-b15f-65515d4c1843',
+//   namespace: ['1', 'memories'],
+//   createdAt: '2024-10-02T17:22:31.590602+00:00',
+//   updatedAt: '2024-10-02T17:22:31.590605+00:00'
+// }
+```
+
+
+We can access the memories and use them in our model call.
+
+
+
+```typescript
+const callModel: GraphNode<typeof MessagesState> = async (state, runtime) => {
+  // Get the user id from the config
+  const userId = runtime.context?.user_id;
+
+  // Namespace the memory
+  const namespace = [userId, "memories"];
+
+  // Search based on the most recent message
+  const memories = await runtime.store?.search(namespace, {
+    query: state.messages[state.messages.length - 1].content,
+    limit: 3,
+  });
+  const info = memories.map((d) => d.value.memory).join("\n");
+
+  // ... Use memories in the model call
+};
+```
+
+
+If we create a new thread, we can still access the same memories so long as the `user_id` is the same.
+
+
+
+```typescript
+// Invoke the graph
+const config = { configurable: { thread_id: "2" }, context: { userId: "1" } };
+
+// Let's say hi again
+for await (const update of await graph.stream(
+  { messages: [{ role: "user", content: "hi, tell me about my memories" }] },
+  { ...config, streamMode: "updates" }
+)) {
+  console.log(update);
+}
+```
+
+
+当我们使用 LangSmith 时，无论是本地（例如在 [Studio](/langsmith/studio) 中）还是[托管在 LangSmith](/langsmith/platform-setup) 上，基础存储默认可用，不需要在图编译时指定。但是，要启用语义搜索，你**确实**需要在 `langgraph.json` 文件中配置索引设置。例如：
+
+```json
+{
+    ...
+    "store": {
+        "index": {
+            "embed": "openai:text-embeddings-3-small",
+            "dims": 1536,
+            "fields": ["$"]
+        }
+    }
+}
+```
+
+请参阅 [deployment guide](/langsmith/semantic-search) 了解更多详情 and configuration options.
+
+## Optimize checkpoint storage
+
+
+
+## Checkpointer libraries
+
+在底层，检查点由符合 [`BaseCheckpointSaver`](https://reference.langchain.com/javascript/langchain-langgraph/index/BaseCheckpointSaver) 接口的检查点器对象驱动。LangGraph 提供了几种检查点器实现，均通过独立的可安装库实现。
+
+
+
+* `@langchain/langgraph-checkpoint`: The base interface for checkpointer savers ([`BaseCheckpointSaver`](https://reference.langchain.com/javascript/langchain-langgraph/index/BaseCheckpointSaver)) and serialization/deserialization interface ([`SerializerProtocol`](https://reference.langchain.com/javascript/langchain-langgraph-checkpoint/SerializerProtocol)). Includes in-memory checkpointer implementation ([`MemorySaver`](https://reference.langchain.com/javascript/langchain-langgraph/index/MemorySaver)) for experimentation. LangGraph comes with `@langchain/langgraph-checkpoint` included.
+* `@langchain/langgraph-checkpoint-sqlite`: An implementation of LangGraph checkpointer that uses SQLite database ([`SqliteSaver`](https://reference.langchain.com/javascript/langchain-langgraph-checkpoint-sqlite/SqliteSaver)). Ideal for experimentation and local workflows. Needs to be installed separately.
+* `@langchain/langgraph-checkpoint-postgres`: An advanced checkpointer that uses Postgres database ([`PostgresSaver`](https://reference.langchain.com/javascript/langchain-langgraph-checkpoint-postgres/index/PostgresSaver)), used in LangSmith. Ideal for using in production. Needs to be installed separately.
+* `@langchain/langgraph-checkpoint-mongodb`: An advanced checkpointer (`MongoDBSaver`) and long-term memory store (`MongoDBStore`) backed by MongoDB. The store supports cross-thread persistence with optional integrated vector search. Ideal for production use. Needs to be installed separately.
+* `@langchain/langgraph-checkpoint-redis`: An advanced checkpointer that uses Redis database (`RedisSaver`). Ideal for using in production. Needs to be installed separately.
+
+
+### Checkpointer interface
+
+
+
+每个检查点器都符合 [`BaseCheckpointSaver`](https://reference.langchain.com/javascript/langchain-langgraph/index/BaseCheckpointSaver) 接口并实现以下方法：
+
+* `.put` - Store a checkpoint with its configuration and metadata.
+* `.putWrites` - Store intermediate writes linked to a checkpoint (i.e. [pending writes](#pending-writes)).
+* `.getTuple` - Fetch a checkpoint tuple using for a given configuration (`thread_id` and `checkpoint_id`). This is used to populate `StateSnapshot` in `graph.getState()`.
+* `.list` - List checkpoints that match a given configuration and filter criteria. This is used to populate state history in `graph.getStateHistory()`
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/persistence.mdx) or [提交 Issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

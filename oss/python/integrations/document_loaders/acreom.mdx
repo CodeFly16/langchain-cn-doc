@@ -1,0 +1,33 @@
+---
+title: "Acreom 集成"
+description: "使用 LangChain Python 集成 Acreom 文档加载器。"
+---
+
+[acreom](https://acreom.com) 是一个面向开发者的知识库，任务运行在本地 markdown 文件上。
+
+以下是将本地 acreom vault 加载到 LangChain 的示例。由于 acreom 中的本地 vault 是纯文本 .md 文件的文件夹，加载器需要目录路径。
+
+Vault 文件可能包含一些以 YAML 头部存储的元数据。如果 `collect_metadata` 设置为 true，这些值将被添加到文档的元数据中。
+
+```python
+from langchain_community.document_loaders import AcreomLoader
+```
+
+```python
+loader = AcreomLoader("<path-to-acreom-vault>", collect_metadata=False)
+```
+
+```python
+docs = loader.load()
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [通过 MCP 将这些文档连接到](/use-these-docs) Claude、VSCode 等工具以获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/document_loaders/acreom.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

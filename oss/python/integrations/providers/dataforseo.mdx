@@ -1,0 +1,66 @@
+---
+title: "Dataforseo 集成"
+description: "使用 LangChain Python 与 Dataforseo 集成。"
+---
+
+>[DataForSeo](https://dataforseo.com/) provides comprehensive SEO and digital marketing data solutions via API.
+
+This page provides instructions on how to use the DataForSEO search APIs within LangChain.
+
+## 安装和设置
+
+Get a [DataForSEO API Access login and password](https://app.dataforseo.com/register), and set them as environment variables
+(`DATAFORSEO_LOGIN` and `DATAFORSEO_PASSWORD` respectively).
+
+```python
+import os
+
+os.environ["DATAFORSEO_LOGIN"] = "your_login"
+os.environ["DATAFORSEO_PASSWORD"] = "your_password"
+```
+
+
+## 工具类
+
+The `DataForSEO` utility wraps the API. To import this utility, use:
+
+```python
+from langchain_community.utilities.dataforseo_api_search import DataForSeoAPIWrapper
+```
+
+For a detailed walkthrough of this 封装器的更详细演练，请参阅[此笔记本](/oss/python/integrations/tools/dataforseo).
+
+## 工具
+
+You can also load this wrapper as a Tool to use with an Agent:
+
+```python
+from langchain_community.agent_toolkits.load_tools import load_tools
+tools = load_tools(["dataforseo-api-search"])
+```
+
+This will load the following tools:
+
+```python
+from langchain_community.tools import DataForSeoAPISearchRun
+from langchain_community.tools import DataForSeoAPISearchResults
+```
+
+## Example usage
+
+```python
+dataforseo = DataForSeoAPIWrapper(api_login="your_login", api_password="your_password")
+result = dataforseo.run("Bill Gates")
+print(result)
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/dataforseo.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

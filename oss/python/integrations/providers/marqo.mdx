@@ -1,0 +1,47 @@
+---
+title: "Marqo 集成"
+description: "使用 LangChain Python 与 Marqo 集成。"
+---
+
+This page covers how to use the Marqo ecosystem within LangChain.
+
+### **What is marqo?**
+
+Marqo is a tensor search engine that uses embeddings stored in in-memory HNSW indexes to achieve cutting edge search speeds. Marqo can scale to hundred-million document indexes with horizontal index sharding and allows for async and non-blocking data upload and search. Marqo uses the latest machine learning models from PyTorch, Huggingface, OpenAI and more. You can start with a pre-configured model or bring your own. The built in ONNX support and conversion allows for faster inference and higher throughput on both CPU and GPU.
+
+Because Marqo include its own inference your documents can have a mix of text and images, you can bring Marqo indexes with data from your other systems into the langchain ecosystem without having to worry about your embeddings being compatible.
+
+Deployment of Marqo is flexible, you can get started yourself with our docker image or [contact us about our managed cloud offering!](https://www.marqo.ai/pricing)
+
+To run Marqo locally with our docker image, [see our getting started.](https://docs.marqo.ai/latest/)
+
+## 安装和设置
+
+- Install the Python SDK with `pip install marqo`
+
+## Wrappers
+
+### 向量存储
+
+存在一个围绕 Marqo indexes, allowing you to use them within the vectorstore framework. Marqo lets you select from a range of models for generating embeddings and exposes some preprocessing configurations.
+
+The Marqo vectorstore can also work with existing multimodal indexes where your documents have a mix of images and text, for more information refer to [our documentation](https://docs.marqo.ai/latest/#multi-modal-and-cross-modal-search). 请注意，instantiating the Marqo vectorstore with an existing multimodal index will disable the ability to add any new documents to it via the langchain vectorstore `add_texts` method.
+
+要导入此向量存储：
+
+```python
+from langchain_community.vectorstores import Marqo
+```
+
+有关 Marqo wrapper and some of its unique features, see [this notebook](/oss/python/integrations/vectorstores/marqo)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/marqo.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,62 @@
+---
+title: "Arxiv 集成"
+description: "使用 LangChain Python 与 Arxiv 集成。"
+---
+
+>[arXiv](https://arxiv.org/) is an open-access archive for 2 million scholarly articles in the fields of physics,
+> mathematics, computer science, quantitative biology, quantitative finance, statistics, electrical engineering and
+> systems science, and economics.
+
+
+## 安装和设置
+
+First, you need to install `arxiv` Python 包.
+
+<CodeGroup>
+```bash pip
+pip install arxiv
+```
+
+```bash uv
+uv add arxiv
+```
+</CodeGroup>
+
+Second, you need to install `PyMuPDF` Python 包 which transforms PDF files downloaded from the `arxiv.org` site into the text format.
+
+<CodeGroup>
+```bash pip
+pip install pymupdf
+```
+
+```bash uv
+uv add pymupdf
+```
+</CodeGroup>
+
+## 文档加载器
+
+查看[使用示例](/oss/python/integrations/document_loaders/arxiv).
+
+```python
+from langchain_community.document_loaders import ArxivLoader
+```
+
+## 检索器
+
+查看[使用示例](/oss/python/integrations/retrievers/arxiv).
+
+```python
+from langchain_community.retrievers import ArxivRetriever
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/arxiv.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

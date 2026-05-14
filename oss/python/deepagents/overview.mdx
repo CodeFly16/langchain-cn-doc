@@ -1,0 +1,41 @@
+---
+title: 深度智能体概述
+sidebarTitle: 概述
+description: 深度智能体是一个开源智能体 Harness，用于构建长时间运行的、能够规划、使用工具和委派子智能体的智能体
+---
+
+深度智能体是一个开源智能体 Harness，用于构建能够规划、使用工具和委派子智能体的长时间运行的智能体。它提供了一个完整的框架，包括虚拟文件系统、上下文管理、技能系统和记忆功能。
+
+## 核心功能
+
+- **规划能力** - 内置 `write_todos` 工具，用于维护结构化的任务列表
+- **虚拟文件系统** - 可配置的文件系统后端，支持 `ls`、`read_file`、`write_file`、`edit_file`、`glob`、`grep` 等操作
+- **子智能体** - 通过 `task` 工具将工作委派给专门的子智能体，实现上下文隔离
+- **上下文管理** - 自动卸载和摘要功能，在 Token 限制内保持上下文
+- **技能** - 按需加载的可复用智能体能力
+- **记忆** - 跨对话持久化的 `AGENTS.md` 文件
+- **人机协作** - 可配置的工具操作审批门控
+- **代码执行** - 通过沙箱后端或解释器执行代码
+
+## 快速入门
+
+参阅[快速入门](/oss/python/deepagents/quickstart)指南，几分钟内构建你的第一个深度智能体。
+
+## 相关资源
+
+- [Harness 功能](/oss/python/deepagents/harness) - 完整的 Harness 功能概述
+- [自定义配置](/oss/python/deepagents/customization) - 配置模型、工具、系统提示词等
+- [后端](/oss/python/deepagents/backends) - 文件系统后端配置
+- [子智能体](/oss/python/deepagents/subagents) - 子智能体配置和使用
+- [部署](/oss/python/deepagents/deploy) - 部署深度智能体到生产环境
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时解答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/overview.mdx) 或 [提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

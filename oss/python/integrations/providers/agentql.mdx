@@ -1,0 +1,55 @@
+---
+title: "Agentql 集成"
+description: "使用 LangChain Python 与 Agentql 集成。"
+---
+
+[AgentQL](https://www.agentql.com/) provides web interaction and structured data extraction from any web page using an [AgentQL query](https://docs.agentql.com/agentql-query) or a Natural Language prompt. AgentQL can be used across multiple languages and web pages without breaking over time and change.
+
+## 安装和设置
+
+安装集成包：
+
+<CodeGroup>
+```bash pip
+pip install langchain-agentql
+```
+
+```bash uv
+uv add langchain-agentql
+```
+</CodeGroup>
+
+## API Key
+
+Get an API Key from our [Dev Portal](https://dev.agentql.com/) and add it to your environment variables:
+```
+export AGENTQL_API_KEY="your-api-key-here"
+```
+
+## DocumentLoader
+AgentQL's document loader provides structured data extraction from any web page using an AgentQL query.
+
+```python
+from langchain_agentql.document_loaders import AgentQLLoader
+```
+See our [document loader documentation and usage example](/oss/python/integrations/document_loaders/agentql).
+
+## 工具和工具包
+AgentQL tools provides web interaction and structured data extraction from any web page using an AgentQL query or a Natural Language prompt.
+
+```python
+from langchain_agentql.tools import ExtractWebDataTool, ExtractWebDataBrowserTool, GetWebElementBrowserTool
+from langchain_agentql import AgentQLBrowserToolkit
+```
+See our [tools documentation and usage example](/oss/python/integrations/tools/agentql).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/agentql.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

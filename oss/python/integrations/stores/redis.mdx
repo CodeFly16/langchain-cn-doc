@@ -1,0 +1,101 @@
+---
+title: "Redis 存储"
+description: "使用 LangChain Python 集成 Redis 存储。"
+---
+
+这将帮助你开始使用 Redis [键值存储](/oss/python/integrations/stores)。 所有 `RedisStore` 功能和配置的详细文档请前往 [API reference](https://reference.langchain.com/python/langchain-community/storage/redis/RedisStore).
+
+## 概述
+
+`RedisStore` 是 `ByteStore` 的实现，将所有内容存储在你的 Redis 实例中。
+
+### 集成详情
+
+| Class | Package | Local | [JS support](https://js.langchain.com/docs/integrations/stores/ioredis_storage) | Downloads | Version |
+| :--- | :--- | :---: | :---: |  :---: | :---: |
+| [`RedisStore`](https://reference.langchain.com/python/langchain-community/storage/redis/RedisStore) | [`langchain-community`](https://reference.langchain.com/python/langchain-community) | ✅ | ✅ | ![PyPI - Downloads](https://img.shields.io/pypi/dm/langchain_community?style=flat-square&label=%20) | ![PyPI - Version](https://img.shields.io/pypi/v/langchain_community?style=flat-square&label=%20) |
+
+## 设置
+
+要创建 Redis 字节存储，你需要设置一个 Redis 实例。 你可以在本地或通过提供商来完成此操作 - 请参阅我们的 [Redis guide](/oss/python/integrations/providers/redis) 了解可用选项的概述。
+
+### 安装
+
+The LangChain `RedisStore` integration lives in the `langchain-community` package:
+
+```python
+pip install -qU langchain-community redis
+```
+
+## Instantiation
+
+Now we can instantiate our byte store:
+
+```python
+from langchain_community.storage import RedisStore
+
+kv_store = RedisStore(redis_url="redis://localhost:6379")
+```
+
+## 使用方法
+
+You can set data under keys like this using the `mset` method:
+
+```python
+kv_store.mset(
+    [
+        ["key1", b"value1"],
+        ["key2", b"value2"],
+    ]
+)
+
+kv_store.mget(
+    [
+        "key1",
+        "key2",
+    ]
+)
+```
+
+```text
+[b'value1', b'value2']
+```
+
+And you can delete data using the `mdelete` method:
+
+```python
+kv_store.mdelete(
+    [
+        "key1",
+        "key2",
+    ]
+)
+
+kv_store.mget(
+    [
+        "key1",
+        "key2",
+    ]
+)
+```
+
+```text
+[None, None]
+```
+
+---
+
+## API 参考
+
+所有 `RedisStore` features and configurations, head to the [API reference](https://reference.langchain.com/python/langchain-community/storage/redis/RedisStore)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/stores/redis.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

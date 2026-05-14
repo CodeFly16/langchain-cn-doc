@@ -1,0 +1,33 @@
+---
+title: MODEL_RATE_LIMIT
+---
+
+<Note>
+    目前仅在 `langchainjs`（JavaScript/TypeScript）中使用。
+</Note>
+
+你已达到模型提供商在给定时间段内允许的最大请求数，正在被临时限制。
+
+当你超过模型提供商在特定时间范围内允许的最大请求数时，会发生此错误，导致临时封锁。该限制通常是临时的，会在限额重置后解除。
+
+## 故障排除
+
+要解决此错误，你可以：
+
+1. **实施速率限制**：部署速率限制器来调节发送给模型的请求频率。
+    参见[速率限制](/oss/python/langchain/models#rate-limiting)文档。
+
+2. **实施响应缓存**：当传入查询重复时，使用模型响应缓存来减少冗余请求。
+3. **使用多个提供商**：如果你的应用架构支持，将请求分发到多个提供商
+4. **联系你的提供商**：联系你的模型提供商请求增加速率限额
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时回答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/errors/MODEL_RATE_LIMIT.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

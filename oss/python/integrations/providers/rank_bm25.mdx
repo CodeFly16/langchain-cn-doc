@@ -1,0 +1,45 @@
+---
+title: "Rank_bm25 集成"
+description: "使用 LangChain Python 与 Rank_bm25 集成。"
+---
+
+[rank_bm25](https://github.com/dorianbrown/rank_bm25) 是一个开源的 collection of algorithms
+designed to query documents and return the most relevant ones, commonly used for creating
+search engines.
+
+See its [project page](https://github.com/dorianbrown/rank_bm25) for available algorithms.
+
+
+## 安装和设置
+
+First, you need to install `rank_bm25` Python 包.
+
+<CodeGroup>
+```bash pip
+pip install rank_bm25
+```
+
+```bash uv
+uv add rank_bm25
+```
+</CodeGroup>
+
+
+## 检索器
+
+查看[使用示例](/oss/python/integrations/retrievers/bm25).
+
+```python
+from langchain_community.retrievers import BM25Retriever
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/rank_bm25.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

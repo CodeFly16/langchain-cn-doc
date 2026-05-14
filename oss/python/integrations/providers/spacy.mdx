@@ -1,0 +1,46 @@
+---
+title: "Spacy 集成"
+description: "使用 LangChain Python 与 Spacy 集成。"
+---
+
+>[spaCy](https://spacy.io/) 是一个开源的 software library for advanced natural language processing, written in the programming languages Python and Cython.
+
+## 安装和设置
+
+
+<CodeGroup>
+```bash pip
+pip install spacy
+```
+
+```bash uv
+uv add spacy
+```
+</CodeGroup>
+
+
+
+## 文本分割器
+
+```python
+from langchain_text_splitters import SpacyTextSplitter
+```
+
+## 文本向量嵌入模型
+
+查看[使用示例](/oss/python/integrations/embeddings/spacy_embedding)
+
+```python
+from langchain_community.embeddings.spacy_embeddings import SpacyEmbeddings
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/spacy.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

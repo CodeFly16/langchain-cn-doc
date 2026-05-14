@@ -1,0 +1,129 @@
+---
+title: 权限
+description: 使用声明式权限规则控制深度智能体的文件系统访问
+---
+
+import PermissionsBasicPy from '/snippets/code-samples/permissions-basic-py.mdx';
+import PermissionsBasicJs from '/snippets/code-samples/permissions-basic-js.mdx';
+import PermissionsIsolateWorkspacePy from '/snippets/code-samples/permissions-isolate-workspace-py.mdx';
+import PermissionsIsolateWorkspaceJs from '/snippets/code-samples/permissions-isolate-workspace-js.mdx';
+import PermissionsProtectFilesPy from '/snippets/code-samples/permissions-protect-files-py.mdx';
+import PermissionsProtectFilesJs from '/snippets/code-samples/permissions-protect-files-js.mdx';
+import PermissionsReadOnlyMemoryPy from '/snippets/code-samples/permissions-read-only-memory-py.mdx';
+import PermissionsReadOnlyMemoryJs from '/snippets/code-samples/permissions-read-only-memory-js.mdx';
+import PermissionsDenyAllPy from '/snippets/code-samples/permissions-deny-all-py.mdx';
+import PermissionsDenyAllJs from '/snippets/code-samples/permissions-deny-all-js.mdx';
+import PermissionsRuleOrderingPy from '/snippets/code-samples/permissions-rule-ordering-py.mdx';
+import PermissionsRuleOrderingJs from '/snippets/code-samples/permissions-rule-ordering-js.mdx';
+import PermissionsSubagentPy from '/snippets/code-samples/permissions-subagent-py.mdx';
+import PermissionsSubagentJs from '/snippets/code-samples/permissions-subagent-js.mdx';
+import PermissionsCompositeBackendPy from '/snippets/code-samples/permissions-composite-backend-py.mdx';
+import PermissionsCompositeBackendJs from '/snippets/code-samples/permissions-composite-backend-js.mdx';
+import PermissionsCompositeBackendInvalidPy from '/snippets/code-samples/permissions-composite-backend-invalid-py.mdx';
+import PermissionsCompositeBackendInvalidJs from '/snippets/code-samples/permissions-composite-backend-invalid-js.mdx';
+
+使用声明式权限规则控制智能体可以读写的文件和目录。将规则列表传递给 `permissions=`，智能体的内置文件系统工具将遵守这些规则。
+
+<Note>
+    权限需要 `deepagents>=0.5.2`。
+</Note>
+
+
+
+
+权限仅适用于内置文件系统工具（`ls`、`read_file`、`glob`、`grep`、`write_file`、`edit_file`）。自定义工具和访问文件系统的 MCP 工具不在覆盖范围内。权限也不适用于[沙箱后端](/oss/python/deepagents/sandboxes)，后者通过 `execute` 工具支持任意命令执行。
+
+<Tip>
+当你需要在内置文件系统工具上实施**基于路径的允许/拒绝规则**时，使用 `permissions`。当你需要自定义验证逻辑（速率限制、审计日志、内容检查）或需要控制自定义工具时，使用[后端策略钩子](/oss/python/deepagents/backends#add-policy-hooks)。
+</Tip>
+
+## 基本用法
+
+将 [`FilesystemPermission`](https://reference.langchain.com/python/deepagents/middleware/permissions/FilesystemPermission) 规则列表传递给 [`create_deep_agent`](https://reference.langchain.com/python/deepagents/graph/create_deep_agent)。规则按声明顺序评估。首条匹配的规则生效。如果没有规则匹配，操作被允许。
+
+<PermissionsBasicPy />
+
+
+
+
+
+## 规则结构
+
+每个 `FilesystemPermission` 有三个字段：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `operations` | `list["read" \| "write"]` | 此规则适用的操作。`"read"` 覆盖 `ls`、`read_file`、`glob`、`grep`。`"write"` 覆盖 `write_file`、`edit_file`。 |
+| `paths` | `list[str]` | 用于匹配文件路径的 glob 模式（如 `["/workspace/**"]`）。支持 `**` 进行递归匹配和 `{a,b}` 进行交替。 |
+| `mode` | `"allow" \| "deny"` | 是否允许或拒绝匹配的操作。默认为 `"allow"`。 |
+
+规则使用首次匹配生效的评估方式：第一条其 `operations` 和 `paths` 匹配当前调用的规则决定结果。如果没有规则匹配，调用被**允许**（宽容的默认行为）。
+
+
+
+
+
+## 示例
+
+### 隔离到工作区目录
+
+仅允许在 `/workspace/` 下读写，拒绝其他所有操作：
+
+<PermissionsIsolateWorkspacePy />
+
+### 保护特定文件
+
+<PermissionsProtectFilesPy />
+
+### 只读记忆
+
+允许智能体读取记忆文件但阻止修改。这对于组织范围的策略或应仅由应用代码更新的共享知识库很有用。参见[只读与可写记忆](/oss/python/deepagents/memory#read-only-vs-writable-memory)了解更多背景。
+
+<PermissionsReadOnlyMemoryPy />
+
+### 拒绝所有访问
+
+阻止所有读取和写入。这是一个限制性基线，你可以在其上叠加更具体的允许规则：
+
+<PermissionsDenyAllPy />
+
+### 规则排序
+
+由于首次匹配生效，规则顺序很重要。将更具体的规则放在更宽泛的规则之前：
+
+<PermissionsRuleOrderingPy />
+
+
+
+
+
+## 子智能体权限
+
+[子智能体](/oss/python/deepagents/subagents)默认继承父智能体的权限。要给子智能体不同的权限，在其规格中设置 `permissions` 字段。这会**完全替换**父级的规则。
+
+<PermissionsSubagentPy />
+
+
+
+
+
+## 组合后端
+
+当使用带有沙箱默认值的 [`CompositeBackend`](https://reference.langchain.com/python/deepagents/backends/composite/CompositeBackend) 时，每个权限路径必须限定在已知的路由前缀下。沙箱支持任意命令执行，因此仅靠基于路径的限制无法防止通过 Shell 命令进行文件系统访问。将权限限定到特定路由的[后端](/oss/python/deepagents/backends)可以避免此冲突。
+
+<PermissionsCompositeBackendPy />
+
+包含任何路由之外路径的权限会引发 `NotImplementedError`：
+
+<PermissionsCompositeBackendInvalidPy />
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/permissions.mdx) 或[提交 Issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

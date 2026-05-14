@@ -1,0 +1,187 @@
+---
+title: 基于自查询的 SAP HANA Cloud Vector Engine
+---
+有关如何设置 SAP HANA 向量存储的更多信息，请查看[文档](/oss/python/integrations/vectorstores/sap_hanavector)。
+
+我们在这里使用相同的设置：
+
+```python
+import os
+
+# 使用 OPENAI_API_KEY 环境变量
+# os.environ["OPENAI_API_KEY"] = "Your OpenAI API key"
+from hdbcli import dbapi
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# 使用环境中的连接设置
+connection = dbapi.connect(
+    address=os.environ.get("HANA_DB_ADDRESS"),
+    port=os.environ.get("HANA_DB_PORT"),
+    user=os.environ.get("HANA_DB_USER"),
+    password=os.environ.get("HANA_DB_PASSWORD")
+)
+```
+
+为了能够以良好的性能进行自查询，我们创建额外的元数据字段
+用于 HANA 中的向量存储表：
+
+```python
+# 创建带属性的自定义表
+cur = connection.cursor()
+cur.execute("DROP TABLE LANGCHAIN_DEMO_SELF_QUERY", ignoreErrors=True)
+cur.execute(
+    (
+        """CREATE TABLE "LANGCHAIN_DEMO_SELF_QUERY"  (
+        "name" NVARCHAR(100), "is_active" BOOLEAN, "id" INTEGER, "height" DOUBLE,
+        "VEC_TEXT" NCLOB,
+        "VEC_META" NCLOB,
+        "VEC_VECTOR" REAL_VECTOR
+        )"""
+    )
+)
+```
+
+```text
+True
+```
+
+让我们添加一些文档。
+
+```python
+from langchain_hana import HanaDB
+from langchain_core.documents import Document
+from langchain_openai import OpenAIEmbeddings
+
+embeddings = OpenAIEmbeddings()
+
+# 准备一些测试文档
+docs = [
+    Document(
+        page_content="First",
+        metadata={"name": "adam", "is_active": True, "id": 1, "height": 10.0},
+    ),
+    Document(
+        page_content="Second",
+        metadata={"name": "bob", "is_active": False, "id": 2, "height": 5.7},
+    ),
+    Document(
+        page_content="Third",
+        metadata={"name": "jane", "is_active": True, "id": 3, "height": 2.4},
+    ),
+]
+
+db = HanaDB(
+    connection=connection,
+    embedding=embeddings,
+    table_name="LANGCHAIN_DEMO_SELF_QUERY",
+    specific_metadata_columns=["name", "is_active", "id", "height"],
+)
+
+# Delete already existing documents from the table
+db.delete(filter={})
+db.add_documents(docs)
+```
+
+## Self querying
+
+Now for the main act: here is how to construct a SelfQueryRetriever for HANA vectorstore:
+
+```python
+from langchain_classic.chains.query_constructor.schema import AttributeInfo
+from langchain_classic.retrievers.self_query.base import SelfQueryRetriever
+from langchain_hana import HanaTranslator
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(model="gpt-3.5-turbo")
+
+metadata_field_info = [
+    AttributeInfo(
+        name="name",
+        description="The name of the person",
+        type="string",
+    ),
+    AttributeInfo(
+        name="is_active",
+        description="Whether the person is active",
+        type="boolean",
+    ),
+    AttributeInfo(
+        name="id",
+        description="The ID of the person",
+        type="integer",
+    ),
+    AttributeInfo(
+        name="height",
+        description="The height of the person",
+        type="float",
+    ),
+]
+
+document_content_description = "A collection of persons"
+
+hana_translator = HanaTranslator()
+
+retriever = SelfQueryRetriever.from_llm(
+    llm,
+    db,
+    document_content_description,
+    metadata_field_info,
+    structured_query_translator=hana_translator,
+)
+```
+
+Let's use this retriever to prepare a (self) query for a person:
+
+```python
+query_prompt = "Which person is not active?"
+
+docs = retriever.invoke(input=query_prompt)
+for doc in docs:
+    print("-" * 80)
+    print(doc.page_content, " ", doc.metadata)
+```
+
+```text
+--------------------------------------------------------------------------------
+Second   {'name': 'bob', 'is_active': False, 'id': 2, 'height': 5.7}
+```
+
+We can also take a look at how the query is being constructed:
+
+```python
+from langchain.chains.query_constructor.base import (
+    StructuredQueryOutputParser,
+    get_query_constructor_prompt,
+)
+
+prompt = get_query_constructor_prompt(
+    document_content_description,
+    metadata_field_info,
+)
+output_parser = StructuredQueryOutputParser.from_components()
+query_constructor = prompt | llm | output_parser
+
+sq = query_constructor.invoke(input=query_prompt)
+
+print("Structured query: ", sq)
+
+print("Translated for hana vector store: ", hana_translator.visit_structured_query(sq))
+```
+
+```text
+Structured query:  query=' ' filter=Comparison(comparator=<Comparator.EQ: 'eq'>, attribute='is_active', value=False) limit=None
+Translated for hana vector store:  (' ', {'filter': {'is_active': {'$eq': False}}})
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/retrievers/self_query/hanavector_self_query.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

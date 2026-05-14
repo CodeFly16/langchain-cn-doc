@@ -1,0 +1,306 @@
+---
+title: LangChain 概述
+sidebarTitle: 概述
+description: LangChain 是一个开源框架，提供预构建的智能体架构和任意模型或工具的集成——让你能够构建随生态系统发展而快速适应的智能体
+---
+
+使用 [OpenAI、Anthropic、Google 等](/oss/javascript/integrations/providers/overview)的集成，只需不到 10 行代码即可构建完全自定义的 LLM 驱动智能体和应用程序。
+LangChain 提供预构建的智能体架构和模型集成，帮助你快速上手并将 LLM 无缝融入你的智能体和应用程序。
+
+<Tip>
+**LangChain vs. LangGraph vs. Deep Agents**
+
+从 [Deep Agents](/oss/javascript/deepagents/overview/) 开始，获得"开箱即用"的智能体，包含自动上下文压缩、虚拟文件系统和子智能体生成等功能。Deep Agents 基于 LangChain [智能体](/oss/javascript/langchain/agents/)构建，你也可以直接使用 LangChain。
+
+使用 [LangGraph](/oss/javascript/langgraph/overview)，我们的底层编排框架，满足结合确定性和智能体工作流的高级需求。
+
+使用 [LangSmith](/langsmith/home) 追踪、调试和评估使用这些框架构建的智能体。按照[追踪快速入门](/langsmith/trace-with-langchain)进行设置。
+</Tip>
+
+## <Icon icon="wand" /> 创建智能体
+
+
+
+<CodeGroup>
+    ```ts OpenAI
+    // 首先安装: npm install langchain zod @langchain/openai
+    import { createAgent, tool } from "langchain";
+    import * as z from "zod";
+
+    const getWeather = tool(
+      (input) => `It's always sunny in ${input.city}!`,
+      {
+        name: "get_weather",
+        description: "Get the weather for a given city",
+        schema: z.object({
+          city: z.string().describe("The city to get the weather for"),
+        }),
+      }
+    );
+
+    const agent = createAgent({
+      model: "gpt-5.4",
+      tools: [getWeather],
+    });
+
+    console.log(
+      await agent.invoke({
+        messages: [{ role: "user", content: "What's the weather in San Francisco?" }],
+      })
+    );
+    ```
+    ```ts Google Gemini
+    // 首先安装: npm install langchain zod @langchain/google-genai
+    import { createAgent, tool } from "langchain";
+    import * as z from "zod";
+
+    const getWeather = tool(
+      (input) => `It's always sunny in ${input.city}!`,
+      {
+        name: "get_weather",
+        description: "Get the weather for a given city",
+        schema: z.object({
+          city: z.string().describe("The city to get the weather for"),
+        }),
+      }
+    );
+
+    const agent = createAgent({
+      model: "google-genai:gemini-2.5-flash-lite",
+      tools: [getWeather],
+    });
+
+    console.log(
+      await agent.invoke({
+        messages: [{ role: "user", content: "What's the weather in San Francisco?" }],
+      })
+    );
+    ```
+    ```ts Claude (Anthropic)
+    // 首先安装: npm install langchain zod @langchain/anthropic
+    import { createAgent, tool } from "langchain";
+    import * as z from "zod";
+
+    const getWeather = tool(
+      (input) => `It's always sunny in ${input.city}!`,
+      {
+        name: "get_weather",
+        description: "Get the weather for a given city",
+        schema: z.object({
+          city: z.string().describe("The city to get the weather for"),
+        }),
+      }
+    );
+
+    const agent = createAgent({
+      model: "claude-sonnet-4-6",
+      tools: [getWeather],
+    });
+
+    console.log(
+      await agent.invoke({
+        messages: [{ role: "user", content: "What's the weather in San Francisco?" }],
+      })
+    );
+    ```
+    ```ts OpenRouter
+    // 首先安装: npm install langchain zod @langchain/openrouter
+    import { createAgent, tool } from "langchain";
+    import * as z from "zod";
+
+    const getWeather = tool(
+      (input) => `It's always sunny in ${input.city}!`,
+      {
+        name: "get_weather",
+        description: "Get the weather for a given city",
+        schema: z.object({
+          city: z.string().describe("The city to get the weather for"),
+        }),
+      }
+    );
+
+    const agent = createAgent({
+      model: "openrouter:anthropic/claude-sonnet-4-6",
+      tools: [getWeather],
+    });
+
+    console.log(
+      await agent.invoke({
+        messages: [{ role: "user", content: "What's the weather in San Francisco?" }],
+      })
+    );
+    ```
+    ```ts Fireworks
+    // 首先安装: npm install langchain zod @langchain/community
+    import { createAgent, tool } from "langchain";
+    import * as z from "zod";
+
+    const getWeather = tool(
+      (input) => `It's always sunny in ${input.city}!`,
+      {
+        name: "get_weather",
+        description: "Get the weather for a given city",
+        schema: z.object({
+          city: z.string().describe("The city to get the weather for"),
+        }),
+      }
+    );
+
+    const agent = createAgent({
+      model: "fireworks:accounts/fireworks/models/qwen3p5-397b-a17b",
+      tools: [getWeather],
+    });
+
+    console.log(
+      await agent.invoke({
+        messages: [{ role: "user", content: "What's the weather in San Francisco?" }],
+      })
+    );
+    ```
+    ```ts Baseten
+    // 首先安装: npm install langchain zod @langchain/community
+    import { createAgent, tool } from "langchain";
+    import * as z from "zod";
+
+    const getWeather = tool(
+      (input) => `It's always sunny in ${input.city}!`,
+      {
+        name: "get_weather",
+        description: "Get the weather for a given city",
+        schema: z.object({
+          city: z.string().describe("The city to get the weather for"),
+        }),
+      }
+    );
+
+    const agent = createAgent({
+      model: "baseten:zai-org/GLM-5",
+      tools: [getWeather],
+    });
+
+    console.log(
+      await agent.invoke({
+        messages: [{ role: "user", content: "What's the weather in San Francisco?" }],
+      })
+    );
+    ```
+    ```ts Ollama
+    // 首先安装: npm install langchain zod @langchain/ollama
+    import { createAgent, tool } from "langchain";
+    import * as z from "zod";
+
+    const getWeather = tool(
+      (input) => `It's always sunny in ${input.city}!`,
+      {
+        name: "get_weather",
+        description: "Get the weather for a given city",
+        schema: z.object({
+          city: z.string().describe("The city to get the weather for"),
+        }),
+      }
+    );
+
+    const agent = createAgent({
+      model: "ollama:devstral-2",
+      tools: [getWeather],
+    });
+
+    console.log(
+      await agent.invoke({
+        messages: [{ role: "user", content: "What's the weather in San Francisco?" }],
+      })
+    );
+    ```
+    ```ts Azure
+    // 首先安装: npm install langchain zod @langchain/openai
+    import { createAgent, tool } from "langchain";
+    import * as z from "zod";
+
+    const getWeather = tool(
+      (input) => `It's always sunny in ${input.city}!`,
+      {
+        name: "get_weather",
+        description: "Get the weather for a given city",
+        schema: z.object({
+          city: z.string().describe("The city to get the weather for"),
+        }),
+      }
+    );
+
+    const agent = createAgent({
+      model: "azure_openai:gpt-5.4",
+      tools: [getWeather],
+    });
+
+    console.log(
+      await agent.invoke({
+        messages: [{ role: "user", content: "What's the weather in San Francisco?" }],
+      })
+    );
+    ```
+    ```ts AWS Bedrock
+    // 首先安装: npm install langchain zod @langchain/aws
+    import { createAgent, tool } from "langchain";
+    import * as z from "zod";
+
+    const getWeather = tool(
+      (input) => `It's always sunny in ${input.city}!`,
+      {
+        name: "get_weather",
+        description: "Get the weather for a given city",
+        schema: z.object({
+          city: z.string().describe("The city to get the weather for"),
+        }),
+      }
+    );
+
+    const agent = createAgent({
+      model: "bedrock:gpt-5.4",
+      tools: [getWeather],
+    });
+
+    console.log(
+      await agent.invoke({
+        messages: [{ role: "user", content: "What's the weather in San Francisco?" }],
+      })
+    );
+    ```
+</CodeGroup>
+
+
+请参阅[安装说明](/oss/javascript/langchain/install)和[快速入门指南](/oss/javascript/langchain/quickstart)开始使用 LangChain 构建你自己的智能体和应用程序。
+
+<Tip>
+使用 [LangSmith](/langsmith/home) 追踪请求、调试智能体行为和评估输出。设置 `LANGSMITH_TRACING=true` 和你的 API 密钥即可开始。
+</Tip>
+
+## <Icon icon="star" size={20} /> 核心优势
+
+<Columns cols={2}>
+    <Card title="标准模型接口" icon="refresh" href="/oss/javascript/langchain/models" arrow cta="了解更多">
+        不同提供商有各自独特的模型交互 API，包括响应格式。LangChain 标准化了你与模型的交互方式，让你可以无缝切换提供商，避免供应商锁定。
+    </Card>
+
+    <Card title="易用且高度灵活的智能体" icon="wand" href="/oss/javascript/langchain/agents" arrow cta="了解更多">
+        LangChain 的智能体抽象设计为易于上手，让你只需不到 10 行代码即可构建简单智能体。同时它也提供足够的灵活性，允许你进行所有你想要的上下文工程。
+    </Card>
+
+    <Card title="基于 LangGraph 构建" icon="/images/brand/langgraph-icon.png" href="/oss/javascript/langgraph/overview" arrow cta="了解更多">
+        LangChain 的智能体基于 LangGraph 构建。这使我们能够利用 LangGraph 的持久执行、人机协作支持、持久化等功能。
+    </Card>
+
+    <Card title="使用 LangSmith 调试" icon="/images/brand/observability-icon-dark.png" href="/langsmith/observability" arrow cta="了解更多">
+        通过可视化工具深入了解复杂的智能体行为，追踪执行路径、捕获状态转换并提供详细的运行时指标。
+    </Card>
+</Columns>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时解答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/overview.mdx) 或 [提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

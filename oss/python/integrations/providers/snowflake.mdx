@@ -1,0 +1,52 @@
+---
+title: "Snowflake 集成"
+description: "使用 LangChain Python 与 Snowflake 集成。"
+---
+
+> [Snowflake](https://www.snowflake.com/) is a cloud-based data-warehousing platform
+> that allows you to store and query large amounts of data.
+
+This page covers how to use the `Snowflake` ecosystem within `LangChain`.
+
+## 向量嵌入模型
+
+Snowflake offers their open-weight `arctic` line of embedding models for free
+on [Hugging Face](https://huggingface.co/Snowflake/snowflake-arctic-embed-m-v1.5). The most recent model, snowflake-arctic-embed-m-v1.5 feature [matryoshka embedding](https://arxiv.org/abs/2205.13147) which allows for effective vector truncation.
+您可以使用se models via the
+[HuggingFaceEmbeddings](/oss/python/integrations/embeddings/huggingfacehub) connector:
+
+<CodeGroup>
+```bash pip
+pip install langchain-community sentence-transformers
+```
+
+```bash uv
+uv add langchain-community sentence-transformers
+```
+</CodeGroup>
+
+```python
+from langchain_huggingface import HuggingFaceEmbeddings
+
+model = HuggingFaceEmbeddings(model_name="snowflake/arctic-embed-m-v1.5")
+```
+
+## 文档加载器
+
+您可以使用 [`SnowflakeLoader`](/oss/python/integrations/document_loaders/snowflake)
+to load data from Snowflake:
+
+```python
+from langchain_community.document_loaders import SnowflakeLoader
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/snowflake.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

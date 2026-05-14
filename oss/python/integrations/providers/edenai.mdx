@@ -1,0 +1,76 @@
+---
+title: "Eden AI 集成"
+description: "使用 LangChain Python 与 Eden AI 集成。"
+---
+
+>[Eden AI](https://docs.edenai.co/docs/getting-started-with-eden-ai) user interface (UI)
+> is designed for handling the AI projects. With `Eden AI Portal`,
+> you can perform no-code AI 使用 best engines for the market.
+
+
+## 安装和设置
+
+Accessing the Eden AI API requires an API key, which you can get by
+[creating an account](https://app.edenai.run/user/register) and
+heading in the [Eden AI account settings](https://app.edenai.run/admin/account/settings).
+
+## 大语言模型 (LLM)
+
+查看[使用示例](/oss/python/integrations/llms/edenai).
+
+```python
+from langchain_community.llms import EdenAI
+
+```
+
+## 聊天模型
+
+查看[使用示例](/oss/python/integrations/chat/edenai).
+
+```python
+from langchain_community.chat_models.edenai import ChatEdenAI
+```
+
+## 向量嵌入模型
+
+查看[使用示例](/oss/python/integrations/embeddings/edenai).
+
+```python
+from langchain_community.embeddings.edenai import EdenAiEmbeddings
+```
+
+## 工具
+
+Eden AI provides a list of tools that grants your Agent the ability to do multiple tasks, such as:
+* speech to text
+* text to speech
+* text explicit content detection
+* image explicit content detection
+* object detection
+* OCR invoice parsing
+* OCR ID parsing
+
+查看[使用示例](/oss/python/integrations/tools/edenai_tools).
+
+```python
+from langchain_community.tools.edenai import (
+    EdenAiExplicitImageTool,
+    EdenAiObjectDetectionTool,
+    EdenAiParsingIDTool,
+    EdenAiParsingInvoiceTool,
+    EdenAiSpeechToTextTool,
+    EdenAiTextModerationTool,
+    EdenAiTextToSpeechTool,
+)
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/edenai.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

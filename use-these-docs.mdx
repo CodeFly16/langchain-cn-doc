@@ -1,0 +1,127 @@
+---
+title: 程序化使用文档
+description: 将 LangChain 文档连接到你的 AI 工具和工作流
+---
+
+我们希望让文档尽可能易于访问。我们提供了多种方式，让你可以通过 AI 助手、代码编辑器和直接集成（如模型上下文协议 MCP）来程序化地使用这些文档。
+
+## 快速访问选项
+
+在我们文档的任何页面上，你都可以在右上角找到一个上下文菜单下拉框：
+
+<img
+    className="block dark:hidden"
+    src="/images/copy-page-light.png"
+    alt="复制页面浅色模式"
+/>
+
+<img
+    className="hidden dark:block"
+    src="/images/copy-page-dark.png"
+    alt="复制页面深色模式"
+/>
+
+其中包括我们的 `llms.txt`、MCP 服务器连接，以及 ChatGPT 和 Claude 等其他快速访问选项。
+
+## 使用我们的 MCP 服务器
+
+我们的文档包含一个内置的**模型上下文协议 (MCP) 服务器**，让 AI 应用可以实时查询最新文档。
+
+LangChain 文档 MCP 服务器地址：
+
+```txt
+https://docs.langchain.com/mcp
+```
+
+连接后，你可以向 AI 助手询问关于 LangChain、LangGraph 和 LangSmith 的问题，它会搜索我们的文档来提供准确、最新的回答。
+
+### 通过 Claude Code 连接
+
+如果你使用 Claude Code，在终端中运行以下命令将服务器添加到当前项目：
+
+```bash
+claude mcp add --transport http docs-langchain https://docs.langchain.com/mcp
+```
+
+<Note>
+    **项目（本地）作用域**
+
+    上述命令仅将 MCP 服务器添加到当前项目/工作目录。要全局添加 MCP 服务器并在所有项目中访问，请在命令中添加 `--scope user`：
+
+    ```bash
+    claude mcp add --transport http docs-langchain --scope user https://docs.langchain.com/mcp
+    ```
+</Note>
+
+### 通过 Claude Desktop 连接
+
+1. 打开 Claude Desktop
+2. 进入 设置 > 连接器
+3. 添加我们的 MCP 服务器 URL：`https://docs.langchain.com/mcp`
+
+### 通过 Codex CLI 连接
+
+如果你使用 OpenAI Codex CLI，在终端中运行以下命令全局添加服务器：
+
+```sh
+codex mcp add langchain-docs --url https://docs.langchain.com/mcp
+```
+
+### 通过 Cursor 连接
+
+将以下内容添加到你的 MCP 设置配置文件中：
+
+```json
+{
+  "mcpServers": {
+    "docs-langchain": {
+      "url": "https://docs.langchain.com/mcp"
+    }
+  }
+}
+```
+
+### 通过 VS Code 连接
+
+将以下内容添加到你的 MCP 设置配置文件中：
+
+```json
+{
+  "servers": {
+    "docs-langchain": {
+      "url": "https://docs.langchain.com/mcp"
+    }
+  }
+}
+```
+
+### 通过 Antigravity 连接
+
+将以下内容添加到你的 MCP 设置配置文件中：
+
+```json
+{
+  "mcpServers": {
+    "docs-langchain": {
+      "serverUrl": "https://docs.langchain.com/mcp"
+    }
+  }
+}
+```
+
+## 了解更多
+
+有关使用 Mintlify MCP 服务器的更多信息，请参阅 [Mintlify 官方文档](https://www.mintlify.com/docs/ai/model-context-protocol)。
+
+有问题或反馈？请在我们的[社区论坛](https://forum.langchain.com/)中告诉我们。
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时回答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/use-these-docs.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

@@ -1,0 +1,58 @@
+---
+title: 安装 LangGraph
+sidebarTitle: 安装
+---
+
+
+
+要安装 LangGraph 基础包：
+
+<CodeGroup>
+```bash pip
+pip install -U langgraph
+```
+
+```bash uv
+uv add langgraph
+```
+</CodeGroup>
+
+
+
+
+使用 LangGraph 时，您通常需要访问大语言模型(LLM)并定义工具。
+您可以按自己认为合适的方式来实现。
+
+一种方式（也是我们在文档中使用的方式）是使用 [LangChain](/oss/python/langchain/overview)。
+
+使用以下命令安装 LangChain：
+
+<CodeGroup>
+```bash pip
+pip install -U langchain
+# 需要 Python 3.10+
+```
+
+```bash uv
+uv add langchain
+# 需要 Python 3.10+
+```
+</CodeGroup>
+
+
+
+
+要使用特定的 LLM 提供商包，您需要单独安装它们。
+
+请参阅[集成](/oss/python/integrations/providers/overview)页面获取特定提供商的安装说明。
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时回答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/install.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

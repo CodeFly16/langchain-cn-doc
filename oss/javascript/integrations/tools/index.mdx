@@ -1,0 +1,282 @@
+---
+title: "工具集成"
+sidebarTitle: "工具和工具包"
+description: "使用 LangChain JavaScript 集成 tools。"
+---
+
+[工具](/oss/javascript/langchain/tools)是设计用来由模型调用的实用程序：它们的输入设计为由模型生成，输出设计为传回模型。
+
+[工具包](/oss/javascript/langchain/tools#prebuilt-tools)是一组旨在一起使用的工具。
+
+## 集成平台
+
+The following platforms provide access to multiple tools and services through a unified interface:
+
+| Tool/Toolkit | Number of Integrations | Pricing | Key Features |
+|-------------|----------------------|---------|--------------|
+| [`Composio`](/oss/javascript/integrations/tools/composio) | 500+ | Free tier available | OAuth handling, event-driven workflows, multi-user support |
+
+## 所有工具和工具包
+
+<Columns cols={3}>
+  <Card
+    title="Azure Container Apps Dynamic Sessions"
+    icon="link"
+    href="/oss/javascript/integrations/tools/azure_dynamic_sessions"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="ClickSend"
+    icon="link"
+    href="/oss/javascript/integrations/tools/clicksend"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Connery Action Tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/connery"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Composio"
+    icon="link"
+    href="/oss/javascript/integrations/tools/composio"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Dall-E Tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/dalle"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Decodo Tools"
+    icon="link"
+    href="/oss/javascript/integrations/tools/decodo"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Discord Tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/discord_tool"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="DuckDuckGoSearch"
+    icon="link"
+    href="/oss/javascript/integrations/tools/duckduckgo_search"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="ExaSearchResults"
+    icon="link"
+    href="/oss/javascript/integrations/tools/exa_search"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="FalkorDB"
+    icon="link"
+    href="/oss/javascript/integrations/tools/falkordb"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Google (Gemini Native Tools)"
+    icon="link"
+    href="/oss/javascript/integrations/tools/google"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Gmail Tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/google_gmail"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="GOAT"
+    icon="link"
+    href="/oss/javascript/integrations/tools/goat"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Google Calendar Tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/google_calendar"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Google Places Tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/google_places"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Google Routes Tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/google_routes"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Google Scholar"
+    icon="link"
+    href="/oss/javascript/integrations/tools/google_scholar"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Google Trends Tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/google_trends"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="JigsawStack Tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/jigsawstack"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Agent with AWS Lambda"
+    icon="link"
+    href="/oss/javascript/integrations/tools/lambda_agent"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Oracle AI Database"
+    icon="link"
+    href="/oss/javascript/integrations/tools/oracleai"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Python interpreter tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/pyinterpreter"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="SearchApi tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/searchapi"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Searxng Search tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/searxng"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="SerpApi"
+    icon="link"
+    href="/oss/javascript/integrations/tools/serpapi"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="StackExchange Tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/stackexchange"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Stagehand AI Web Automation Toolkit"
+    icon="link"
+    href="/oss/javascript/integrations/tools/stagehand"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Tavily Crawl"
+    icon="link"
+    href="/oss/javascript/integrations/tools/tavily_crawl"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Tavily Extract"
+    icon="link"
+    href="/oss/javascript/integrations/tools/tavily_extract"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Tavily Map"
+    icon="link"
+    href="/oss/javascript/integrations/tools/tavily_map"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Nia Toolkit"
+    icon="link"
+    href="/oss/javascript/integrations/tools/nia"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Tavily Search"
+    icon="link"
+    href="/oss/javascript/integrations/tools/tavily_search"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Web Browser Tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/webbrowser"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="Wikipedia tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/wikipedia"
+    arrow="true"
+    cta="查看指南"
+  />
+  <Card
+    title="WolframAlpha Tool"
+    icon="link"
+    href="/oss/javascript/integrations/tools/wolframalpha"
+    arrow="true"
+    cta="查看指南"
+  />
+</Columns>
+
+<Info>
+    如果你想编写自己的工具，请参阅[创建工具](/oss/javascript/langchain/tools#create-tools)。如果你想贡献一个集成，请参阅[构建新集成](/oss/javascript/contributing/integrations-langchain)。
+</Info>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/tools/index.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

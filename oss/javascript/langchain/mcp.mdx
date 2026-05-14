@@ -1,0 +1,371 @@
+---
+title: 模型上下文协议 (MCP)
+---
+
+
+[模型上下文协议 (MCP)](https://modelcontextprotocol.io/introduction) 是一个开放协议，标准化了应用程序向 LLM 提供工具和上下文的方式。LangChain 智能体可以使用 [`@langchain/mcp-adapters`](https://github.com/langchain-ai/langchainjs/tree/main/libs/langchain-mcp-adapters) 库来使用 MCP 服务器上定义的工具。
+
+
+## 快速开始
+
+
+
+安装 `@langchain/mcp-adapters` 库：
+
+<CodeGroup>
+```bash npm
+npm install @langchain/mcp-adapters
+```
+
+```bash pnpm
+pnpm add @langchain/mcp-adapters
+```
+
+```bash yarn
+yarn add @langchain/mcp-adapters
+```
+
+```bash bun
+bun add @langchain/mcp-adapters
+```
+</CodeGroup>
+
+`@langchain/mcp-adapters` 使智能体能够使用跨一个或多个 MCP 服务器定义的工具。
+
+<Note>
+    `MultiServerMCPClient` **默认是无状态的**。每次工具调用都会创建一个新的 MCP `ClientSession`，执行工具，然后进行清理。
+</Note>
+
+```ts 访问多个 MCP 服务器 icon="server"
+import { MultiServerMCPClient } from "@langchain/mcp-adapters";  // [!code highlight]
+import { ChatAnthropic } from "@langchain/anthropic";
+import { createAgent } from "langchain";
+
+const client = new MultiServerMCPClient({  // [!code highlight]
+    math: {
+        transport: "stdio",  // 本地子进程通信
+        command: "node",
+        // 替换为你的 math_server.js 文件的绝对路径
+        args: ["/path/to/math_server.js"],
+    },
+    weather: {
+        transport: "http",  // 基于 HTTP 的远程服务器
+        // 确保你的天气服务器在 8000 端口启动
+        url: "http://localhost:8000/mcp",
+    },
+});
+
+const tools = await client.getTools();  // [!code highlight]
+const agent = createAgent({
+    model: "claude-sonnet-4-6",
+    tools,  // [!code highlight]
+});
+
+const mathResponse = await agent.invoke({
+    messages: [{ role: "user", content: "what's (3 + 5) x 12?" }],
+});
+
+const weatherResponse = await agent.invoke({
+    messages: [{ role: "user", content: "what is the weather in nyc?" }],
+});
+```
+
+
+<Tip>
+使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langchain-mcp) 追踪 MCP 工具调用以及智能体的推理步骤。按照[追踪快速入门](/langsmith/trace-with-langchain)进行设置。
+</Tip>
+
+## 自定义服务器
+
+
+
+要创建你自己的 MCP 服务器，可以使用 `@modelcontextprotocol/sdk` 库。该库提供了一种简单的方式来定义[工具](https://modelcontextprotocol.io/docs/learn/server-concepts#tools-ai-actions)并将其作为服务器运行。
+
+<CodeGroup>
+```bash npm
+npm install @modelcontextprotocol/sdk
+```
+
+```bash pnpm
+pnpm add @modelcontextprotocol/sdk
+```
+
+```bash yarn
+yarn add @modelcontextprotocol/sdk
+```
+
+```bash bun
+bun add @modelcontextprotocol/sdk
+```
+</CodeGroup>
+
+
+要测试你的智能体与 MCP 工具服务器的集成，请使用以下示例：
+
+
+
+
+```typescript title="数学服务器 (stdio 传输)" icon="device-floppy"
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+    CallToolRequestSchema,
+    ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+
+const server = new Server(
+    {
+        name: "math-server",
+        version: "0.1.0",
+    },
+    {
+        capabilities: {
+            tools: {},
+        },
+    }
+);
+
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+    return {
+        tools: [
+        {
+            name: "add",
+            description: "两数相加",
+            inputSchema: {
+                type: "object",
+                properties: {
+                    a: {
+                        type: "number",
+                        description: "第一个数",
+                    },
+                    b: {
+                        type: "number",
+                        description: "第二个数",
+                    },
+                },
+                required: ["a", "b"],
+            },
+        },
+        {
+            name: "multiply",
+            description: "两数相乘",
+            inputSchema: {
+                type: "object",
+                properties: {
+                    a: {
+                        type: "number",
+                        description: "第一个数",
+                    },
+                    b: {
+                        type: "number",
+                        description: "第二个数",
+                    },
+                },
+                required: ["a", "b"],
+            },
+        },
+        ],
+    };
+});
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    switch (request.params.name) {
+        case "add": {
+            const { a, b } = request.params.arguments as { a: number; b: number };
+            return {
+                content: [
+                {
+                    type: "text",
+                    text: String(a + b),
+                },
+                ],
+            };
+        }
+        case "multiply": {
+            const { a, b } = request.params.arguments as { a: number; b: number };
+            return {
+                content: [
+                {
+                    type: "text",
+                    text: String(a * b),
+                },
+                ],
+            };
+        }
+        default:
+            throw new Error(`Unknown tool: ${request.params.name}`);
+    }
+});
+
+async function main() {
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    console.error("数学 MCP 服务器正在 stdio 上运行");
+}
+
+main();
+```
+
+```typescript title="天气服务器 (SSE 传输)" icon="wifi"
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import {
+    CallToolRequestSchema,
+    ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+import express from "express";
+
+const app = express();
+app.use(express.json());
+
+const server = new Server(
+    {
+        name: "weather-server",
+        version: "0.1.0",
+    },
+    {
+        capabilities: {
+            tools: {},
+        },
+    }
+);
+
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+    return {
+        tools: [
+        {
+            name: "get_weather",
+            description: "获取某个位置的天气",
+            inputSchema: {
+            type: "object",
+            properties: {
+                location: {
+                type: "string",
+                description: "要获取天气的位置",
+                },
+            },
+            required: ["location"],
+            },
+        },
+        ],
+    };
+});
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    switch (request.params.name) {
+        case "get_weather": {
+            const { location } = request.params.arguments as { location: string };
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: `${location} 总是阳光明媚`,
+                    },
+                ],
+            };
+        }
+        default:
+            throw new Error(`Unknown tool: ${request.params.name}`);
+    }
+});
+
+app.post("/mcp", async (req, res) => {
+    const transport = new SSEServerTransport("/mcp", res);
+    await server.connect(transport);
+});
+
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => {
+    console.log(`天气 MCP 服务器正在端口 ${PORT} 上运行`);
+});
+```
+
+
+## 传输方式
+
+MCP 支持不同的客户端-服务器通信传输机制。
+
+### HTTP
+
+`http` 传输（也称为 `streamable-http`）使用 HTTP 请求进行客户端-服务器通信。更多详情请参阅 [MCP HTTP 传输规范](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http)。
+
+
+
+```typescript
+const client = new MultiServerMCPClient({
+    weather: {
+        transport: "sse",
+        url: "http://localhost:8000/mcp",
+    },
+});
+```
+
+
+#### 传递请求头
+
+
+
+#### 认证
+
+
+
+### stdio
+
+客户端将服务器作为子进程启动，并通过标准输入/输出进行通信。最适合本地工具和简单的配置场景。
+
+
+
+```typescript
+const client = new MultiServerMCPClient({
+    math: {
+        transport: "stdio",
+        command: "node",
+        args: ["/path/to/math_server.js"],
+    },
+});
+```
+
+
+
+
+## 核心功能
+
+### 工具
+
+[工具](https://modelcontextprotocol.io/docs/concepts/tools)允许 MCP 服务器暴露可执行的函数，LLM 可以调用这些函数来执行操作——例如查询数据库、调用 API 或与外部系统交互。LangChain 将 MCP 工具转换为 LangChain [工具](/oss/javascript/langchain/tools)，使其可以直接在任何 LangChain 智能体或工作流中使用。
+
+#### 加载工具
+
+
+
+使用 `client.getTools()` 从 MCP 服务器获取工具并传递给你的智能体：
+
+```typescript
+import { MultiServerMCPClient } from "@langchain/mcp-adapters";
+import { createAgent } from "langchain";
+
+const client = new MultiServerMCPClient({...});
+const tools = await client.getTools();  // [!code highlight]
+const agent = createAgent({ model: "claude-sonnet-4-6", tools });
+```
+
+
+
+
+## 其他资源
+
+* [MCP 文档](https://modelcontextprotocol.io/introduction)
+* [MCP 传输文档](https://modelcontextprotocol.io/docs/concepts/transports)
+
+* [`@langchain/mcp-adapters`](https://github.com/langchain-ai/langchainjs/tree/main/libs/langchain-mcp-adapters/)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时解答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/mcp.mdx) 或 [提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

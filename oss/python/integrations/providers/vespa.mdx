@@ -1,0 +1,41 @@
+---
+title: "Vespa 集成"
+description: "使用 LangChain Python 与 Vespa 集成。"
+---
+
+>[Vespa](https://vespa.ai/) is a fully featured search engine and vector database.
+> 它支持 vector search (ANN), lexical search, and search in structured data, all in the same query.
+
+## 安装和设置
+
+
+<CodeGroup>
+```bash pip
+pip install pyvespa
+```
+
+```bash uv
+uv add pyvespa
+```
+</CodeGroup>
+
+
+
+## 检索器
+
+查看[使用示例](/oss/python/integrations/retrievers/vespa).
+
+```python
+from langchain_classic.retrievers import VespaRetriever
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/vespa.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

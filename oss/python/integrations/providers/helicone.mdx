@@ -1,0 +1,65 @@
+---
+title: "Helicone 集成"
+description: "使用 LangChain Python 与 Helicone 集成。"
+---
+
+This page covers how to use the [Helicone](https://helicone.ai) ecosystem within LangChain.
+
+## What is helicone?
+
+Helicone is an [open-source](https://github.com/Helicone/helicone) observability platform that proxies your OpenAI traffic and provides you key insights into your spend, latency and usage.
+
+
+## 快速入门
+
+With your LangChain environment you can just add the following parameter.
+
+```bash
+export OPENAI_API_BASE="https://oai.hconeai.com/v1"
+```
+
+Now head over to [helicone.ai](https://www.helicone.ai/signup) to create your account, and add your OpenAI API key within our dashboard to view your logs.
+
+
+## How to enable helicone caching
+
+```python
+from langchain_openai import OpenAI
+import openai
+openai.api_base = "https://oai.hconeai.com/v1"
+
+llm = OpenAI(temperature=0.9, headers={"Helicone-Cache-Enabled": "true"})
+text = "What is a helicone?"
+print(llm.invoke(text))
+```
+
+[Helicone caching docs](https://docs.helicone.ai/advanced-usage/caching)
+
+## How to use helicone custom properties
+
+```python
+from langchain_openai import OpenAI
+import openai
+openai.api_base = "https://oai.hconeai.com/v1"
+
+llm = OpenAI(temperature=0.9, headers={
+        "Helicone-Property-Session": "24",
+        "Helicone-Property-Conversation": "support_issue_2",
+        "Helicone-Property-App": "mobile",
+      })
+text = "What is a helicone?"
+print(llm.invoke(text))
+```
+
+[Helicone property docs](https://docs.helicone.ai/advanced-usage/custom-properties)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/helicone.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

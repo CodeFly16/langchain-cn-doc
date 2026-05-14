@@ -1,0 +1,76 @@
+---
+title: "Yandex 集成"
+description: "使用 LangChain Python 与 Yandex 集成。"
+---
+
+All functionality related to Yandex Cloud
+
+>[Yandex Cloud](https://cloud.yandex.com/en/) is a public cloud platform.
+
+## 安装和设置
+
+Yandex Cloud SDK can be installed via pip from PyPI:
+
+<CodeGroup>
+```bash pip
+pip install yandexcloud
+```
+
+```bash uv
+uv add yandexcloud
+```
+</CodeGroup>
+
+## 大语言模型 (LLM)
+
+### YandexGPT
+
+查看[使用示例](/oss/python/integrations/llms/yandex).
+
+```python
+from langchain_community.llms import YandexGPT
+```
+
+## 聊天模型
+
+### YandexGPT
+
+查看[使用示例](/oss/python/integrations/chat/yandex).
+
+```python
+from langchain_community.chat_models import ChatYandexGPT
+```
+
+## 向量嵌入模型
+
+### YandexGPT
+
+查看[使用示例](/oss/python/integrations/embeddings/yandex).
+
+```python
+from langchain_community.embeddings import YandexGPTEmbeddings
+```
+
+## Parser
+
+### YandexSTTParser
+
+It transcribes and parses audio files.
+
+`YandexSTTParser` is similar to the `OpenAIWhisperParser`.
+See a [usage example with OpenAIWhisperParser](/oss/python/integrations/document_loaders/youtube_audio).
+
+```python
+from langchain_community.document_loaders import YandexSTTParser
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/yandex.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,57 @@
+---
+title: "VLite 集成"
+description: "使用 LangChain Python 与 VLite 集成。"
+---
+
+This page covers how to use [vlite](https://github.com/sdan/vlite) within LangChain. vlite is a simple and fast vector database for storing and retrieving embeddings.
+
+## 安装和设置
+
+To install vlite, run the following command:
+
+<CodeGroup>
+```bash pip
+pip install vlite
+```
+
+```bash uv
+uv add vlite
+```
+</CodeGroup>
+
+For PDF OCR support, install the `vlite[ocr]` extra:
+
+<CodeGroup>
+```bash pip
+pip install "vlite[ocr]"
+```
+
+```bash uv
+uv add "vlite[ocr]"
+```
+</CodeGroup>
+
+## 向量存储
+
+vlite provides a wrapper around its vector database, allowing you to use it as a vectorstore for semantic search and example selection.
+
+To import the vlite vectorstore:
+
+```python
+from langchain_community.vectorstores import vlite
+```
+
+### 使用方法
+
+有关 vlite 封装器的更详细演练，请参阅[此笔记本](/oss/python/integrations/vectorstores/vlite).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/vlite.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

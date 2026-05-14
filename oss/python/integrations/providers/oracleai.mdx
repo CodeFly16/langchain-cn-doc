@@ -1,0 +1,80 @@
+---
+title: "OracleAI vector search 集成"
+description: "使用 LangChain Python 与 OracleAI vector search 集成。"
+---
+
+Oracle AI Database is built for AI workloads where you query data by **meaning** (semantics), not just keywords. It combines **semantic search over unstructured content** with **relational filtering over business data** in one system—so you can build AI retrieval workflows (like RAG) without introducing a separate vector database and fragmenting data across multiple platforms.
+
+### Why it matters
+
+- **One system for AI + business data:** vectors and operational data live together.
+- **Less fragmentation:** fewer moving parts than a separate vector store.
+- **Database-grade guarantees:** apply security, transactions, scale, and availability to the same AI workload.
+
+## 前提条件
+
+Install `langchain-oracledb`. The `python-oracledb` driver will be installed automatically as a dependency.
+
+<CodeGroup>
+```bash pip
+pip install -qU langchain-oracledb
+```
+```bash uv
+uv add langchain-oracledb
+```
+</CodeGroup>
+
+## 文档加载器
+
+请查看[使用示例](/oss/python/integrations/document_loaders/oracleai).
+
+```python
+from langchain_oracledb.document_loaders.oracleai import OracleDocLoader
+```
+
+## 文本分割器
+
+请查看[使用示例](/oss/python/integrations/document_loaders/oracleai).
+
+```python
+from langchain_oracledb.document_loaders.oracleai import OracleTextSplitter
+```
+
+## 向量嵌入
+
+请查看[使用示例](/oss/python/integrations/embeddings/oracleai).
+
+```python
+from langchain_oracledb.embeddings.oracleai import OracleEmbeddings
+```
+
+## 总结
+
+请查看[使用示例](/oss/python/integrations/tools/oracleai).
+
+```python
+from langchain_oracledb.utilities.oracleai import OracleSummary
+```
+
+## 向量存储
+
+请查看[使用示例](/oss/python/integrations/vectorstores/oracle).
+
+```python
+from langchain_oracledb.vectorstores.oraclevs import OracleVS
+```
+
+## End to end demo
+
+Please check the [Oracle AI Vector Search End-to-End Demo Guide](https://github.com/langchain-ai/langchain/blob/v0.3/cookbook/oracleai_demo.ipynb).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/oracleai.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

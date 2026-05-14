@@ -1,0 +1,38 @@
+---
+title: cloro
+---
+
+This page covers how to use the [cloro](https://cloro.dev/) monitoring APIs within LangChain.
+
+## 安装和设置
+- Install requirements with `pip install -U langchain-cloro`
+- Get a cloro API key from the [cloro dashboard](https://dashboard.cloro.dev/) and set it as an environment variable (`CLORO_API_KEY`)
+
+## 工具
+
+cloro provides several tools for scraping AI platforms and extracting structured data. To use these tools:
+
+```python
+from langchain_cloro import CloroGoogleSearch, CloroChatGPT, CloroGemini, CloroPerplexity, CloroGrok, CloroCopilot
+```
+
+For detailed documentation and examples, see:
+- [Google Search scraper](/oss/python/integrations/tools/cloro#google-search-scraper)
+- [ChatGPT scraper](/oss/python/integrations/tools/cloro#chatgpt-scraper)
+- [Gemini scraper](/oss/python/integrations/tools/cloro#gemini-scraper)
+- [Perplexity scraper](/oss/python/integrations/tools/cloro#perplexity-scraper)
+- [Grok scraper](/oss/python/integrations/tools/cloro#grok-scraper)
+- [Copilot scraper](/oss/python/integrations/tools/cloro#copilot-scraper)
+
+For more information, visit the [cloro documentation](https://docs.cloro.dev).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/cloro.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

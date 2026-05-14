@@ -1,0 +1,77 @@
+---
+title: "Dedoc 集成"
+description: "使用 LangChain Python 与 Dedoc 集成。"
+---
+
+>[Dedoc](https://dedoc.readthedocs.io) is an [open-source](https://github.com/ispras/dedoc)
+library/service that extracts texts, tables, attached files and document structure
+(e.g., titles, list items, etc.) from files of various formats.
+
+`Dedoc` supports `DOCX`, `XLSX`, `PPTX`, `EML`, `HTML`, `PDF`, images and more.
+您可以找到 a full list of supported formats in the [Dedoc supported formats documentation](https://dedoc.readthedocs.io/en/latest/#id1).
+
+## 安装和设置
+
+### Dedoc library
+
+You can install `Dedoc` using `pip`.
+In this case, you will need to install dependencies.
+For more information, see the [Dedoc installation guide](https://dedoc.readthedocs.io/en/latest/getting_started/installation.html).
+
+<CodeGroup>
+
+```bash pip
+pip install dedoc
+```
+
+```bash uv
+uv add dedoc
+```
+
+</CodeGroup>
+
+### Dedoc API
+
+If you are going to use `Dedoc` API, you don't need to install `dedoc` 库。
+In this case, you should run the `Dedoc` service, e.g. `Docker` container (please see
+[the documentation](https://dedoc.readthedocs.io/en/latest/getting_started/installation.html#install-and-run-dedoc-using-docker)
+for more details):
+
+```bash
+docker pull dedocproject/dedoc
+docker run -p 1231:1231
+```
+
+## 文档加载器
+
+* For handling files of any formats (supported by `Dedoc`), you can use `DedocFileLoader`:
+
+    ```python
+    from langchain_community.document_loaders import DedocFileLoader
+    ```
+
+* For handling PDF files (with or without a textual layer), you can use `DedocPDFLoader`:
+
+    ```python
+    from langchain_community.document_loaders import DedocPDFLoader
+    ```
+
+* For handling files of any formats without library installation,
+you can use `Dedoc API` with `DedocAPIFileLoader`:
+
+    ```python
+    from langchain_community.document_loaders import DedocAPIFileLoader
+    ```
+
+Please see a [usage example](/oss/python/integrations/document_loaders/dedoc) for more details.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/dedoc.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

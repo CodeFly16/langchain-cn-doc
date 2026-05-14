@@ -1,0 +1,160 @@
+---
+title: 向后兼容
+description: 在生产环境中更新 LangGraph 图代码而不破坏正在进行的运行。
+---
+
+软件需要在生产环境中变更。新需求、错误修复和重构最终都会落地到你的图代码中。因为 LangGraph 使用最新部署的图来处理已为现有线程[持久化](/oss/python/langgraph/persistence)的状态，所以你发布的每一个更改实际上都是相对于现有检查点的向后兼容 API 变更。
+
+与将运行固定到启动时代码版本的工作流引擎不同，LangGraph 会立即将最新的图应用到*所有*线程，包括新线程和从检查点恢复的线程。这很方便：错误修复可以直接传播到正在进行的对话和智能体中。但这也意味着你必须考虑每个更改如何与在旧版本代码下启动的运行进行交互。
+
+需要关注三类兼容性问题，大致按照你会遇到的顺序排列：
+
+1. [技术兼容性](#technical-compatibility)：最常见；新代码必须仍然能够加载并针对现有状态执行。
+2. [业务兼容性](#business-compatibility)：不太常见；即使代码已更改，现有运行也应继续遵循旧的业务逻辑。
+3. [非确定性](#non-determinism)：仅适用于 [Functional API](/oss/python/langgraph/functional-api)。
+
+<Tip>
+有关运行时默认支持哪些图拓扑和状态更改的简短摘要，请参阅[图迁移](/oss/python/langgraph/graph-api#graph-migrations)。本页面的其余部分涵盖了当更改超出支持范围时你可以应用的模式。
+</Tip>
+
+## 技术兼容性
+
+技术兼容性相当于微服务中的 API 破坏性变更。这里的"API"是你的图代码与[检查点器](/oss/python/langgraph/persistence#checkpointer-libraries)为现有线程持久化的数据之间的约定。当线程恢复时，LangGraph 反序列化保存的状态，按名称将其分发到节点，并期望节点返回符合状态模式的值。
+
+常见的技术破坏：
+
+- **重命名或删除节点**，而线程正暂停在该节点或即将进入该节点，例如在 [`interrupt`](https://reference.langchain.com/python/langgraph/types/interrupt) 处或通过仍路由到旧名称的检查点条件边。恢复时，LangGraph 找不到保存名称对应的节点，运行将失败。[恢复运行的起点](/oss/python/langgraph/durable-execution#starting-points-for-resuming-workflows)是执行停止的节点的开头，因此缺失的节点将没有恢复的地方。
+- **重命名或删除状态键**，而旧检查点仍然包含该键或下游节点仍在读取该键。
+- **收紧状态字段**，例如将 `Optional` 字段变为必需、缩窄类型或添加没有默认值的新必需字段。现有检查点将不满足新模式。
+
+边拓扑本身*不*持久化在检查点中。在仍然存在的节点之间添加、删除或重新路由边对正在进行的线程是安全的。根据[图迁移](/oss/python/langgraph/graph-api#graph-migrations)摘要，唯一可能破坏被中断线程的拓扑更改是重命名或删除节点。
+
+### 推荐模式
+
+- 将新状态字段添加为 `NotRequired`（或 `Optional[...] = None`），以便旧检查点仍然有效：
+
+  ```python
+  from typing import NotRequired
+  from typing_extensions import TypedDict
+
+  class State(TypedDict):
+      messages: list
+      summary: NotRequired[str]  # [!code ++]
+  ```
+
+- 将删除视为弃用。至少在一个排空周期内保持字段在状态上的定义，即使没有节点读取它，以便现有检查点继续加载。
+- 通过*先添加后删除*进行重命名。将新字段或节点与旧的并列添加，在弃用窗口期双写或路由到两者，然后在确认没有正在进行的线程依赖旧字段后再删除它。
+- 保持节点函数对未知键的容忍性。`TypedDict` 在运行时会忽略多余的键，因此来自旧代码版本的残留状态不会引发错误，除非节点显式读取一个缺失的键。
+- 使用[时间旅行](/oss/python/langgraph/use-time-travel)和 [`graph.get_state`](https://reference.langchain.com/python/langgraph/graphs/#langgraph.graph.state.CompiledStateGraph.get_state) 在暂存部署中抽查现有线程与新代码的兼容性，然后再正式发布。
+
+
+
+
+
+### 检测正在进行的线程
+
+在你删除节点、重命名状态键或进行其他旧线程无法容忍的更改之前，你需要知道是否有任何线程当前停留在你即将弃用的代码版本上。LangGraph 本身不维护线程状态的搜索索引，因此答案取决于你的图在哪里运行。
+
+**如果你部署到 [LangSmith](/langsmith/deployment)。** 使用 Agent Server 的线程搜索按状态过滤。`status` 字段接受 `idle`、`busy`、`interrupted` 和 `error`，因此你可以批量查询 `interrupted` 或 `busy` 线程，可选地使用元数据过滤器缩小范围。参见[按线程状态过滤](/langsmith/use-threads#filter-by-thread-status)和[列出线程](/langsmith/use-threads#list-threads)。
+
+**LangGraph 运行的任何地方。** 使用 [LangSmith 追踪](/oss/python/langgraph/observability)监控生产环境中哪些节点正在被进入和退出。这是确认某个节点或状态字段在任何活跃代码路径中不再可达的最可靠信号。
+
+**当你已有 `thread_id` 时。** 直接检查该单个线程：
+
+- [`graph.get_state(config)`](https://reference.langchain.com/python/langgraph/graphs/#langgraph.graph.state.CompiledStateGraph.get_state) 返回最新的检查点，包括线程暂停在哪个节点以及任何待处理的中断。
+- [`graph.get_state_history(config)`](https://reference.langchain.com/python/langgraph/graphs/#langgraph.graph.state.CompiledStateGraph.get_state_history) 返回线程的完整时间顺序检查点列表。
+
+
+
+
+
+如有疑问，请保留已弃用的节点或字段，直到 Agent Server 线程列表和追踪都显示不再有活动为止。
+
+## 业务兼容性
+
+有时候更改在技术上是有效的（每个现有检查点仍然加载，每个节点仍然解析），但新图的*含义*与旧的不同。新行为对新线程是正确的，你不希望将其追溯应用到在旧逻辑下启动的线程。
+
+例如，假设你的图运行 `intake → triage → respond`，而你决定在 `triage` 和 `respond` 之间插入一个新的 `policy_check` 步骤：
+
+- 已经通过 `triage` 的线程应继续直接到 `respond`（旧流程）。
+- 新线程应运行完整的新流程。
+
+推荐的模式是在线程启动时在状态上记录相关的*行为版本*，然后通过[条件边](/oss/python/langgraph/graph-api#conditional-edges)进行分支：
+
+```python
+from typing import NotRequired
+from typing_extensions import TypedDict
+
+from langgraph.graph import END, START, StateGraph
+
+
+class State(TypedDict):
+    request: str
+    flow_version: NotRequired[int]
+    response: NotRequired[str]
+
+
+def intake(state: State) -> dict:
+    # 为新线程标记当前流程版本。绕过 `intake` 恢复的
+    # 现有线程保留已保存的值。
+    return {"flow_version": state.get("flow_version", 2)}
+
+
+def triage(state: State) -> dict: ...
+def policy_check(state: State) -> dict: ...
+def respond(state: State) -> dict: ...
+
+
+def after_triage(state: State) -> str:
+    if state.get("flow_version", 1) >= 2:
+        return "policy_check"
+    return "respond"
+
+
+builder = StateGraph(State)
+builder.add_node("intake", intake)
+builder.add_node("triage", triage)
+builder.add_node("policy_check", policy_check)
+builder.add_node("respond", respond)
+builder.add_edge(START, "intake")
+builder.add_edge("intake", "triage")
+builder.add_conditional_edges("triage", after_triage, ["policy_check", "respond"])
+builder.add_edge("policy_check", "respond")
+builder.add_edge("respond", END)
+
+graph = builder.compile()
+```
+
+
+
+在 `triage` 之后恢复的旧线程从其保存的状态中读取 `flow_version`（或回退到 v1 默认值）并跳过 `policy_check`。新线程从 `intake` 开始，被标记为 `flow_version=2`，并运行新路径。一旦所有 v1 线程完成，你就可以删除版本标记和条件边。
+
+此模式仅在你*在线程开始时*设置版本才有效，即在任何需要版本控制的分支之前。稍后设置意味着现有线程在需要时不会设置该值。
+
+## 非确定性
+
+此类别仅适用于 [Functional API](/oss/python/langgraph/functional-api)。[Graph API](/oss/python/langgraph/graph-api) 在恢复时从节点边界重新进入，因此节点代码不会像 Temporal 风格的工作流那样从函数开头"重放"。
+
+相比之下，Functional API 在运行恢复时从头重放 `@entrypoint` 的主体，使用缓存的 [`@task`](https://reference.langchain.com/python/langgraph/func/task) 结果来跳过已完成的工作。两种更改会破坏此模型：
+
+- **添加、删除或重新排序在恢复点*之前*的 `@task` 调用或 [`interrupt`](https://reference.langchain.com/python/langgraph/types/interrupt) 调用**。LangGraph 通过重放中的位置将缓存结果和恢复值匹配到调用，因此移动该位置可能导致错误的缓存值被重放到不同的调用上。
+- **在 `@task` 之外引入非确定性操作**，例如 `time.time()`、`random.random()` 或内联在入口点主体中的网络调用。在重放时，这些操作产生的值与首次运行时不同，可能会改变控制流。
+
+有关更深入的讨论和示例，请参阅 Functional API 指南中的[确定性](/oss/python/langgraph/functional-api#determinism)和[常见陷阱](/oss/python/langgraph/functional-api#common-pitfalls)。
+
+如果你需要对具有正在进行运行的 `@entrypoint` 进行非平凡的代码更改，最安全的选项是：
+
+- 在部署更改之前让正在进行的运行排空。
+- 将任何新逻辑包装在新的 `@task` 中，以便其结果独立进行检查点。
+- 在 `langgraph.json` 中以新的图名称注册新的入口点用于新行为，并将新线程路由到它。
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/backward-compatibility.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

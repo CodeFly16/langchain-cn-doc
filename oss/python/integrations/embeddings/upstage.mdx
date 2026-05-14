@@ -1,0 +1,93 @@
+---
+title: "UpstageEmbeddings 集成"
+description: "使用 LangChain Python 集成 UpstageEmbeddings 向量嵌入模型。"
+---
+
+本笔记本介绍如何开始使用 Upstage 向量嵌入模型.
+
+## 安装
+
+Install `langchain-upstage` package.
+
+```bash
+pip install -U langchain-upstage
+```
+
+## 环境设置
+
+Make sure to set the following environment variables:
+
+- `UPSTAGE_API_KEY`: Your Upstage API key from [Upstage console](https://console.upstage.ai/).
+
+```python
+import os
+
+os.environ["UPSTAGE_API_KEY"] = "YOUR_API_KEY"
+```
+
+## 使用方法
+
+Initialize `UpstageEmbeddings` class.
+
+```python
+from langchain_upstage import UpstageEmbeddings
+
+embeddings = UpstageEmbeddings(model="solar-embedding-1-large")
+```
+
+Use `embed_documents` to embed list of texts or documents.
+
+```python
+doc_result = embeddings.embed_documents(
+    ["Sung is a professor.", "This is another document"]
+)
+print(doc_result)
+```
+
+Use `embed_query` to embed query string.
+
+```python
+query_result = embeddings.embed_query("What does Sung do?")
+print(query_result)
+```
+
+Use `aembed_documents` and `aembed_query` for async operations.
+
+```python
+# async embed query
+await embeddings.aembed_query("My query to look up")
+```
+
+```python
+# async embed documents
+await embeddings.aembed_documents(
+    ["This is a content of the document", "This is another document"]
+)
+```
+
+## Using with vector store
+
+You can use `UpstageEmbeddings` with vector store component. The following demonstrates a simple example.
+
+```python
+from langchain_community.vectorstores import DocArrayInMemorySearch
+
+vectorstore = DocArrayInMemorySearch.from_texts(
+    ["harrison worked at kensho", "bears like to eat honey"],
+    embedding=UpstageEmbeddings(model="solar-embedding-1-large"),
+)
+retriever = vectorstore.as_retriever()
+docs = retriever.invoke("Where did Harrison work?")
+print(docs)
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/embeddings/upstage.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

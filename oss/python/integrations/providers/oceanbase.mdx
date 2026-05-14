@@ -1,0 +1,50 @@
+---
+title: "Oceanbase 集成"
+description: "使用 LangChain Python 与 Oceanbase 集成。"
+---
+
+[OceanBase Database](https://github.com/oceanbase/oceanbase) is a distributed relational database.
+It is developed entirely by Ant Group. The OceanBase Database is built on a common server cluster.
+Based on the Paxos protocol and its distributed structure, the OceanBase Database provides high availability and linear scalability.
+
+OceanBase currently has the ability to store vectors. Users can easily perform the following operations with SQL:
+
+- Create a table containing vector type fields;
+- Create a vector index table based on the HNSW algorithm;
+- Perform vector approximate nearest neighbor queries;
+- ...
+
+## 安装
+
+<CodeGroup>
+```bash pip
+pip install -U langchain-oceanbase
+```
+
+```bash uv
+uv add langchain-oceanbase
+```
+</CodeGroup>
+
+We recommend using Docker to deploy OceanBase:
+
+```shell
+docker run --name=ob433 -e MODE=slim -p 2881:2881 -d oceanbase/oceanbase-ce:4.3.3.0-100000132024100711
+```
+
+[More methods to deploy OceanBase cluster](https://github.com/oceanbase/oceanbase-doc/blob/V4.3.1/en-US/400.deploy/500.deploy-oceanbase-database-community-edition/100.deployment-overview.md)
+
+### 使用方法
+
+有关 OceanBase Wrapper, see [this notebook](https://github.com/oceanbase/langchain-oceanbase/blob/main/docs/vectorstores.ipynb)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/oceanbase.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

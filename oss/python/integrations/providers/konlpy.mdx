@@ -1,0 +1,40 @@
+---
+title: "Konlpy 集成"
+description: "使用 LangChain Python 与 Konlpy 集成。"
+---
+
+>[KoNLPy](https://konlpy.org/) is a Python 包 for natural language processing (NLP)
+> of the Korean language.
+
+
+## 安装和设置
+
+您需要安装 the `konlpy` Python 包.
+
+<CodeGroup>
+```bash pip
+pip install konlpy
+```
+
+```bash uv
+uv add konlpy
+```
+</CodeGroup>
+
+## 文本分割器
+
+
+```python
+from langchain_text_splitters import KonlpyTextSplitter
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/konlpy.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,300 @@
+---
+title: 快速入门
+description: 几分钟内构建你的第一个深度智能体
+---
+
+本指南将引导你创建第一个具备规划、文件系统工具和子智能体功能的深度智能体。你将构建一个能够进行研究并撰写报告的研究智能体。
+
+<Tip>
+    **正在使用 AI 编码助手？**
+
+    - 安装 [LangChain 文档 MCP 服务器](/use-these-docs)，让你的智能体能够访问最新的 LangChain 文档和示例。
+    - 安装 [LangChain Skills](https://github.com/langchain-ai/langchain-skills) 以提升你的智能体在 LangChain 生态系统任务上的表现。
+</Tip>
+
+## 前置条件
+
+开始之前，请确保你拥有模型提供商的 API 密钥（例如 Gemini、Anthropic、OpenAI）。
+
+<Note>
+    深度智能体需要支持[工具调用](/oss/python/langchain/models#tool-calling)的模型。参阅[自定义配置](/oss/python/deepagents/customization#model)了解如何配置模型。
+</Note>
+
+## 步骤 1：安装依赖
+
+<CodeGroup>
+    ```bash pip
+    pip install deepagents tavily-python
+    ```
+
+    ```bash uv
+    uv init
+    uv add deepagents tavily-python
+    uv sync
+    ```
+</CodeGroup>
+
+
+
+
+<Note>
+    本指南使用 [Tavily](https://tavily.com/) 作为示例搜索服务提供商，但你可以替换为任何搜索 API（例如 DuckDuckGo、SerpAPI、Brave Search）。
+</Note>
+
+## 步骤 2：设置 API 密钥
+
+<Tabs>
+    <Tab title="Google">
+        ```bash
+        export GOOGLE_API_KEY="your-api-key"
+        export TAVILY_API_KEY="your-tavily-api-key"
+        ```
+    </Tab>
+    <Tab title="OpenAI">
+        ```bash
+        export OPENAI_API_KEY="your-api-key"
+        export TAVILY_API_KEY="your-tavily-api-key"
+        ```
+    </Tab>
+    <Tab title="Anthropic">
+        ```bash
+        export ANTHROPIC_API_KEY="your-api-key"
+        export TAVILY_API_KEY="your-tavily-api-key"
+        ```
+    </Tab>
+    <Tab title="OpenRouter">
+        ```bash
+        export OPENROUTER_API_KEY="your-api-key"
+        export TAVILY_API_KEY="your-tavily-api-key"
+        ```
+    </Tab>
+    <Tab title="Fireworks">
+        ```bash
+        export FIREWORKS_API_KEY="your-api-key"
+        export TAVILY_API_KEY="your-tavily-api-key"
+        ```
+    </Tab>
+    <Tab title="Baseten">
+        ```bash
+        export BASETEN_API_KEY="your-api-key"
+        export TAVILY_API_KEY="your-tavily-api-key"
+        ```
+    </Tab>
+    <Tab title="Ollama">
+        ```bash
+        # 本地：Ollama 必须在你的机器上运行
+        # 云端：设置 Ollama API 密钥用于托管推理
+        export OLLAMA_API_KEY="your-api-key"
+        export TAVILY_API_KEY="your-tavily-api-key"
+        ```
+    </Tab>
+    <Tab title="其他">
+        ```bash
+        # 设置你的提供商的 API 密钥
+        export <PROVIDER>_API_KEY="your-api-key"
+        export TAVILY_API_KEY="your-tavily-api-key"
+        ```
+
+        深度智能体支持任何 [LangChain 聊天模型](/oss/python/deepagents/models#supported-models)。请设置你所用提供商的 API 密钥。
+    </Tab>
+</Tabs>
+
+## 步骤 3：创建搜索工具
+
+```python
+import os
+from typing import Literal
+from tavily import TavilyClient
+from deepagents import create_deep_agent
+
+tavily_client = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
+
+def internet_search(
+    query: str,
+    max_results: int = 5,
+    topic: Literal["general", "news", "finance"] = "general",
+    include_raw_content: bool = False,
+):
+    """运行网络搜索"""
+    return tavily_client.search(
+        query,
+        max_results=max_results,
+        include_raw_content=include_raw_content,
+        topic=topic,
+    )
+```
+
+
+
+
+## 步骤 4：创建深度智能体
+
+```python
+# 系统提示词，引导智能体成为专业研究员
+research_instructions = """You are an expert researcher. Your job is to conduct thorough research and then write a polished report.
+
+You have access to an internet search tool as your primary means of gathering information.
+
+## `internet_search`
+
+Use this to run an internet search for a given query. You can specify the max number of results to return, the topic, and whether raw content should be included.
+"""
+```
+
+传入 `provider:model` 格式的 `model` 字符串，或已初始化的模型实例。参阅[支持的模型](/oss/python/deepagents/models#supported-models)了解所有提供商，以及[推荐模型](/oss/python/deepagents/models#suggested-models)查看经过测试的推荐方案。
+
+<Tabs>
+    <Tab title="Google">
+        ```python
+        agent = create_deep_agent(
+            model="google_genai:gemini-3.1-pro-preview",
+            tools=[internet_search],
+            system_prompt=research_instructions,
+        )
+        ```
+    </Tab>
+    <Tab title="OpenAI">
+        ```python
+        agent = create_deep_agent(
+            model="openai:gpt-5.4",
+            tools=[internet_search],
+            system_prompt=research_instructions,
+        )
+        ```
+    </Tab>
+    <Tab title="Anthropic">
+        ```python
+        agent = create_deep_agent(
+            model="anthropic:claude-sonnet-4-6",
+            tools=[internet_search],
+            system_prompt=research_instructions,
+        )
+        ```
+    </Tab>
+    <Tab title="OpenRouter">
+        ```python
+        agent = create_deep_agent(
+            model="openrouter:anthropic/claude-sonnet-4-6",
+            tools=[internet_search],
+            system_prompt=research_instructions,
+        )
+        ```
+    </Tab>
+    <Tab title="Fireworks">
+        ```python
+        agent = create_deep_agent(
+            model="fireworks:accounts/fireworks/models/qwen3p5-397b-a17b",
+            tools=[internet_search],
+            system_prompt=research_instructions,
+        )
+        ```
+    </Tab>
+    <Tab title="Baseten">
+        ```python
+        agent = create_deep_agent(
+            model="baseten:zai-org/GLM-5",
+            tools=[internet_search],
+            system_prompt=research_instructions,
+        )
+        ```
+    </Tab>
+    <Tab title="Ollama">
+        ```python
+        agent = create_deep_agent(
+            model="ollama:devstral-2",
+            tools=[internet_search],
+            system_prompt=research_instructions,
+        )
+        ```
+    </Tab>
+    <Tab title="其他">
+        传入任何[支持的模型字符串](/oss/python/deepagents/models#supported-models)，或已初始化的模型实例：
+
+        <CodeGroup>
+            ```python model string
+            agent = create_deep_agent(
+                model="provider:model-name",
+                tools=[internet_search],
+                system_prompt=research_instructions,
+            )
+            ```
+            ```python init_chat_model
+            from langchain.chat_models import init_chat_model
+
+            model = init_chat_model("provider:model-name")
+            agent = create_deep_agent(
+                model=model,
+                tools=[internet_search],
+                system_prompt=research_instructions,
+            )
+            ```
+            ```python model class
+            from langchain_<provider> import Chat<Provider>
+
+            model = Chat<Provider>(model="model-name")
+            agent = create_deep_agent(
+                model=model,
+                tools=[internet_search],
+                system_prompt=research_instructions,
+            )
+            ```
+        </CodeGroup>
+    </Tab>
+</Tabs>
+
+
+
+
+## 步骤 5：运行智能体
+
+```python
+result = agent.invoke({"messages": [{"role": "user", "content": "What is langgraph?"}]})
+
+# 打印智能体的响应
+print(result["messages"][-1].content)
+```
+
+
+
+
+<Tip>
+使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-deepagents-quickstart) 跟踪你的智能体的规划步骤、工具调用和子智能体委派。按照[可观测性快速入门](/langsmith/observability-quickstart)进行设置。
+</Tip>
+
+## 工作原理
+
+你的深度智能体会自动执行以下操作：
+
+1. **规划方法**，使用内置的 [`write_todos`](/oss/python/deepagents/harness#planning-capabilities) 工具将研究任务分解。
+1. **进行研究**，通过调用 `internet_search` 工具收集信息。
+1. **管理上下文**，使用文件系统工具（[`write_file`](/oss/python/deepagents/harness#virtual-filesystem-access)、[`read_file`](/oss/python/deepagents/harness#virtual-filesystem-access)）卸载大型搜索结果。
+1. **生成子智能体**，根据需要将复杂子任务委派给专门的子智能体。
+1. **合成报告**，将研究结果整合为连贯的响应。
+
+## 示例
+
+有关可以使用深度智能体构建的智能体、模式和应用程序，请参阅[示例](https://github.com/langchain-ai/deepagents/tree/main/examples)。
+
+## 流式输出
+
+深度智能体内置了[流式输出](/oss/python/langchain/streaming/overview)功能，可使用 LangGraph 实时获取智能体执行过程的更新。
+这使你能够逐步观察输出，并审查和调试智能体及子智能体的工作，如工具调用、工具结果和大语言模型（LLM）响应。
+
+## 后续步骤
+
+现在你已经构建了第一个深度智能体：
+
+- **自定义你的智能体**：了解[自定义选项](/oss/python/deepagents/customization)，包括自定义系统提示词、工具和子智能体。
+- **添加长期记忆**：启用跨对话的[持久化记忆](/oss/python/deepagents/memory)。
+- **部署到生产环境**：了解深度智能体的[部署选项](/oss/python/deepagents/deploy)。
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时解答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/quickstart.mdx) 或 [提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

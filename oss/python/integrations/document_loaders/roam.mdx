@@ -1,0 +1,45 @@
+---
+title: "Roam 集成"
+description: "使用 LangChain Python 集成 Roam 文档加载器。"
+---
+
+>[ROAM](https://roamresearch.com/) is a note-taking tool for networked thought, designed to create a personal knowledge base.
+
+本 notebook 介绍如何load documents from a Roam database. This takes a lot of inspiration from the [Roam QA example repository](https://github.com/JimmyLv/roam-qa).
+
+## 🧑 Instructions for ingesting your own dataset
+
+Export your dataset from Roam Research. You can do this by clicking on the three dots in the upper right hand corner and then clicking `Export`.
+
+导出时，请确保选择 `Markdown & CSV` 格式选项。
+
+这将在你的下载文件夹中生成一个 `.zip` 文件。将 `.zip` 文件移到此仓库中。
+
+运行以下命令解压 zip 文件（根据需要将 `Export...` 替换为你自己的文件名）。
+
+```shell
+unzip Roam-Export-1675782732639.zip -d Roam_DB
+```
+
+```python
+from langchain_community.document_loaders import RoamLoader
+```
+
+```python
+loader = RoamLoader("Roam_DB")
+```
+
+```python
+docs = loader.load()
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [通过 MCP 将这些文档连接到](/use-these-docs) Claude、VSCode 等工具以获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/document_loaders/roam.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

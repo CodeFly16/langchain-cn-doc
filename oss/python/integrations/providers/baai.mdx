@@ -1,0 +1,58 @@
+---
+title: "Baai 集成"
+description: "使用 LangChain Python 与 Baai 集成。"
+---
+
+>[Beijing Academy of Artificial Intelligence (BAAI) (Wikipedia)](https://en.wikipedia.org/wiki/Beijing_Academy_of_Artificial_Intelligence),
+> also known as `Zhiyuan Institute`, is a Chinese non-profit artificial
+> intelligence (AI) research laboratory. `BAAI` conducts AI research
+> and is dedicated to promoting collaboration among academia and industry,
+> as well as fostering top talent and a focus on long-term research on
+> the fundamentals of AI technology. As a collaborative hub, BAAI's founding
+> members include leading AI companies, universities, and research institutes.
+
+
+## 向量嵌入模型
+
+### HuggingFaceBgeEmbeddings
+
+>[BGE models on the HuggingFace](https://huggingface.co/BAAI/bge-large-en-v1.5)
+> are one of [the best open-source embedding models](https://huggingface.co/spaces/mteb/leaderboard).
+
+查看[使用示例](/oss/python/integrations/embeddings/bge_huggingface).
+
+```python
+from langchain_community.embeddings import HuggingFaceBgeEmbeddings
+```
+
+### IpexLLMBgeEmbeddings
+
+>[IPEX-LLM](https://github.com/intel-analytics/ipex-llm) is a PyTorch
+> library for running LLM on Intel CPU and GPU (e.g., local PC with iGPU,
+> discrete GPU such as Arc, Flex and Max) with very low latency.
+
+See a [usage example running model on Intel CPU](/oss/python/integrations/embeddings/ipex_llm).
+See a [usage example running model on Intel GPU](/oss/python/integrations/embeddings/ipex_llm_gpu).
+
+```python
+from langchain_community.embeddings import IpexLLMBgeEmbeddings
+```
+
+### QuantizedBgeEmbeddings
+
+查看[使用示例](/oss/python/integrations/embeddings/itrex).
+
+```python
+from langchain_community.embeddings import QuantizedBgeEmbeddings
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/baai.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

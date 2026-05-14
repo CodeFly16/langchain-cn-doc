@@ -1,0 +1,97 @@
+---
+title: "LlamaCpp 集成"
+description: "使用 LangChain JavaScript 集成 LlamaCpp embedding model。"
+---
+
+<Tip>
+**兼容性**
+
+Only available on Node.js.
+</Tip>
+
+This module is based on the [node-llama-cpp](https://github.com/withcatai/node-llama-cpp) Node.js bindings for [llama.cpp](https://github.com/ggerganov/llama.cpp), allowing you to work with a locally running LLM. This allows you to work with a much smaller quantized model capable of running on a laptop environment, ideal for testing and scratch padding ideas without running up a bill!
+
+## 设置
+
+You'll need to install major version `3` of the [node-llama-cpp](https://github.com/withcatai/node-llama-cpp) module to communicate with your local model.
+
+```bash npm
+npm install -S node-llama-cpp@3
+```
+<Tip>
+请参阅[此部分了解安装 LangChain 包的通用说明](/oss/javascript/langchain/install)。
+</Tip>
+
+```bash npm
+npm install @langchain/community @langchain/core
+```
+
+You will also need a local Llama 3 model (or a model supported by [node-llama-cpp](https://github.com/withcatai/node-llama-cpp)). You will need to pass the path to this model to the LlamaCpp module as a part of the parameters (see example).
+
+Out-of-the-box `node-llama-cpp` is tuned for running on a MacOS platform with support for the Metal GPU of Apple M-series of processors. If you need to turn this off or need support for the CUDA architecture then refer to the documentation at [node-llama-cpp](https://withcatai.github.io/node-llama-cpp/).
+
+For advice on getting and preparing `llama3` see the documentation for the LLM version of this module.
+
+A note to LangChain.js contributors: if you want to run the tests associated with this module you will need to put the path to your local model in the environment variable `LLAMA_PATH`.
+
+## 用法
+
+### Basic use
+
+We need to provide a path to our local Llama3 model, also the `embeddings` property is always set to `true` in this module.
+
+```typescript
+import { LlamaCppEmbeddings } from "@langchain/community/embeddings/llama_cpp";
+
+const llamaPath = "/Replace/with/path/to/your/model/gguf-llama3-Q4_0.bin";
+
+const embeddings = await LlamaCppEmbeddings.initialize({
+  modelPath: llamaPath,
+});
+
+const res = embeddings.embedQuery("Hello Llama!");
+
+console.log(res);
+
+/*
+	[ 15043, 365, 29880, 3304, 29991 ]
+*/
+```
+
+### Document embedding
+
+```typescript
+import { LlamaCppEmbeddings } from "@langchain/community/embeddings/llama_cpp";
+
+const llamaPath = "/Replace/with/path/to/your/model/gguf-llama3-Q4_0.bin";
+
+const documents = ["Hello World!", "Bye Bye!"];
+
+const embeddings = await LlamaCppEmbeddings.initialize({
+  modelPath: llamaPath,
+});
+
+const res = await embeddings.embedDocuments(documents);
+
+console.log(res);
+
+/*
+	[ [ 15043, 2787, 29991 ], [ 2648, 29872, 2648, 29872, 29991 ] ]
+*/
+```
+
+## 相关内容
+
+- Embedding model [conceptual guide](/oss/javascript/integrations/embeddings)
+- Embedding model [how-to guides](/oss/javascript/integrations/embeddings)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/embeddings/llama_cpp.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

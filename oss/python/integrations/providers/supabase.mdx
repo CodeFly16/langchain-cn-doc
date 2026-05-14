@@ -1,0 +1,45 @@
+---
+title: "Supabase (Postgres) 集成"
+description: "使用 LangChain Python 与 Supabase (Postgres) 集成。"
+---
+
+>[Supabase](https://supabase.com/docs) 是一个开源的 `Firebase` alternative.
+> `Supabase` is built on top of `PostgreSQL`, which offers strong `SQL`
+> querying capabilities and enables a simple interface with already-existing tools and frameworks.
+
+>[PostgreSQL](https://en.wikipedia.org/wiki/PostgreSQL) also known as `Postgres`,
+> is a free and open-source relational database management system (RDBMS)
+> emphasizing extensibility and `SQL` compliance.
+
+## 安装和设置
+
+我们需要安装 `supabase` Python 包.
+
+<CodeGroup>
+```bash pip
+pip install supabase
+```
+
+```bash uv
+uv add supabase
+```
+</CodeGroup>
+
+## 向量存储
+
+查看[使用示例](/oss/python/integrations/vectorstores/supabase).
+
+```python
+from langchain_community.vectorstores import SupabaseVectorStore
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/supabase.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

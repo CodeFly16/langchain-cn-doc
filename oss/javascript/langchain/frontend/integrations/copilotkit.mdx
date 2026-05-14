@@ -1,0 +1,465 @@
+---
+title: CopilotKit
+description: 为 LangGraph 部署添加自定义 CopilotKit 端点，在 React 中渲染结构化生成式 UI
+---
+
+[CopilotKit](https://www.copilotkit.ai/) 提供完整的 React 聊天运行时，与 LangGraph 配合使用时效果特别好，尤其是当你希望智能体返回**结构化 UI 负载**而不仅仅是纯文本时。在这种模式下，你的 LangGraph 部署同时提供图 API 和自定义 CopilotKit 端点，而前端将助手消息解析为动态 React 组件。
+
+这种方法在以下场景中很有用：
+
+- 需要现成的聊天运行时，而不是自己连接 `stream.messages`
+- 需要自定义服务器端点，可以在已部署的图旁边添加特定于提供商的行为
+- 需要从受约束的组件注册表渲染结构化生成式 UI
+
+<Info>
+  有关 CopilotKit 特定的 API、UI 模式和运行时配置，请参阅
+  [CopilotKit 文档](https://docs.copilotkit.ai/langgraph)。
+</Info>
+
+import { ExampleEmbed } from "/snippets/example-embed.jsx"
+
+<ExampleEmbed example="copilotkit" minHeight={700} />
+
+## 工作原理
+
+从高层来看，CopilotKit 位于你的 React 应用和 LangGraph 部署之间。前端将对话状态发送到与图 API 一起挂载的自定义 `/api/copilotkit` 路由，该路由将请求转发到 LangGraph，响应包含助手消息和你的组件注册表可以渲染的任何结构化 UI 负载。
+
+1. **照常部署图**，使用 LangSmith 或 LangGraph 开发服务器。
+2. **使用 HTTP 应用扩展部署**，在图 API 旁边挂载 CopilotKit 路由。
+3. **在前端用 `CopilotKit` 包装** 并将其指向该自定义运行时 URL。
+4. **注册动态 UI 组件** 并在渲染时将助手响应解析为这些组件。
+
+```mermaid
+%%{
+  init: {
+    "fontFamily": "monospace",
+    "flowchart": {
+      "curve": "curve"
+    }
+  }
+}%%
+graph LR
+  USER["用户输入"]
+  UI["CopilotKit React 应用"]
+  ENDPOINT["/api/copilotkit"]
+  GRAPH["LangGraph 部署"]
+  RENDER["Hashbrown UI 套件"]
+
+  USER --> UI
+  UI --> ENDPOINT
+  ENDPOINT --> GRAPH
+  GRAPH --> ENDPOINT
+  ENDPOINT --> UI
+  UI --> RENDER
+```
+
+## 安装
+
+后端端点：
+
+```bash
+bun add @copilotkit/runtime hono
+```
+
+
+
+
+前端应用：
+
+```bash
+bun add @copilotkit/react-core @copilotkit/react-ui @hashbrownai/core @hashbrownai/react
+```
+
+## 使用自定义端点扩展 LangGraph 部署
+
+关键思想是 LangGraph 部署不仅提供图服务。它还可以加载 HTTP 应用，让你在部署旁边挂载额外的路由。
+
+在 `langgraph.json` 中，将 `http.app` 指向你的自定义应用入口点：
+
+```json
+{
+  "graphs": {
+    "copilotkit_shadify": "./src/agents/copilotkit-shadify.ts:agent"
+  },
+  "http": {
+    "app": "./src/api/app.ts:app"
+  }
+}
+```
+
+
+
+
+然后创建 Hono 应用并注册 CopilotKit 路由：
+
+```ts app.ts
+import { Hono } from "hono";
+import { registerCopilotKit } from "./copilotkit.js";
+
+export const app = new Hono();
+
+registerCopilotKit(app);
+```
+
+
+
+
+这个自定义应用是重要的扩展点：它挂载了一个 CopilotKit 感知的运行时，而不替换底层的 LangGraph 部署。
+
+在该路由内，创建 `CopilotRuntime` 并使用 `LangGraphAgent` 将其指回已部署的图：
+
+```ts expandable copilotkit.ts
+import { type Hono } from "hono";
+
+import { createCopilotEndpointSingleRoute, CopilotRuntime } from "@copilotkit/runtime/v2";
+import { LangGraphAgent } from "@copilotkit/runtime/langgraph";
+
+const defaultAgentHost = process.env.LANGGRAPH_DEPLOYMENT_URL || "http://127.0.0.1:2024";
+const agentUrl = defaultAgentHost.startsWith("http")
+  ? defaultAgentHost
+  : `http://${defaultAgentHost}`;
+
+class BridgedLangGraphAgent extends LangGraphAgent {
+  override prepareRunAgentInput(
+    input: Parameters<LangGraphAgent["prepareRunAgentInput"]>[0],
+  ): ReturnType<LangGraphAgent["prepareRunAgentInput"]> {
+    const prepared = super.prepareRunAgentInput(input);
+
+    return {
+      ...prepared,
+      context: normalizeCopilotContext(prepared.context) as ReturnType<
+        LangGraphAgent["prepareRunAgentInput"]
+      >["context"],
+    };
+  }
+
+  override async getAssistant(): Promise<Awaited<ReturnType<LangGraphAgent["getAssistant"]>>> {
+    const assistants = await this.client.assistants.search({
+      graphId: this.graphId,
+      limit: 100,
+    });
+
+    const assistant = assistants.find((candidate) => candidate.graph_id === this.graphId);
+    if (assistant) {
+      return assistant;
+    }
+
+    return super.getAssistant();
+  }
+}
+
+export function registerCopilotKit(app: Hono) {
+  const runtime = new CopilotRuntime({
+    agents: {
+      default: new BridgedLangGraphAgent({
+        deploymentUrl: agentUrl,
+        graphId: "copilotkit_shadify",
+      }),
+    },
+  });
+
+  const copilotApp = createCopilotEndpointSingleRoute({
+    runtime,
+    basePath: "/api/copilotkit",
+  });
+
+  app.route("/", copilotApp);
+}
+
+function normalizeCopilotContext(context: unknown): unknown {
+  if (!Array.isArray(context)) {
+    return context;
+  }
+
+  const normalizedEntries = context.flatMap((item) => {
+    if (!item || typeof item !== "object") {
+      return [];
+    }
+
+    const entry = item as { description?: unknown; value?: unknown };
+    return typeof entry.description === "string" ? [[entry.description, entry.value] as const] : [];
+  });
+
+  return Object.fromEntries(normalizedEntries);
+}
+```
+
+路由适配器只是 TypeScript 设置的一半。你的 LangChain 智能体还需要中间件来读取转发的 `output_schema` 并将其转换为模型的结构化 `responseFormat`：
+
+```ts expandable agent.ts
+import { createAgent, createMiddleware, toolStrategy } from "langchain";
+import { z } from "zod";
+
+import { deepSearchTool, searchWebTool } from "../tools/index.js";
+
+const contextSchema = z.object({
+  output_schema: z.unknown().optional(),
+});
+
+const structuredOutputMiddleware = createMiddleware({
+  name: "CopilotKitStructuredOutput",
+  contextSchema,
+  wrapModelCall: async (request, handler) => {
+    const rawOutputSchema = getRuntimeOutputSchema(request.runtime);
+    const schema = normalizeOutputSchema(rawOutputSchema);
+    if (!schema) {
+      return handler(request);
+    }
+
+    const responseFormat = toolStrategy(
+      schema as unknown as Parameters<typeof toolStrategy>[0],
+      {
+        toolMessageContent: "Structured UI response generated.",
+      },
+    );
+
+    return handler({
+      ...request,
+      responseFormat,
+    });
+  },
+});
+
+export const agent = createAgent({
+  model: process.env.COPILOTKIT_MODEL ?? "google_genai:gemini-3.1-pro-preview",
+  contextSchema,
+  middleware: [structuredOutputMiddleware],
+  tools: [searchWebTool, deepSearchTool],
+  systemPrompt: `You are a helpful UI assistant inspired by the CopilotKit Shadify example.
+
+Build rich visual responses with the available UI components when they add value.
+Only wrap actual UI layouts inside cards. Plain Markdown answers should stay as Markdown.
+Use rows for side-by-side layouts with at most two columns.
+Prefer simple, polished outputs over dense dashboards.
+When using charts, make labels and values concise and easy to read.
+When showing code, prefer the code_block component.
+When researching topics, use the available search tools first and then present the result cleanly.`,
+});
+
+function normalizeOutputSchema(value: unknown): Record<string, unknown> | null {
+  let schema = value;
+
+  if (typeof schema === "string") {
+    try {
+      schema = JSON.parse(schema);
+    } catch {
+      return null;
+    }
+  }
+
+  if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
+    return null;
+  }
+
+  const normalized = { ...(schema as Record<string, unknown>) };
+
+  if (!normalized.title) {
+    normalized.title = "CopilotKitStructuredOutput";
+  }
+
+  if (!normalized.description) {
+    normalized.description = "Structured response schema for the CopilotKit preview.";
+  }
+
+  return normalized;
+}
+
+function getRuntimeOutputSchema(runtime: {
+  context?: { output_schema?: unknown };
+  configurable?: Record<string, unknown>;
+}): unknown {
+  if (runtime.context?.output_schema !== undefined) {
+    return runtime.context.output_schema;
+  }
+
+  const configurable = runtime.configurable;
+  if (!configurable || typeof configurable !== "object" || Array.isArray(configurable)) {
+    return undefined;
+  }
+
+  return configurable.output_schema;
+}
+```
+
+这个中间件使前端的 `useAgentContext({ description: "output_schema", ... })` 变得有用。CopilotKit 运行时转发 schema，智能体将其转换为模型必须遵循的结构化输出契约。
+
+
+
+
+结果是清晰的关注点分离：
+
+- LangGraph 仍然负责图执行和持久化
+- CopilotKit 负责面向聊天的运行时契约
+- 你的自定义端点将两者粘合在一个部署中
+
+## 构建前端应用
+
+在前端，用 `CopilotKit` 包装你的应用并将其指向自定义运行时 URL：
+
+```tsx
+import { CopilotKit } from "@copilotkit/react-core";
+import { CopilotChat, useAgentContext } from "@copilotkit/react-core/v2";
+import { s } from "@hashbrownai/core";
+
+import { useChatKit } from "@/components/chat/chat-kit";
+import { chatTheme } from "@/lib/chat-theme";
+
+export function App() {
+  return (
+    <CopilotKit runtimeUrl={import.meta.env.VITE_RUNTIME_URL ?? "/api/copilotkit"}>
+      <Page />
+    </CopilotKit>
+  );
+}
+
+function Page() {
+  const chatKit = useChatKit();
+
+  useAgentContext({
+    description: "output_schema",
+    value: s.toJsonSchema(chatKit.schema),
+  });
+
+  return <CopilotChat {...chatTheme} />;
+}
+```
+
+这里有两个重要的部分：
+
+- `runtimeUrl="/api/copilotkit"` 将聊天发送到你的自定义后端路由，而不是直接发送到原始 LangGraph API
+- `useAgentContext(...)` 将 UI schema 发送到智能体，使模型知道应该生成什么结构化输出格式
+
+## 注册动态组件
+
+组件注册表位于 `useChatKit()` 中。你在这里定义智能体允许输出的组件集，例如卡片、行、列、图表、代码块和按钮。
+
+```tsx
+import { s } from "@hashbrownai/core";
+import { exposeComponent, exposeMarkdown, useUiKit } from "@hashbrownai/react";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { CodeBlock } from "@/components/ui/code-block";
+import { Row, Column } from "@/components/ui/layout";
+import { SimpleChart } from "@/components/ui/simple-chart";
+
+export function useChatKit() {
+  return useUiKit({
+    components: [
+      exposeMarkdown(),
+      exposeComponent(Card, {
+        name: "card",
+        description: "Card to wrap generative UI content.",
+        children: "any",
+      }),
+      exposeComponent(Row, {
+        name: "row",
+        props: {
+          gap: s.string("Tailwind gap size") as never,
+        },
+        children: "any",
+      }),
+      exposeComponent(Column, {
+        name: "column",
+        children: "any",
+      }),
+      exposeComponent(SimpleChart, {
+        name: "chart",
+        props: {
+          labels: s.array("Category labels", s.string("A label")),
+          values: s.array("Numeric values", s.number("A value")),
+        },
+        children: false,
+      }),
+      exposeComponent(CodeBlock, {
+        name: "code_block",
+        props: {
+          code: s.streaming.string("The code to display"),
+          language: s.string("Programming language") as never,
+        },
+        children: false,
+      }),
+      exposeComponent(Button, {
+        name: "button",
+        children: "text",
+      }),
+    ],
+  });
+}
+```
+
+这个注册表成为智能体和 UI 之间的契约。模型不是在生成任意 JSX。它在生成必须根据你暴露的组件和属性进行验证的结构化数据。
+
+## 将助手消息渲染为动态 UI
+
+一旦助手响应到达，自定义消息渲染器决定如何展示它。在这个示例中：
+
+- 助手消息根据 UI 套件 schema 解析为结构化 JSON
+- 有效的结构化输出渲染为真实的 React 组件
+- 用户消息渲染为普通聊天气泡
+
+```tsx
+import type { AssistantMessage } from "@ag-ui/core";
+import type { RenderMessageProps } from "@copilotkit/react-ui";
+import { useJsonParser } from "@hashbrownai/react";
+import { memo } from "react";
+
+import { useChatKit } from "@/components/chat/chat-kit";
+import { Squircle } from "@/components/squircle";
+
+const AssistantMessageRenderer = memo(function AssistantMessageRenderer({
+  message,
+}: {
+  message: AssistantMessage;
+}) {
+  const kit = useChatKit();
+  const { value } = useJsonParser(message.content ?? "", kit.schema);
+
+  if (!value) return null;
+
+  return (
+    <div className="group/msg mt-2 flex w-full justify-start">
+      <div className="magic-text-output w-full px-1 py-1">{kit.render(value)}</div>
+    </div>
+  );
+});
+
+export function CustomMessageRenderer({ message }: RenderMessageProps) {
+  if (message.role === "assistant") {
+    return <AssistantMessageRenderer message={message} />;
+  }
+
+  return (
+    <div className="flex w-full justify-end">
+      <Squircle className="w-full max-w-[64ch] px-4 py-3">
+        <pre>{typeof message.content === "string" ? message.content : JSON.stringify(message.content, null, 2)}</pre>
+      </Squircle>
+    </div>
+  );
+}
+```
+
+这种渲染器模式使集成感觉原生：
+
+- CopilotKit 处理聊天状态和传输
+- 自定义渲染器决定助手负载如何变成 UI
+- [Hashbrown](https://hashbrown.dev/) 将经过验证的结构化数据转换为具体的 React 元素
+
+## 最佳实践
+
+- **保持自定义端点精简：** 用它来将 CopilotKit 适配到你的图部署，而不是复制图内已有的业务逻辑
+- **显式发送 schema：** 每次页面挂载时 `useAgentContext` 应该描述 UI 契约
+- **注册受约束的组件集：** 只暴露你实际希望模型使用的组件和属性
+- **将渲染视为解析步骤：** 在渲染之前，根据你的 schema 解析助手内容
+- **保持用户消息为纯文本：** 只有助手消息需要结构化渲染器；用户消息可以保持普通聊天气泡
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/frontend/integrations/copilotkit.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

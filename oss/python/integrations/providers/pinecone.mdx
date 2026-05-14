@@ -1,0 +1,113 @@
+---
+title: "Pinecone 集成"
+description: "使用 LangChain Python 与 Pinecone 集成。"
+---
+
+>[Pinecone](https://docs.pinecone.io/docs/overview) 是一个向量数据库 with broad functionality.
+
+
+## 安装和设置
+
+安装 Python SDK：
+
+<CodeGroup>
+```bash pip
+pip install langchain-pinecone
+```
+
+```bash uv
+uv add langchain-pinecone
+```
+</CodeGroup>
+
+
+## 向量存储
+
+存在一个围绕 Pinecone indexes, 的封装器，允许您将其用作向量存储，
+无论是用于语义搜索还是示例选择。
+
+```python
+from langchain_pinecone import PineconeVectorStore
+```
+
+有关 Pinecone vectorstore, see [this notebook](/oss/python/integrations/vectorstores/pinecone)
+
+### Sparse vector store
+
+LangChain's `PineconeSparseVectorStore` enables sparse retrieval using Pinecone's sparse English model. It maps text to sparse vectors and supports adding documents and similarity search.
+
+```python
+from langchain_pinecone import PineconeSparseVectorStore
+
+# Initialize sparse vector store
+vector_store = PineconeSparseVectorStore(
+    index=my_index,
+    embedding_model="pinecone-sparse-english-v0"
+)
+# 添加文档
+vector_store.add_documents(documents)
+# 查询
+results = vector_store.similarity_search("your query", k=3)
+```
+
+有关更详细的演练，请参阅 [Pinecone Sparse Vector Store notebook](/oss/python/integrations/vectorstores/pinecone_sparse).
+
+### Sparse embedding
+
+LangChain's `PineconeSparseEmbeddings` provides sparse embedding generation using Pinecone's `pinecone-sparse-english-v0` model.
+
+```python
+from langchain_pinecone.embeddings import PineconeSparseEmbeddings
+
+# Initialize sparse embeddings
+sparse_embeddings = PineconeSparseEmbeddings(
+    model="pinecone-sparse-english-v0"
+)
+# Embed a single query (returns SparseValues)
+query_embedding = sparse_embeddings.embed_query("sample text")
+
+# Embed multiple documents (returns list of SparseValues)
+docs = ["Document 1 content", "Document 2 content"]
+doc_embeddings = sparse_embeddings.embed_documents(docs)
+```
+
+有关更详细的用法，请参阅 [Pinecone Sparse Embeddings notebook](/oss/python/integrations/vectorstores/pinecone_sparse).
+
+
+## 检索器
+
+### Pinecone hybrid search
+
+<CodeGroup>
+```bash pip
+pip install pinecone pinecone-text
+```
+
+```bash uv
+uv add pinecone pinecone-text
+```
+</CodeGroup>
+
+```python
+from langchain_community.retrievers import (
+    PineconeHybridSearchRetriever,
+)
+```
+
+有关更多详细信息，请参阅 [this notebook](/oss/python/integrations/retrievers/pinecone_hybrid_search).
+
+
+### Self query retriever
+
+Pinecone vector store can be used as a retriever for self-querying.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/pinecone.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

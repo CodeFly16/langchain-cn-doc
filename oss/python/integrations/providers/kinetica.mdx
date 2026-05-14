@@ -1,0 +1,61 @@
+---
+title: "Kinetica 集成"
+description: "使用 LangChain Python 与 Kinetica 集成。"
+---
+
+[Kinetica](https://www.kinetica.com/) is a real-time database purpose built for enabling
+analytics and generative AI on time-series & spatial data.
+
+## 聊天模型
+
+The Kinetica LLM wrapper uses the [Kinetica SqlAssist
+LLM](https://docs.kinetica.com/7.2/sql-gpt/concepts/) to transform natural language into
+SQL to simplify the process of data retrieval.
+
+See [Kinetica Language To SQL Chat Model](/oss/python/integrations/chat/kinetica) for usage.
+
+
+```python
+from langchain_kinetica import ChatKinetica
+```
+
+## 向量存储
+
+The Kinetca vectorstore wrapper leverages Kinetica's native support for [vector
+similarity search](https://docs.kinetica.com/7.2/vector_search/).
+
+See [Kinetica Vectorstore API](/oss/python/integrations/vectorstores/kinetica) for usage.
+
+
+```python
+from langchain_kinetica import KineticaVectorstore
+```
+
+## 文档加载器
+
+The Kinetica Document loader can be used to load LangChain [Documents](https://reference.langchain.com/python/langchain-core/documents/base/Document) from the
+[Kinetica](https://www.kinetica.com/) database.
+
+See [Kinetica Document Loader](/oss/python/integrations/document_loaders/kinetica) for usage.
+
+
+```python
+from langchain_kinetica import KineticaLoader
+```
+
+## 检索器
+
+The Kinetica Retriever can return documents given an unstructured query.
+
+See [Kinetica VectorStore based Retriever](/oss/python/integrations/retrievers/kinetica) for usage.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/kinetica.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

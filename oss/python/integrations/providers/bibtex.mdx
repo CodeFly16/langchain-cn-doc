@@ -1,0 +1,40 @@
+---
+title: "Bibtex 集成"
+description: "使用 LangChain Python 与 Bibtex 集成。"
+---
+
+>[BibTeX](https://www.ctan.org/pkg/bibtex) is a file format and reference management system commonly used in conjunction with `LaTeX` typesetting. It serves as a way to organize and store bibliographic information for academic and research documents.
+
+## 安装和设置
+
+我们需要安装 the `bibtexparser` and `pymupdf` 包。
+
+<CodeGroup>
+```bash pip
+pip install bibtexparser pymupdf
+```
+
+```bash uv
+uv add bibtexparser pymupdf
+```
+</CodeGroup>
+
+
+## 文档加载器
+
+查看[使用示例](/oss/python/integrations/document_loaders/bibtex).
+
+```python
+from langchain_community.document_loaders import BibtexLoader
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/bibtex.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

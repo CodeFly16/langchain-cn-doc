@@ -1,0 +1,145 @@
+---
+title: 事件流
+description: 通过类型化投影从 LangChain 智能体运行中流式获取实时更新。
+---
+
+LangChain 智能体构建在 LangGraph 之上，因此它们支持相同的事件流模型，并提供面向智能体的投影，包括消息、工具调用、状态和自定义更新。
+
+对于大多数应用和前端使用场景，请通过 `stream_events(..., version="v3")` 使用事件流。事件流返回一个带有类型化投影的运行对象，因此你可以选择需要的视图，而不是解析流模式元组。
+
+<Tip>
+查看[流式处理示例集](https://github.com/langchain-ai/streaming-cookbook)，获取可运行的示例和详细参考文档链接。
+</Tip>
+
+<Note>
+对直接使用 `updates`、`messages` 或 `custom` 等 Pregel 模式的流式处理感兴趣？请参阅[流式处理页面](/oss/python/langchain/streaming)。
+</Note>
+
+```python
+from langchain.agents import create_agent
+
+
+def get_weather(city: str) -> str:
+    """获取城市天气。"""
+    return f"It's always sunny in {city}!"
+
+
+agent = create_agent(
+    model="gpt-5-nano",
+    tools=[get_weather],
+)
+
+run = agent.stream_events(
+    {"messages": [{"role": "user", "content": "What is the weather in SF?"}]},
+    version="v3",
+)
+
+for message in run.messages:
+    for delta in message.text:
+        print(delta, end="", flush=True)
+
+final_state = run.output
+```
+
+
+
+## 可流式传输的内容
+
+| 投影 | 用途 |
+| ---------- | --- |
+| `for event in run` | 当你需要精确的到达顺序时使用原始协议事件。 |
+| `run.messages` | 模型消息流，每次 LLM 调用一个。 |
+| `message.text` | 消息的文本增量和最终文本。 |
+| `message.reasoning` | 对于公开推理内容的模型，提供推理增量。 |
+| `message.tool_calls` | 工具调用参数块和最终确定的工具调用。 |
+| `message.output` | 模型调用完成后的最终消息对象。 |
+| `message.usage` | 当提供商返回 Token 使用量元数据时提供。 |
+| `run.values` | 智能体状态快照。 |
+| `run.output` | 最终智能体状态。 |
+| `run.extensions` | 自定义转换器投影。 |
+| `run.tool_calls` | 工具执行生命周期、输入、输出增量、最终输出和错误。 |
+
+
+
+`run.messages` 生成 `ChatModelStream` 对象。每个消息流公开 `.text`、`.reasoning`、`.tool_calls` 和 `.output`。同步投影是可迭代的（用于实时增量）且可排空的（用于最终值）。
+
+
+
+## 流式传输智能体消息
+
+当你需要每次 LLM 调用的模型输出时，使用 `run.messages`。
+
+```python
+run = agent.stream_events(input, version="v3")
+
+for message in run.messages:
+    print(f"[{message.node}] ", end="")
+    for delta in message.text:
+        print(delta, end="", flush=True)
+
+    full_message = message.output
+    usage = full_message.usage_metadata
+    if usage:
+        print(usage)
+```
+
+
+
+## 流式传输工具调用
+
+有两个有用的工具调用投影：
+
+- `message.tool_calls` 在模型生成工具调用时流式传输工具调用参数块。
+- `run.tool_calls` 在工具调用开始后流式传输工具执行的生命周期。
+
+```python
+run = agent.stream_events(input, version="v3")
+
+for message in run.messages:
+    for chunk in message.tool_calls:
+        print(f"tool call chunk: {chunk}")
+
+    finalized = message.tool_calls.get()
+    if finalized:
+        print(f"finalized tool calls: {finalized}")
+
+for call in run.tool_calls:
+    print(f"{call.tool_name}({call.input})")
+    for delta in call.output_deltas:
+        print(delta, end="", flush=True)
+    print(call.output, call.error)
+```
+
+
+
+## 流式传输状态和最终输出
+
+使用 `run.values` 获取状态快照，使用 `run.output` 获取最终智能体状态。
+
+```python
+run = agent.stream_events(input, version="v3")
+
+for snapshot in run.values:
+    print(snapshot)
+
+final_state = run.output
+```
+
+
+
+## 相关内容
+
+- [流式处理示例集](https://github.com/langchain-ai/streaming-cookbook)展示了可运行的事件流示例。
+- [LangChain 流式处理](/oss/python/langchain/streaming)涵盖了更底层的 Pregel 流模式。
+- [LangGraph 事件流](/oss/python/langgraph/streaming/event-streaming)解释了底层的图流模型。
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时回答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/event-streaming.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

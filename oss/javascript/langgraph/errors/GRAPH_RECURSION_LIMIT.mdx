@@ -1,0 +1,52 @@
+---
+title: GRAPH_RECURSION_LIMIT
+---
+
+你的 LangGraph [`StateGraph`](https://langchain-ai.github.io/langgraph/reference/graphs/#langgraph.graph.state.StateGraph) 在达到停止条件之前达到了最大步骤数。
+这通常是由于如下示例代码导致的无限循环引起的：
+
+
+
+```typescript
+import { StateGraph, StateSchema } from "@langchain/langgraph";
+import { z } from "zod/v4";
+
+const State = new StateSchema({
+  someKey: z.string(),
+});
+
+const builder = new StateGraph(State)
+  .addNode("a", ...)
+  .addNode("b", ...)
+  .addEdge("a", "b")
+  .addEdge("b", "a")
+  ...
+
+const graph = builder.compile();
+```
+
+
+然而，复杂的图可能自然地达到默认限制。
+
+## 故障排除
+
+* 如果你不期望图经过很多次迭代，你可能有一个循环。检查你的逻辑是否存在无限循环。
+
+
+
+* 如果你有一个复杂的图，可以在调用图时在 `config` 对象中传入更高的 `recursionLimit` 值：
+
+```typescript
+await graph.invoke({...}, { recursionLimit: 100 });
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/errors/GRAPH_RECURSION_LIMIT.mdx) 或 [提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

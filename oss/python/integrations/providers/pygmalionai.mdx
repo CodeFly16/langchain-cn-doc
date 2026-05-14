@@ -1,0 +1,41 @@
+---
+title: "Pygmalionai 集成"
+description: "使用 LangChain Python 与 Pygmalionai 集成。"
+---
+
+>[PygmalionAI](https://pygmalion.chat/) is a company supporting the
+> open-source models by serving the inference endpoint
+> for the [Aphrodite Engine](https://github.com/PygmalionAI/aphrodite-engine).
+
+
+## 安装和设置
+
+
+<CodeGroup>
+```bash pip
+pip install aphrodite-engine
+```
+
+```bash uv
+uv add aphrodite-engine
+```
+</CodeGroup>
+
+## 大语言模型 (LLM)
+
+查看[使用示例](/oss/python/integrations/llms/aphrodite).
+
+```python
+from langchain_community.llms import Aphrodite
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/pygmalionai.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

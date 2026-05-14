@@ -1,0 +1,94 @@
+---
+title: "Serper 集成"
+description: "使用 LangChain Python 与 Serper 集成。"
+---
+
+This page covers how to use the [Serper](https://serper.dev) Google Search API within LangChain. Serper is a low-cost Google Search API that can be used to add answer box, knowledge graph, and organic results data from Google Search.
+
+It is broken into two parts: setup, and then references to the specific Google Serper wrapper.
+
+## 设置
+
+- Go to [serper.dev](https://serper.dev) to sign up for a free account
+- Get the api key and set it as an environment variable (`SERPER_API_KEY`)
+
+## Wrappers
+
+### 工具类
+
+There exists a `GoogleSerperAPIWrapper` utility which wraps this API. To import this utility:
+
+```python
+from langchain_community.utilities import GoogleSerperAPIWrapper
+```
+
+您可以将其作为带搜索工具的智能体的一部分使用：
+
+```python
+from langchain_community.utilities import GoogleSerperAPIWrapper
+from langchain_openai import OpenAI
+from langchain.agents import create_agent, Tool
+
+import os
+
+os.environ["SERPER_API_KEY"] = ""
+os.environ["OPENAI_API_KEY"] = ""
+
+llm = OpenAI(temperature=0)
+search = GoogleSerperAPIWrapper()
+
+tools = [
+    Tool(
+        name="Intermediate Answer",
+        func=search.run,
+        description="useful for when you need to ask with search",
+    )
+]
+
+agent = create_agent(
+    model=llm,
+    tools=tools,
+)
+
+agent.invoke("What is the hometown of the reigning men's U.S. Open champion?")
+```
+
+
+#### Output
+```
+Entering new AgentExecutor chain...
+ Yes.
+Follow up: Who is the reigning men's U.S. Open champion?
+Intermediate answer: Current champions Carlos Alcaraz, 2022 men's singles champion.
+Follow up: Where is Carlos Alcaraz from?
+Intermediate answer: El Palmar, Spain
+So the final answer is: El Palmar, Spain
+
+> Finished chain.
+
+'El Palmar, Spain'
+```
+
+For a more detailed walkthrough of this wrapper, see [Google Serper integration](/oss/python/integrations/tools/google_serper).
+
+### 工具
+
+您也可以轻松地将此封装器加载为工具（与智能体一起使用）。
+您可以通过以下方式完成：
+```python
+from langchain_community.agent_toolkits.load_tools import load_tools
+tools = load_tools(["google-serper"])
+```
+
+有关工具的更多信息，请参阅 [this overview](/oss/python/integrations/tools).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/google_serper.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,155 @@
+---
+title: "OllamaEmbeddings 集成"
+description: "使用 LangChain Python 集成 OllamaEmbeddings 向量嵌入模型。"
+---
+
+本指南将帮助您开始使用 Ollama 向量嵌入模型 using LangChain. For detailed documentation on `OllamaEmbeddings` 功能和配置选项的详细文档，请参阅 [API reference](https://reference.langchain.com/python/langchain-ollama/embeddings/OllamaEmbeddings).
+
+## 概述
+
+### 集成详情
+
+<ItemTable category="embeddings" item="Ollama" />
+
+## 设置
+
+First, follow [these instructions](https://github.com/ollama/ollama?tab=readme-ov-file#ollama) to set up and run a local Ollama instance:
+
+* [Download](https://ollama.ai/download) and install Ollama onto the available supported platforms (including Windows Subsystem for Linux aka WSL, macOS, and Linux)
+  * macOS users can install via Homebrew with `brew install ollama` and start with `brew services start ollama`
+* Fetch available LLM model via `ollama pull <name-of-model>`
+  * View a list of available models 通过 [model library](https://ollama.ai/library)
+  * e.g., `ollama pull llama3`
+* This will download the default tagged version of the model. Typically, the default points to the latest, smallest sized-parameter model.
+
+> On Mac, the models will be download to `~/.ollama/models`
+>
+> On Linux (or WSL), the models will be stored at `/usr/share/ollama/.ollama/models`
+
+* Specify the exact version of the model of interest as such `ollama pull vicuna:13b-v1.5-16k-q4_0` (View the [various tags for the `Vicuna`](https://ollama.ai/library/vicuna/tags) model in this instance)
+* To view all pulled models, use `ollama list`
+* To chat directly with a model from the command line, use `ollama run <name-of-model>`
+* View the [Ollama documentation](https://github.com/ollama/ollama/tree/main/docs) for more commands. You can run `ollama help` in the terminal to see available commands.
+
+要启用模型调用的自动追踪，请设置您的 [LangSmith](/langsmith/home) API key:
+
+```python
+os.environ["LANGSMITH_TRACING"] = "true"
+os.environ["LANGSMITH_API_KEY"] = getpass.getpass("请输入您的 LangSmith API 密钥: ")
+```
+
+### 安装
+
+LangChain 的 Ollama 集成位于 `langchain-ollama` 包中：
+
+```python
+pip install -qU langchain-ollama
+```
+
+## 实例化
+
+Now we can instantiate our model object and generate embeddings:
+
+```python
+from langchain_ollama import OllamaEmbeddings
+
+embeddings = OllamaEmbeddings(
+    model="llama3",
+)
+```
+
+If your model supports configurable output dimensions (e.g., `qwen3-embedding`), you can specify them 通过 `dimensions` parameter:
+
+```python
+from langchain_ollama import OllamaEmbeddings
+
+embeddings = OllamaEmbeddings(
+    model="qwen3-embedding:8b",
+    dimensions=1024,
+)
+```
+
+## 索引与检索
+
+向量嵌入模型常用于检索增强生成 (RAG) 流程中, 既用于索引数据，也用于后续检索数据。 更详细的说明请参阅我们的 [RAG tutorials](/oss/python/langchain/rag/).
+
+下面展示如何使用 `embeddings` 对象来索引和检索数据。 在此示例中，我们将在 `InMemoryVectorStore`.
+
+```python
+# 使用示例文本创建向量存储
+from langchain_core.vectorstores import InMemoryVectorStore
+
+text = "LangChain is the framework for building context-aware reasoning applications"
+
+vectorstore = InMemoryVectorStore.from_texts(
+    [text],
+    embedding=embeddings,
+)
+
+# Use the vectorstore as a retriever
+retriever = vectorstore.as_retriever()
+
+# Retrieve the most similar text
+retrieved_documents = retriever.invoke("What is LangChain?")
+
+# Show the retrieved document's content
+print(retrieved_documents[0].page_content)
+```
+
+```text
+LangChain is the framework for building context-aware reasoning applications
+```
+
+## 直接使用
+
+Under the hood, the vectorstore and retriever implementations are calling `embeddings.embed_documents(...)` and `embeddings.embed_query(...)` to create embeddings for the text(s) used in `from_texts` and retrieval `invoke` operations, respectively.
+
+You can directly call these methods to get embeddings for your own use cases.
+
+### Embed single texts
+
+You can embed single texts or documents with `embed_query`:
+
+```python
+single_vector = embeddings.embed_query(text)
+print(str(single_vector)[:100])  # Show the first 100 characters of the vector
+```
+
+```text
+[-0.0039849705, 0.023019705, -0.001768838, -0.0058736936, 0.00040999008, 0.017861595, -0.011274585,
+```
+
+### Embed multiple texts
+
+You can embed multiple texts with `embed_documents`:
+
+```python
+text2 = (
+    "LangGraph is a library for building stateful, multi-actor applications with LLMs"
+)
+two_vectors = embeddings.embed_documents([text, text2])
+for vector in two_vectors:
+    print(str(vector)[:100])  # Show the first 100 characters of the vector
+```
+
+```text
+[-0.0039849705, 0.023019705, -0.001768838, -0.0058736936, 0.00040999008, 0.017861595, -0.011274585,
+[-0.0066985516, 0.009878328, 0.008019467, -0.009384944, -0.029560851, 0.025744654, 0.004872892, -0.0
+```
+
+---
+
+## API 参考
+
+For detailed documentation on `OllamaEmbeddings` 功能和配置选项的详细文档，请参阅 [API reference](https://reference.langchain.com/python/langchain-ollama/embeddings/OllamaEmbeddings).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/embeddings/ollama.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,44 @@
+---
+title: "ChatGPT plugin 集成"
+description: "使用 LangChain JavaScript 集成 ChatGPT plugin retriever。"
+---
+
+<Warning>
+This module has been deprecated and is no longer supported. The documentation below will not work in versions 0.2.0 or later.
+</Warning>
+
+This example shows how to use the ChatGPT Retriever Plugin within LangChain.
+
+To set up the ChatGPT Retriever Plugin, follow the [ChatGPT Retrieval Plugin setup instructions](https://github.com/openai/chatgpt-retrieval-plugin).
+
+## 用法
+
+```typescript
+import { ChatGPTPluginRetriever } from "@langchain/classic/retrievers/remote";
+
+const retriever = new ChatGPTPluginRetriever({
+  url: "http://0.0.0.0:8000",
+  auth: {
+    bearer: "super-secret-jwt-token-with-at-least-32-characters-long",
+  },
+});
+
+const docs = await retriever.invoke("hello world");
+
+console.log(docs);
+```
+
+## 相关内容
+
+- [Retrieval guide](/oss/javascript/langchain/retrieval)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/retrievers/chatgpt-retriever-plugin.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

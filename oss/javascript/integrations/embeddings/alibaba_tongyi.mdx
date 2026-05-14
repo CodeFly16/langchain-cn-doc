@@ -1,0 +1,48 @@
+---
+title: "Alibaba tongyi 集成"
+description: "使用 LangChain JavaScript 集成 Alibaba tongyi embedding model。"
+---
+
+The `AlibabaTongyiEmbeddings` class uses the Alibaba Tongyi API to generate embeddings for a given text.
+
+## 设置
+
+You'll need to sign up for an Alibaba API key and set it as an environment variable named `ALIBABA_API_KEY`.
+
+Then, you'll need to install the [`@langchain/community`](https://www.npmjs.com/package/@langchain/community) package:
+
+<Tip>
+请参阅[此部分了解安装 LangChain 包的通用说明](/oss/javascript/langchain/install)。
+</Tip>
+
+```bash npm
+npm install @langchain/community @langchain/core
+```
+
+## 用法
+
+```typescript
+import { AlibabaTongyiEmbeddings } from "@langchain/community/embeddings/alibaba_tongyi";
+
+const model = new AlibabaTongyiEmbeddings({});
+const res = await model.embedQuery(
+  "What would be a good company name a company that makes colorful socks?"
+);
+console.log({ res });
+```
+
+## 相关内容
+
+- Embedding model [conceptual guide](/oss/javascript/integrations/embeddings)
+- Embedding model [how-to guides](/oss/javascript/integrations/embeddings)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/embeddings/alibaba_tongyi.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

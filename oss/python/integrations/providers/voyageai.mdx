@@ -1,0 +1,52 @@
+---
+title: "VoyageAI 集成"
+description: "使用 LangChain Python 与 VoyageAI 集成。"
+---
+
+All functionality related to VoyageAI
+
+>[VoyageAI](https://www.voyageai.com/) Voyage AI builds embedding models, customized for your domain and company, for better retrieval quality.
+
+## 安装和设置
+
+Install the integration package with
+<CodeGroup>
+```bash pip
+pip install langchain-voyageai
+```
+
+```bash uv
+uv add langchain-voyageai
+```
+</CodeGroup>
+
+Get a VoyageAI API key and set it as an environment variable (`VOYAGE_API_KEY`)
+
+
+## Text embedding model
+
+查看[使用示例](/oss/python/integrations/embeddings/voyageai)
+
+```python
+from langchain_voyageai import VoyageAIEmbeddings
+```
+
+
+## Reranking
+
+查看[使用示例](/oss/python/integrations/document_transformers/voyageai-reranker)
+
+```python
+from langchain_voyageai import VoyageAIRerank
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/voyageai.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

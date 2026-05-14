@@ -1,0 +1,96 @@
+---
+title: "ChatNovita 集成"
+description: "使用 LangChain JavaScript 集成 ChatNovita chat model。"
+---
+
+Delivers an affordable, reliable, and simple inference platform for running top LLM models.
+
+You can find all the models we support here: [Novita AI Featured Models](https://novita.ai/models/llm?utm_source=github_langchain&utm_medium=github_readme&utm_campaign=link) or request the [Models API](https://novita.ai/docs/guides/llm-models?utm_source=github_langchain&utm_medium=github_readme&utm_campaign=link) to get all available models.
+
+Try the [Novita AI DeepSeek R1 API Demo](https://novita.ai/models/llm/deepseek-deepseek-r1?utm_source=github_langchain&utm_medium=github_readme&utm_campaign=link) today!
+
+## 概述
+
+### 模型功能
+
+| [Tool calling](/oss/javascript/langchain/tools) | [Structured output](/oss/javascript/langchain/structured-output) | [Image input](/oss/javascript/langchain/messages#multimodal) | Audio input | Video input | [Token-level streaming](/oss/javascript/langchain/streaming/) | Native async | [Token usage](/oss/javascript/langchain/models#token-usage) | [Logprobs](/oss/javascript/langchain/models#log-probabilities) |
+| :---: | :---: | :---: |  :---: | :---: | :---: | :---: | :---: | :---: |
+| ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
+
+## 设置
+
+要访问 Novita AI models，你需要create a Novita account and get an API key.
+
+### 凭证
+
+Head to [this page](https://novita.ai/settings#key-management?utm_source=github_langchain&utm_medium=github_readme&utm_campaign=link) to sign up to Novita AI and generate an API key. Once you've done this set the NOVITA_API_KEY environment variable:
+
+```bash
+export NOVITA_API_KEY="your-api-key"
+```
+
+### 安装
+
+LangChain 的 Novita 集成位于 `@langchain-community` 包中：
+
+<CodeGroup>
+```bash npm
+npm install @langchain/community @langchain/core
+```
+```bash yarn
+yarn add @langchain/community @langchain/core
+```
+```bash pnpm
+pnpm add @langchain/community @langchain/core
+```
+</CodeGroup>
+
+## 实例化
+
+Now we can instantiate our model object and generate chat completions. Try the [Novita AI DeepSeek R1 API Demo](https://novita.ai/models/llm/deepseek-deepseek-r1?utm_source=github_langchain&utm_medium=github_readme&utm_campaign=link) today!
+
+```python
+import { ChatNovitaAI } from "@langchain/community/chat_models/novita";
+
+const llm = new ChatNovitaAI({
+  model: "deepseek/deepseek-r1",
+  temperature: 0,
+  // 其他参数...
+})
+```
+
+## 调用
+
+```python
+const aiMsg = await llm.invoke([
+  {
+    role: "system",
+    content: "You are a helpful assistant that translates English to French. Translate the user sentence.",
+  },
+  {
+    role: "human",
+    content: "I love programming."
+  },
+]);
+```
+
+```python
+console.log(aiMsg.content)
+```
+
+---
+
+## API 参考
+
+For detailed documentation of Novita AI LLM APIs, head to [Novita AI LLM API reference](https://novita.ai/docs/guides/llm-api?utm_source=github_langchain&utm_medium=github_readme&utm_campaign=link)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/chat/novita.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

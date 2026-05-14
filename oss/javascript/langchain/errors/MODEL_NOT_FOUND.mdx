@@ -1,0 +1,29 @@
+---
+title: MODEL_NOT_FOUND
+---
+
+<Note>
+    目前仅在 `langchainjs`（JavaScript/TypeScript）中使用。
+</Note>
+
+您指定的模型名称未被您的提供商识别。
+
+## 故障排除
+
+要解决此错误：
+
+1. **验证模型标识符**：仔细检查您传入的模型字符串。确保拼写和格式正确
+2. **检查代理/包装器配置**：如果您使用代理或其他替代主机与模型包装器，确认允许的模型名称没有被限制或更改
+
+此错误通常源于模型名称字符串本身的拼写错误，或代理服务或模型包装器在您的代码和提供商 API 之间施加的限制。
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/errors/MODEL_NOT_FOUND.mdx) 或 [提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

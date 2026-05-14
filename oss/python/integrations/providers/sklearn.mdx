@@ -1,0 +1,48 @@
+---
+title: "Scikit-learn 集成"
+description: "使用 LangChain Python 与 Scikit-learn 集成。"
+---
+
+>[scikit-learn](https://scikit-learn.org/stable/) 是一个开源的 collection of machine learning algorithms,
+> including some implementations of the [k nearest neighbors](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html). `SKLearnVectorStore` wraps this implementation and adds the possibility to persist the vector store in json, bson (binary json) or Apache Parquet format.
+
+## 安装和设置
+
+- Install the Python 包 with `pip install scikit-learn`
+
+
+## 向量存储
+
+`SKLearnVectorStore` provides a simple wrapper around the nearest neighbor implementation in the
+scikit-learn package, allowing you to use it as a vectorstore.
+
+要导入此向量存储：
+
+```python
+from langchain_community.vectorstores import SKLearnVectorStore
+```
+
+有关 SKLearnVectorStore 封装器的更详细演练，请参阅[此笔记本](/oss/python/integrations/vectorstores/sklearn).
+
+
+## 检索器
+
+`Support vector machines (SVMs)` are the supervised learning
+methods used for classification, regression and outliers detection.
+
+查看[使用示例](/oss/python/integrations/retrievers/svm).
+
+```python
+from langchain_community.retrievers import SVMRetriever
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/sklearn.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

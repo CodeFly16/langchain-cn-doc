@@ -1,0 +1,42 @@
+---
+title: "Confluence 集成"
+description: "使用 LangChain Python 与 Confluence 集成。"
+---
+
+>[Confluence](https://www.atlassian.com/software/confluence) is a wiki collaboration platform that saves and organizes all of the project-related material. `Confluence` is a knowledge base that primarily handles content management activities.
+
+
+## 安装和设置
+
+<CodeGroup>
+```bash pip
+pip install atlassian-python-api
+```
+
+```bash uv
+uv add atlassian-python-api
+```
+</CodeGroup>
+
+We need to set up `username/api_key` or `Oauth2 login`.
+See [instructions](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+
+
+## 文档加载器
+
+查看[使用示例](/oss/python/integrations/document_loaders/confluence).
+
+```python
+from langchain_community.document_loaders import ConfluenceLoader
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/confluence.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

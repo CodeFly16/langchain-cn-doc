@@ -1,0 +1,57 @@
+---
+title: "Docarray 集成"
+description: "使用 LangChain Python 与 Docarray 集成。"
+---
+
+> [DocArray](https://docarray.jina.ai/) is a library for nested, unstructured, multimodal data in transit,
+> including text, image, audio, video, 3D mesh, etc. 它允许 deep-learning engineers to efficiently process,
+> embed, search, recommend, store, and transfer multimodal data with a Pythonic API.
+
+
+## 安装和设置
+
+我们需要安装 `docarray` Python 包.
+
+<CodeGroup>
+```bash pip
+pip install docarray
+```
+
+```bash uv
+uv add docarray
+```
+</CodeGroup>
+
+## 向量存储
+
+LangChain provides an access to the `In-memory` and `HNSW` vector stores from the `DocArray` 库。
+
+查看[使用示例](/oss/python/integrations/vectorstores/docarray_hnsw).
+
+```python
+from langchain_community.vectorstores import DocArrayHnswSearch
+```
+查看[使用示例](/oss/python/integrations/vectorstores/docarray_in_memory).
+
+```python
+from langchain_community.vectorstores DocArrayInMemorySearch
+```
+
+## 检索器
+
+查看[使用示例](/oss/python/integrations/retrievers/docarray_retriever).
+
+```python
+from langchain_community.retrievers import DocArrayRetriever
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/docarray.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

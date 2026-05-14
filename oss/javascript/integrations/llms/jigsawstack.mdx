@@ -1,0 +1,54 @@
+---
+title: "Jigsawstack prompt engine 集成"
+description: "使用 LangChain JavaScript 集成 Jigsawstack prompt engine LLM。"
+---
+
+LangChain.js supports calling JigsawStack [Prompt Engine](https://docs.jigsawstack.com/api-reference/prompt-engine/run-direct) LLMs.
+
+## 设置
+
+- Set up an [account](https://jigsawstack.com/dashboard) (Get started for free)
+- Create and retrieve your [API key](https://jigsawstack.com/dashboard)
+
+## 凭证
+
+```bash
+export JIGSAWSTACK_API_KEY="your-api-key"
+```
+
+## 用法
+
+<Tip>
+请参阅[此部分了解安装 LangChain 包的通用说明](/oss/javascript/langchain/install)。
+</Tip>
+
+```bash npm
+npm install @langchain/jigsawstack
+```
+```ts
+import { JigsawStackPromptEngine } from "@langchain/jigsawstack";
+
+export const run = async () => {
+  const model = new JigsawStackPromptEngine();
+  const res = await model.invoke(
+    "Tell me about the leaning tower of pisa?\nAnswer:"
+  );
+  console.log({ res });
+};
+```
+
+## 相关内容
+
+
+- [Models guide](/oss/javascript/langchain/models)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/llms/jigsawstack.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

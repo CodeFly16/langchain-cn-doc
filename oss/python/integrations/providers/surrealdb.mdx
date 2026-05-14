@@ -1,0 +1,42 @@
+---
+title: "Surrealdb 集成"
+description: "使用 LangChain Python 与 Surrealdb 集成。"
+---
+
+[SurrealDB](https://surrealdb.com) is a unified, multi-model database purpose-built for AI systems. It combines structured and unstructured data (including vector search, graph traversal, relational queries, full-text search, document storage, and time-series data) into a single ACID-compliant engine, scaling from a 3 MB edge binary to petabyte-scale clusters in the cloud. By eliminating the need for multiple specialized stores, SurrealDB simplifies architectures, reduces latency, and ensures consistency for AI workloads.
+
+**Why SurrealDB Matters for GenAI Systems**
+- **One engine for storage and memory:** Combine durable storage and fast, agent-friendly memory in a single system, providing all the data your agent needs and removing the need to sync multiple systems.
+- **One-hop memory for agents:** Run vector search, graph traversal, semantic joins, and transactional writes in a single query, giving LLM agents fast, consistent memory access without stitching relational, graph and vector databases together.
+- **In-place inference and real-time updates:** SurrealDB enables agents to run inference next to data and receive millisecond-fresh updates, critical for real-time reasoning and collaboration.
+- **Versioned, durable context:** SurrealDB supports time-travel queries and versioned records, letting agents audit or “replay” past states for consistent, explainable reasoning.
+- **Plug-and-play agent memory:** Expose AI memory as a native concept, making it easy to use SurrealDB as a drop-in backend for AI frameworks.
+
+## 安装和设置
+
+<CodeGroup>
+```bash pip
+pip install langchain-surrealdb
+```
+
+```bash uv
+uv add langchain-surrealdb
+```
+</CodeGroup>
+
+## 向量存储
+
+[This notebook](/oss/python/integrations/vectorstores/surrealdb) covers how to get started with the SurrealDB vector store.
+
+Find more [examples](https://github.com/surrealdb/langchain-surrealdb/blob/main/README.md#simple-example) in the repository.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/surrealdb.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

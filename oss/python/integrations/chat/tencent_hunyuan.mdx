@@ -1,0 +1,80 @@
+---
+title: "腾讯混元集成"
+description: "使用 LangChain Python 集成腾讯混元聊天模型。"
+---
+
+>[腾讯混元模型 API](https://cloud.tencent.com/document/product/1729) (`Hunyuan API`)
+> 实现了对话沟通、内容生成、
+> 分析理解等功能，可广泛应用于智能
+> 客服、智能营销、角色扮演、广告文案、产品描述、
+> 剧本创作、简历生成、文章写作、代码生成、数据分析和内容
+> 分析等各种场景。
+
+查看[更多信息](https://cloud.tencent.com/document/product/1729)了解更多详情。
+
+```python
+from langchain_community.chat_models import ChatHunyuan
+from langchain.messages import HumanMessage
+```
+
+```python
+chat = ChatHunyuan(
+    hunyuan_app_id=111111111,
+    hunyuan_secret_id="YOUR_SECRET_ID",
+    hunyuan_secret_key="YOUR_SECRET_KEY",
+)
+```
+
+```python
+chat(
+    [
+        HumanMessage(
+            content="You are a helpful assistant that translates English to French.Translate this sentence from English to French. I love programming."
+        )
+    ]
+)
+```
+
+```text
+AIMessage(content="J'aime programmer.")
+```
+
+## 使用 ChatHunyuan 进行流式输出
+
+```python
+chat = ChatHunyuan(
+    hunyuan_app_id="YOUR_APP_ID",
+    hunyuan_secret_id="YOUR_SECRET_ID",
+    hunyuan_secret_key="YOUR_SECRET_KEY",
+    streaming=True,
+)
+```
+
+```python
+chat(
+    [
+        HumanMessage(
+            content="You are a helpful assistant that translates English to French.Translate this sentence from English to French. I love programming."
+        )
+    ]
+)
+```
+
+```text
+AIMessageChunk(content="J'aime programmer.")
+```
+
+```python
+
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/chat/tencent_hunyuan.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

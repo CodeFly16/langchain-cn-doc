@@ -1,0 +1,46 @@
+---
+title: "Scrapeless 集成"
+description: "使用 LangChain Python 与 Scrapeless 集成。"
+---
+
+[Scrapeless](https://scrapeless.com) offers flexible and feature-rich data acquisition services with extensive parameter customization and multi-format export support.
+
+## 安装和设置
+
+<CodeGroup>
+```bash pip
+pip install langchain-scrapeless
+```
+
+```bash uv
+uv add langchain-scrapeless
+```
+</CodeGroup>
+
+You'll need to set up your Scrapeless API key:
+
+```python
+import os
+os.environ["SCRAPELESS_API_KEY"] = "your-api-key"
+```
+
+## 工具
+
+The Scrapeless integration provides several tools:
+
+- [ScrapelessDeepSerpGoogleSearchTool](/oss/python/integrations/tools/scrapeless_scraping_api) - Enables comprehensive extraction of Google SERP data across all result types.
+- [ScrapelessDeepSerpGoogleTrendsTool](/oss/python/integrations/tools/scrapeless_scraping_api) - Retrieves keyword trend data from Google, including popularity over time, regional interest, and related searches.
+- [ScrapelessUniversalScrapingTool](/oss/python/integrations/tools/scrapeless_universal_scraping) - Access and extract data from JS-Render websites that typically block bots.
+- [ScrapelessCrawlerCrawlTool](/oss/python/integrations/tools/scrapeless_crawl) - Crawl a website and its linked pages to extract comprehensive data.
+- [ScrapelessCrawlerScrapeTool](/oss/python/integrations/tools/scrapeless_crawl) - Extract information from a single webpage.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/scrapeless.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

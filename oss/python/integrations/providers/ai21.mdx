@@ -1,0 +1,71 @@
+---
+title: "AI21 labs 集成"
+description: "使用 LangChain Python 与 AI21 labs 集成。"
+---
+
+>[AI21 Labs](https://www.ai21.com/about) is a company specializing in Natural
+> Language Processing (NLP), which develops AI systems
+> that can understand and generate natural language.
+
+This page covers how to use the `AI21` ecosystem within `LangChain`.
+
+## 安装和设置
+
+- Get an AI21 api key and set it as an environment variable (`AI21_API_KEY`)
+- Install the Python 包:
+
+<CodeGroup>
+```bash pip
+pip install langchain-ai21
+```
+
+```bash uv
+uv add langchain-ai21
+```
+</CodeGroup>
+
+## 聊天模型
+
+### AI21 chat
+
+查看[使用示例](/oss/python/integrations/chat/ai21).
+
+```python
+from langchain_ai21 import ChatAI21
+```
+
+## Deprecated features
+
+:::caution The following features are deprecated.
+:::
+
+### AI21 LLM
+
+```python
+from langchain_ai21 import AI21LLM
+```
+
+### AI21 contextual answer
+
+```python
+from langchain_ai21 import AI21ContextualAnswers
+```
+
+## 文本分割器
+
+### AI21 Semantic text splitter
+
+```python
+from langchain_ai21 import AI21SemanticTextSplitter
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/ai21.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

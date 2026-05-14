@@ -1,0 +1,48 @@
+---
+title: "Deepsparse 集成"
+description: "使用 LangChain Python 与 Deepsparse 集成。"
+---
+
+This page covers how to use the [DeepSparse](https://github.com/neuralmagic/deepsparse) inference runtime within LangChain.
+It is broken into two parts: installation and setup, and then examples of DeepSparse usage.
+
+## 安装和设置
+
+- Install the Python 包 with `pip install deepsparse`
+- Choose a [SparseZoo model](https://sparsezoo.neuralmagic.com/?useCase=text_generation) or export a support model to ONNX [using Optimum](https://github.com/neuralmagic/notebooks/blob/main/notebooks/opt-text-generation-deepsparse-quickstart/OPT_Text_Generation_DeepSparse_Quickstart.ipynb)
+
+
+## 大语言模型 (LLM)
+
+There exists a DeepSparse LLM wrapper, which you can access with:
+
+```python
+from langchain_community.llms import DeepSparse
+```
+
+它为所有模型提供统一的接口：
+
+```python
+llm = DeepSparse(model='zoo:nlg/text_generation/codegen_mono-350m/pytorch/huggingface/bigpython_bigquery_thepile/base-none')
+
+print(llm.invoke('def fib():'))
+```
+
+Additional parameters can be passed 使用 `config` parameter:
+
+```python
+config = {'max_generated_tokens': 256}
+
+llm = DeepSparse(model='zoo:nlg/text_generation/codegen_mono-350m/pytorch/huggingface/bigpython_bigquery_thepile/base-none', config=config)
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/deepsparse.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

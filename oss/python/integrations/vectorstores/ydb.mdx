@@ -1,0 +1,276 @@
+---
+title: "YDB 集成"
+description: "使用 LangChain Python 集成 YDB 向量存储。"
+---
+
+> [YDB](https://ydb.tech/) is a versatile open source Distributed SQL Database that combines high availability and scalability with strong consistency and ACID transactions. It accommodates transactional (OLTP), analytical (OLAP), and streaming workloads simultaneously.
+
+本笔记展示如何使用与 `YDB` 向量存储相关的功能。
+
+## 设置
+
+First, set up a local YDB with Docker:
+
+```python
+! docker run -d -p 2136:2136 --name ydb-langchain -e YDB_USE_IN_MEMORY_PDISKS=true -h localhost ydbplatform/local-ydb:trunk
+```
+
+You'll need to install `langchain-ydb` to use this integration
+
+```python
+! pip install -qU langchain-ydb
+```
+
+### 凭证
+
+There are no credentials for this notebook, just make sure you have installed the packages as shown above.
+
+如果您希望获得一流的模型调用自动追踪功能，还可以通过取消注释以下代码来设置 [LangSmith](/langsmith/home) API 密钥：
+
+```python
+os.environ["LANGSMITH_API_KEY"] = getpass.getpass("Enter your LangSmith API key: ")
+os.environ["LANGSMITH_TRACING"] = "true"
+```
+
+## 初始化
+
+<EmbeddingTabs/>
+
+```python
+# | output: false
+# | echo: false
+from langchain_openai import OpenAIEmbeddings
+
+embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
+```
+
+```text
+/Users/ovcharuk/opensource/langchain/.venv/lib/python3.13/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
+```
+
+```python
+from langchain_ydb.vectorstores import YDB, YDBSearchStrategy, YDBSettings
+
+settings = YDBSettings(
+    table="ydb_example",
+    strategy=YDBSearchStrategy.COSINE_SIMILARITY,
+)
+vector_store = YDB(embeddings, config=settings)
+```
+
+## 管理向量存储
+
+Once you have created your vector store, you can interact with it by adding and deleting different items.
+
+### 向向量存储添加项目
+
+Prepare documents to work with:
+
+```python
+from uuid import uuid4
+
+from langchain_core.documents import Document
+
+document_1 = Document(
+    page_content="I had chocolate chip pancakes and scrambled eggs for breakfast this morning.",
+    metadata={"source": "tweet"},
+)
+
+document_2 = Document(
+    page_content="The weather forecast for tomorrow is cloudy and overcast, with a high of 62 degrees.",
+    metadata={"source": "news"},
+)
+
+document_3 = Document(
+    page_content="Building an exciting new project with LangChain - come check it out!",
+    metadata={"source": "tweet"},
+)
+
+document_4 = Document(
+    page_content="Robbers broke into the city bank and stole $1 million in cash.",
+    metadata={"source": "news"},
+)
+
+document_5 = Document(
+    page_content="Wow! That was an amazing movie. I can't wait to see it again.",
+    metadata={"source": "tweet"},
+)
+
+document_6 = Document(
+    page_content="Is the new iPhone worth the price? Read this review to find out.",
+    metadata={"source": "website"},
+)
+
+document_7 = Document(
+    page_content="The top 10 soccer players in the world right now.",
+    metadata={"source": "website"},
+)
+
+document_8 = Document(
+    page_content="LangGraph is the best framework for building stateful, agentic applications!",
+    metadata={"source": "tweet"},
+)
+
+document_9 = Document(
+    page_content="The stock market is down 500 points today due to fears of a recession.",
+    metadata={"source": "news"},
+)
+
+document_10 = Document(
+    page_content="I have a bad feeling I am going to get deleted :(",
+    metadata={"source": "tweet"},
+)
+
+documents = [
+    document_1,
+    document_2,
+    document_3,
+    document_4,
+    document_5,
+    document_6,
+    document_7,
+    document_8,
+    document_9,
+    document_10,
+]
+uuids = [str(uuid4()) for _ in range(len(documents))]
+```
+
+You can add items to your vector store by using the `add_documents` function.
+
+```python
+vector_store.add_documents(documents=documents, ids=uuids)
+```
+
+```text
+Inserting data...: 100%|██████████| 10/10 [00:00<00:00, 14.67it/s]
+```
+
+```python
+['947be6aa-d489-44c5-910e-62e4d58d2ffb',
+ '7a62904d-9db3-412b-83b6-f01b34dd7de3',
+ 'e5a49c64-c985-4ed7-ac58-5ffa31ade699',
+ '99cf4104-36ab-4bd5-b0da-e210d260e512',
+ '5810bcd0-b46e-443e-a663-e888c9e028d1',
+ '190c193d-844e-4dbb-9a4b-b8f5f16cfae6',
+ 'f8912944-f80a-4178-954e-4595bf59e341',
+ '34fc7b09-6000-42c9-95f7-7d49f430b904',
+ '0f6b6783-f300-4a4d-bb04-8025c4dfd409',
+ '46c37ba9-7cf2-4ac8-9bd1-d84e2cb1155c']
+```
+
+### 从向量存储删除项目
+
+You can delete items from your vector store by ID using the `delete` function.
+
+```python
+vector_store.delete(ids=[uuids[-1]])
+```
+
+```text
+True
+```
+
+## 查询向量存储
+
+Once your vector store has been created and relevant documents have been added, you will likely want to query it during the execution of your chain or agent.
+
+### 直接查询
+
+#### 相似度搜索
+
+A simple similarity search can be performed as follows:
+
+```python
+results = vector_store.similarity_search(
+    "LangChain provides abstractions to make working with LLMs easy", k=2
+)
+for res in results:
+    print(f"* {res.page_content} [{res.metadata}]")
+```
+
+```text
+* Building an exciting new project with LangChain - come check it out! [{'source': 'tweet'}]
+* LangGraph is the best framework for building stateful, agentic applications! [{'source': 'tweet'}]
+```
+
+#### 带分数的相似度搜索
+
+You can also perform a search with a score:
+
+```python
+results = vector_store.similarity_search_with_score("Will it be hot tomorrow?", k=3)
+for res, score in results:
+    print(f"* [SIM={score:.3f}] {res.page_content} [{res.metadata}]")
+```
+
+```text
+* [SIM=0.595] The weather forecast for tomorrow is cloudy and overcast, with a high of 62 degrees. [{'source': 'news'}]
+* [SIM=0.212] I had chocolate chip pancakes and scrambled eggs for breakfast this morning. [{'source': 'tweet'}]
+* [SIM=0.118] Wow! That was an amazing movie. I can't wait to see it again. [{'source': 'tweet'}]
+```
+
+### 过滤
+
+You can search with filters as described below:
+
+```python
+results = vector_store.similarity_search_with_score(
+    "What did I eat for breakfast?",
+    k=4,
+    filter={"source": "tweet"},
+)
+for res, _ in results:
+    print(f"* {res.page_content} [{res.metadata}]")
+```
+
+```text
+* I had chocolate chip pancakes and scrambled eggs for breakfast this morning. [{'source': 'tweet'}]
+* Wow! That was an amazing movie. I can't wait to see it again. [{'source': 'tweet'}]
+* Building an exciting new project with LangChain - come check it out! [{'source': 'tweet'}]
+* LangGraph is the best framework for building stateful, agentic applications! [{'source': 'tweet'}]
+```
+
+### 转换为检索器进行查询
+
+您还可以将向量存储转换为检索器，以便在链中更方便地使用。
+
+Here's how to transform your vector store into a retriever and then invoke the retriever with a simple query and filter.
+
+```python
+retriever = vector_store.as_retriever(
+    search_kwargs={"k": 2},
+)
+results = retriever.invoke(
+    "Stealing from the bank is a crime", filter={"source": "news"}
+)
+for res in results:
+    print(f"* {res.page_content} [{res.metadata}]")
+```
+
+```text
+* Robbers broke into the city bank and stole $1 million in cash. [{'source': 'news'}]
+* The stock market is down 500 points today due to fears of a recession. [{'source': 'news'}]
+```
+
+## 用于检索增强生成
+
+有关如何将此向量存储用于检索增强生成 (RAG) 的指南，请参阅以下部分：
+
+- [Build a RAG app with LangChain](/oss/python/langchain/rag)
+- [Agentic RAG](/oss/python/langgraph/agentic-rag)
+- [Retrieval docs](/oss/python/langchain/retrieval)
+
+---
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/vectorstores/ydb.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

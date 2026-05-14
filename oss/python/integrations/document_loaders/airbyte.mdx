@@ -1,0 +1,173 @@
+---
+title: "AirbyteLoader 集成"
+description: "使用 LangChain Python 集成 AirbyteLoader 文档加载器。"
+---
+
+>[Airbyte](https://github.com/airbytehq/airbyte) 是一个数据集成平台，用于从 API、数据库和文件到数据仓库和数据湖的 ELT 管道。它拥有最大的 ELT 连接器目录，可连接到数据仓库和数据库。
+
+本文介绍如何将任何 Airbyte 数据源加载到 LangChain 文档中
+
+## 安装
+
+要使用 `AirbyteLoader`，你需要安装 the `langchain-airbyte` integration package。
+
+```python
+pip install -qU langchain-airbyte
+```
+
+注意：目前 `airbyte` 库不支持 Pydantic v2。
+请降级到 Pydantic v1 以使用此包。
+
+注意：此包目前还需要 Python 3.10+。
+
+## 加载文档
+
+默认情况下，the `AirbyteLoader` will load any structured data from a stream and output yaml-formatted documents.
+
+```python
+from langchain_airbyte import AirbyteLoader
+
+loader = AirbyteLoader(
+    source="source-faker",
+    stream="users",
+    config={"count": 10},
+)
+docs = loader.load()
+print(docs[0].page_content[:500])
+```
+
+```text
+\`\`\`yaml
+academic_degree: PhD
+address:
+  city: Lauderdale Lakes
+  country_code: FI
+  postal_code: '75466'
+  province: New Jersey
+  state: Hawaii
+  street_name: Stoneyford
+  street_number: '1112'
+age: 44
+blood_type: "O\u2212"
+created_at: '2004-04-02T13:05:27+00:00'
+email: bread2099+1@outlook.com
+gender: Fluid
+height: '1.62'
+id: 1
+language: Belarusian
+name: Moses
+nationality: Dutch
+occupation: Track Worker
+telephone: 1-467-194-2318
+title: M.Sc.Tech.
+updated_at: '2024-02-27T16:41:01+00:00'
+weight: 6
+```
+
+你也可以指定a custom prompt template for formatting documents:
+
+```python
+from langchain_core.prompts import PromptTemplate
+
+loader_templated = AirbyteLoader(
+    source="source-faker",
+    stream="users",
+    config={"count": 10},
+    template=PromptTemplate.from_template(
+        "My name is {name} and I am {height} meters tall."
+    ),
+)
+docs_templated = loader_templated.load()
+print(docs_templated[0].page_content)
+```
+
+```text
+My name is Verdie and I am 1.73 meters tall.
+```
+
+## 惰性加载文档
+
+One of the powerful features of `AirbyteLoader` is its ability to load large documents from upstream sources. When working with large datasets, the default `.load()` behavior can be slow and memory-intensive. To avoid this, you can use the `.lazy_load()` method to load documents in a more memory-efficient manner.
+
+```python
+import time
+
+loader = AirbyteLoader(
+    source="source-faker",
+    stream="users",
+    config={"count": 3},
+    template=PromptTemplate.from_template(
+        "My name is {name} and I am {height} meters tall."
+    ),
+)
+
+start_time = time.time()
+my_iterator = loader.lazy_load()
+print(
+    f"Just calling lazy load is quick! This took {time.time() - start_time:.4f} seconds"
+)
+```
+
+```text
+Just calling lazy load is quick! This took 0.0001 seconds
+```
+
+And you can iterate over documents as they're yielded:
+
+```python
+for doc in my_iterator:
+    print(doc.page_content)
+```
+
+```text
+My name is Andera and I am 1.91 meters tall.
+My name is Jody and I am 1.85 meters tall.
+My name is Zonia and I am 1.53 meters tall.
+```
+
+You can also lazy load documents in an async manner with `.alazy_load()`:
+
+```python
+loader = AirbyteLoader(
+    source="source-faker",
+    stream="users",
+    config={"count": 3},
+    template=PromptTemplate.from_template(
+        "My name is {name} and I am {height} meters tall."
+    ),
+)
+
+my_async_iterator = loader.alazy_load()
+
+async for doc in my_async_iterator:
+    print(doc.page_content)
+```
+
+```text
+My name is Carmelina and I am 1.74 meters tall.
+My name is Ali and I am 1.90 meters tall.
+My name is Rochell and I am 1.83 meters tall.
+```
+
+## 配置
+
+`AirbyteLoader` can be configured with the following options:
+
+- `source` (str, required): The name of the Airbyte source to load from.
+- `stream` (str, required): The name of the stream to load from (Airbyte sources can return multiple streams)
+- `config` (dict, required): The configuration for the Airbyte source
+- `template` (PromptTemplate, optional): A custom prompt template for formatting documents
+- `include_metadata` (bool, optional, default True): Whether to include all fields as metadata in the output documents
+
+The majority of the configuration will be in `config`, and you can find the specific configuration options in the "Config field reference" for each source in the [Airbyte documentation](https://docs.airbyte.com/integrations/).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [通过 MCP 将这些文档连接到](/use-these-docs) Claude、VSCode 等工具以获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/document_loaders/airbyte.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

@@ -1,0 +1,50 @@
+---
+title: "AlephAlpha 集成"
+description: "使用 LangChain JavaScript 集成 AlephAlpha LLM。"
+---
+
+LangChain.js supports AlephAlpha's Luminous family of models. You'll need to sign up for an API key [on their website](https://www.aleph-alpha.com/).
+
+以下是一个示例：
+
+<Tip>
+请参阅[此部分了解安装 LangChain 包的通用说明](/oss/javascript/langchain/install)。
+</Tip>
+
+```bash npm
+npm install @langchain/community @langchain/core
+```
+
+```typescript
+import { AlephAlpha } from "@langchain/community/llms/aleph_alpha";
+
+const model = new AlephAlpha({
+  aleph_alpha_api_key: "YOUR_ALEPH_ALPHA_API_KEY", // Or set as process.env.ALEPH_ALPHA_API_KEY
+});
+
+const res = await model.invoke(`Is cereal soup?`);
+
+console.log({ res });
+
+/*
+  {
+    res: "\nIs soup a cereal? I don’t think so, but it is delicious."
+  }
+ */
+```
+
+## 相关内容
+
+
+- [Models guide](/oss/javascript/langchain/models)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/llms/aleph_alpha.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

@@ -1,0 +1,44 @@
+---
+title: "Arize 集成"
+description: "使用 LangChain Python 与 Arize 集成。"
+---
+
+[Arize](https://arize.com) is an AI observability and LLM evaluation platform that offers
+support for LangChain applications, providing detailed traces of input, embeddings, retrieval,
+functions, and output messages.
+
+
+## 安装和设置
+
+First, you need to install `arize` Python 包.
+
+<CodeGroup>
+```bash pip
+pip install arize
+```
+
+```bash uv
+uv add arize
+```
+</CodeGroup>
+
+Second, you need to set up your [Arize account](https://app.arize.com/auth/join)
+and get your  `API_KEY` or `SPACE_KEY`.
+
+
+## Callback handler
+
+```python
+from langchain_community.callbacks import ArizeCallbackHandler
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/arize.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

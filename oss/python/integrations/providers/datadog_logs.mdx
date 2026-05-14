@@ -1,0 +1,39 @@
+---
+title: "Datadog logs 集成"
+description: "使用 LangChain Python 与 Datadog logs 集成。"
+---
+
+>[Datadog](https://www.datadoghq.com/) is a monitoring and analytics platform for cloud-scale applications.
+
+## 安装和设置
+
+<CodeGroup>
+```bash pip
+pip install datadog_api_client
+```
+
+```bash uv
+uv add datadog_api_client
+```
+</CodeGroup>
+
+We must initialize the loader with the Datadog API key and APP key, and we need to set up the query to extract the desired logs.
+
+## 文档加载器
+
+查看[使用示例](/oss/python/integrations/document_loaders/datadog_logs).
+
+```python
+from langchain_community.document_loaders import DatadogLogsLoader
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/datadog_logs.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

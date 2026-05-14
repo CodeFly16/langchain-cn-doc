@@ -1,0 +1,69 @@
+---
+title: LambdaDB
+---
+
+>[LambdaDB](https://lambdadb.ai/) is a serverless AI database for RAG and agents. Unify full-text, multi-vector, and hybrid search on a flexible document model. Handle infinite persistent memory and massive concurrency instantly— at 1/10th the cost.
+
+## 安装和设置
+
+安装 Python SDK：
+
+<CodeGroup>
+    ```bash pip
+    pip install langchain-lambdadb
+    ```
+
+    ```bash uv
+    uv add langchain-lambdadb
+    ```
+</CodeGroup>
+
+You'll also need a LambdaDB account with:
+- Project URL
+- Project API key
+
+Get your credentials at [lambdadb.ai](https://lambdadb.ai).
+
+## 向量存储
+
+存在一个围绕 `LambdaDB` collections, allowing you to use it as a vectorstore for semantic search, RAG, and other AI applications.
+
+要导入此向量存储：
+```python
+from langchain_lambdadb import LambdaDBVectorStore
+```
+
+### 快速入门
+
+```python
+from langchain_lambdadb import LambdaDBVectorStore
+from langchain_openai import OpenAIEmbeddings
+from lambdadb import LambdaDB
+import os
+
+# Initialize client
+client = LambdaDB(
+    server_url=os.environ["LAMBDADB_SERVER_URL"],
+    project_api_key=os.environ["LAMBDADB_API_KEY"]
+)
+
+# Create vector store with existing collection
+vector_store = LambdaDBVectorStore(
+    client=client,
+    collection_name="my_collection",  # Must exist beforehand
+    embedding=OpenAIEmbeddings()
+)
+```
+
+有关 LambdaDB wrapper, see [the full documentation](/oss/python/integrations/vectorstores/lambdadb).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/lambdadb.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

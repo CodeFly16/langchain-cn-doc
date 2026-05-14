@@ -1,0 +1,103 @@
+---
+title: "vLLM 集成"
+description: "使用 LangChain Python 集成 vLLM 聊天模型。"
+---
+
+vLLM can be deployed as a server that mimics the OpenAI API protocol. This allows vLLM to be used as a drop-in replacement for applications using OpenAI API. This server can be queried in the same format as OpenAI API.
+
+## 概述
+
+本指南将帮助您开始使用 vLLM [聊天模型](/oss/python/langchain/models), which leverages the `langchain-openai` package. 有关所有 [`ChatOpenAI`](https://reference.langchain.com/python/langchain-openai/chat_models/base/ChatOpenAI) 功能和配置的详细文档，请前往 [API reference](https://reference.langchain.com/python/langchain-openai/chat_models/base/ChatOpenAI).
+
+### 集成详情
+
+| 类 | 包 | 可序列化 | JS 支持 | 下载量 | 版本 |
+| :--- | :--- | :---: |  :---: | :---: | :---: |
+| [`ChatOpenAI`](https://reference.langchain.com/python/langchain-openai/chat_models/base/ChatOpenAI) | [`langchain_openai`](https://reference.langchain.com/python/langchain-openai) | beta | ❌ | ![PyPI - Downloads](https://img.shields.io/pypi/dm/langchain_openai?style=flat-square&label=%20) | ![PyPI - Version](https://img.shields.io/pypi/v/langchain_openai?style=flat-square&label=%20) |
+
+### 模型功能
+
+Specific model features, such as tool calling, support for multi-modal inputs, support for token-level streaming, etc., will depend on the hosted model.
+
+## 设置
+
+请参阅 [vLLM documentation](https://docs.vllm.ai/en/latest/).
+
+要访问 vLLM models through LangChain, you'll need to install the `langchain-openai` 集成包。
+
+### 凭证
+
+Authentication will depend on specifics of the inference server.
+
+要启用模型调用的自动追踪，请设置您的 [LangSmith](/langsmith/home) API key:
+
+```python
+os.environ["LANGSMITH_TRACING"] = "true"
+os.environ["LANGSMITH_API_KEY"] = getpass.getpass("请输入您的 LangSmith API 密钥: ")
+```
+
+### 安装
+
+LangChain 的 vLLM integration can be accessed 通过 `langchain-openai` 包中：
+
+```python
+pip install -qU langchain-openai
+```
+
+## 实例化
+
+现在我们可以实例化模型对象并生成聊天补全：
+
+```python
+from langchain.messages import HumanMessage, SystemMessage
+from langchain_openai import ChatOpenAI
+```
+
+```python
+inference_server_url = "http://localhost:8000/v1"
+
+llm = ChatOpenAI(
+    model="mosaicml/mpt-7b",
+    api_key="your api key goes here",
+    base_url=inference_server_url,
+    max_tokens=5,
+    temperature=0,
+)
+```
+
+## 调用
+
+```python
+messages = [
+    SystemMessage(
+        content="You are a helpful assistant that translates English to Italian."
+    ),
+    HumanMessage(
+        content="Translate the following sentence from English to Italian: I love programming."
+    ),
+]
+llm.invoke(messages)
+```
+
+```text
+AIMessage(content=' Io amo programmare', additional_kwargs={}, example=False)
+```
+
+---
+
+## API 参考
+
+有关所有 features and configurations exposed via `langchain-openai`, 请前往 API reference: [reference.langchain.com/python/langchain-openai/chat_models/base/ChatOpenAI](https://reference.langchain.com/python/langchain-openai/chat_models/base/ChatOpenAI)
+
+Refer to the vLLM [documentation](https://docs.vllm.ai/en/latest/) as well.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/chat/vllm.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,40 @@
+---
+title: "Docusaurus 集成"
+description: "使用 LangChain Python 与 Docusaurus 集成。"
+---
+
+>[Docusaurus](https://docusaurus.io/) is a static-site generator which provides
+> out-of-the-box documentation features.
+
+
+## 安装和设置
+
+
+<CodeGroup>
+```bash pip
+pip install -U beautifulsoup4 lxml
+```
+
+```bash uv
+uv add beautifulsoup4 lxml
+```
+</CodeGroup>
+
+## 文档加载器
+
+查看[使用示例](/oss/python/integrations/document_loaders/docusaurus).
+
+```python
+from langchain_community.document_loaders import DocusaurusLoader
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/docusaurus.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,43 @@
+---
+title: "YDB 集成"
+description: "使用 LangChain Python 与 YDB 集成。"
+---
+
+All functionality related to YDB.
+
+> [YDB](https://ydb.tech/) is a versatile open source Distributed SQL Database that combines
+> high availability and scalability with strong consistency and ACID transactions.
+> It accommodates transactional (OLTP), analytical (OLAP), and streaming workloads simultaneously.
+
+## 安装和设置
+
+<CodeGroup>
+```bash pip
+pip install langchain-ydb
+```
+
+```bash uv
+uv add langchain-ydb
+```
+</CodeGroup>
+
+## 向量存储
+
+To import YDB vector store:
+
+```python
+from langchain_ydb.vectorstores import YDB
+```
+
+有关 YDB vector store, see [this notebook](/oss/python/integrations/vectorstores/ydb).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/ydb.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

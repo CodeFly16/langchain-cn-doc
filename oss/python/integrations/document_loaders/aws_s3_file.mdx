@@ -1,0 +1,58 @@
+---
+title: "AWS s3 file 集成"
+description: "使用 LangChain Python 集成 AWS s3 file 文档加载器。"
+---
+
+>[Amazon Simple Storage Service (Amazon S3)](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-folders.html) is an object storage service.
+
+>[AWS S3 Buckets](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingBucket.html)
+
+本文介绍如何load document objects from an `AWS S3 File` object.
+
+```python
+from langchain_community.document_loaders import S3FileLoader
+```
+
+```python
+pip install -qU  boto3
+```
+
+```python
+loader = S3FileLoader("testing-hwc", "fake.docx")
+```
+
+```python
+loader.load()
+```
+
+```python
+[Document(page_content='Lorem ipsum dolor sit amet.', lookup_str='', metadata={'source': 's3://testing-hwc/fake.docx'}, lookup_index=0)]
+```
+
+## Configuring the AWS Boto3 client
+
+你可以配置the AWS [Boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) client by passing
+named arguments when creating the S3DirectoryLoader.
+这对于instance when AWS credentials can't be set as environment variables.很有用
+See the [list of parameters](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/core/session.html#boto3.session.Session) that can be configured.
+
+```python
+loader = S3FileLoader(
+    "testing-hwc", "fake.docx", aws_access_key_id="xxxx", aws_secret_access_key="yyyy"
+)
+```
+
+```python
+loader.load()
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [通过 MCP 将这些文档连接到](/use-these-docs) Claude、VSCode 等工具以获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/document_loaders/aws_s3_file.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

@@ -1,0 +1,217 @@
+---
+title: 运行时
+---
+
+## 概览
+
+LangChain 的 [`create_agent`](https://reference.langchain.com/python/langchain/agents/factory/create_agent) 底层运行在 LangGraph 的运行时之上。
+
+
+LangGraph 暴露了一个 [`Runtime`](https://reference.langchain.com/python/langgraph/runtime/Runtime) 对象，包含以下信息：
+
+1. **上下文**：静态信息，如用户 ID、数据库连接或智能体调用的其他依赖项
+2. **存储**：用于[长期记忆](/oss/python/langchain/long-term-memory)的 [BaseStore](https://reference.langchain.com/python/langchain-core/stores/BaseStore) 实例
+3. **流写入器**：用于通过 `"custom"` 流模式流式输出信息的对象
+4. **执行信息**：当前执行的身份和重试信息（线程 ID、运行 ID、尝试次数）
+5. **服务器信息**：在 LangGraph Server 上运行时的服务器特定元数据（助手 ID、图 ID、已认证用户）
+
+<Tip>
+运行时上下文为你的工具和中间件提供**依赖注入**。你可以在调用智能体时注入运行时依赖项（如数据库连接、用户 ID 或配置），而不是硬编码值或使用全局状态。这使你的工具更易于测试、复用且更灵活。
+</Tip>
+
+
+
+
+你可以在[工具](#在工具中)和[中间件](#在中间件中)中访问运行时信息。
+
+## 访问
+
+使用 [`create_agent`](https://reference.langchain.com/python/langchain/agents/factory/create_agent) 创建智能体时，你可以指定 `context_schema` 来定义存储在智能体 [`Runtime`](https://reference.langchain.com/python/langgraph/runtime/Runtime) 中的 `context` 结构。
+
+
+
+调用智能体时，传递 `context` 参数及本次运行的相关配置：
+
+```python
+from dataclasses import dataclass
+
+from langchain.agents import create_agent
+
+
+@dataclass
+class Context:
+    user_name: str
+
+agent = create_agent(
+    model="gpt-5-nano",
+    tools=[...],
+    context_schema=Context  # [!code highlight]
+)
+
+agent.invoke(
+    {"messages": [{"role": "user", "content": "What's my name?"}]},
+    context=Context(user_name="John Smith")  # [!code highlight]
+)
+```
+
+
+
+### 在工具中
+
+你可以在工具中访问运行时信息以：
+
+* 访问上下文
+* 读取或写入长期记忆
+* 写入[自定义流](/oss/python/langchain/streaming#custom-updates)（例如，工具进度/更新）
+
+使用 `ToolRuntime` 参数在工具中访问 [`Runtime`](https://reference.langchain.com/python/langgraph/runtime/Runtime) 对象。
+
+```python
+from dataclasses import dataclass
+from langchain.tools import tool, ToolRuntime  # [!code highlight]
+
+@dataclass
+class Context:
+    user_id: str
+
+@tool
+def fetch_user_email_preferences(runtime: ToolRuntime[Context]) -> str:  # [!code highlight]
+    """从存储中获取用户的邮件偏好。"""
+    user_id = runtime.context.user_id  # [!code highlight]
+
+    preferences: str = "The user prefers you to write a brief and polite email."
+    if runtime.store:  # [!code highlight]
+        if memory := runtime.store.get(("users",), user_id):  # [!code highlight]
+            preferences = memory.value["preferences"]
+
+    return preferences
+```
+
+
+
+### 在工具中访问执行信息和服务器信息
+
+通过 `runtime.execution_info` 访问执行标识（线程 ID、运行 ID），在 LangGraph Server 上运行时通过 `runtime.server_info` 访问服务器特定元数据（助手 ID、已认证用户）：
+
+```python
+from langchain.tools import tool, ToolRuntime
+
+@tool
+def context_aware_tool(runtime: ToolRuntime) -> str:
+    """一个使用执行和服务器信息的工具。"""
+    # 访问线程和运行 ID
+    info = runtime.execution_info
+    print(f"Thread: {info.thread_id}, Run: {info.run_id}")  # [!code highlight]
+
+    # 访问服务器信息（仅在 LangGraph Server 上可用）
+    server = runtime.server_info
+    if server is not None:
+        print(f"Assistant: {server.assistant_id}")  # [!code highlight]
+        if server.user is not None:
+            print(f"User: {server.user.identity}")  # [!code highlight]
+
+    return "done"
+```
+
+当不在 LangGraph Server 上运行时（例如，在本地开发期间），`server_info` 为 `None`。
+
+
+
+
+<Note>
+需要 `deepagents>=0.5.0`（或 `langgraph>=1.1.5`）才能使用 `runtime.execution_info` 和 `runtime.server_info`。
+</Note>
+
+
+
+
+### 在中间件中
+
+你可以在中间件中访问运行时信息，以创建动态提示词、修改消息或根据用户上下文控制智能体行为。
+
+使用 `Runtime` 参数在[节点式钩子](/oss/python/langchain/middleware/custom#node-style-hooks)中访问 [`Runtime`](https://reference.langchain.com/python/langgraph/runtime/Runtime) 对象。对于[包装式钩子](/oss/python/langchain/middleware/custom#wrap-style-hooks)，`Runtime` 对象可在 [`ModelRequest`](https://reference.langchain.com/python/langchain/agents/middleware/types/ModelRequest) 参数中获取。
+
+```python
+from dataclasses import dataclass
+
+from langchain.messages import AnyMessage
+from langchain.agents import create_agent, AgentState
+from langchain.agents.middleware import dynamic_prompt, ModelRequest, before_model, after_model
+from langgraph.runtime import Runtime
+
+
+@dataclass
+class Context:
+    user_name: str
+
+# 动态提示词
+@dynamic_prompt
+def dynamic_system_prompt(request: ModelRequest) -> str:
+    user_name = request.runtime.context.user_name  # [!code highlight]
+    system_prompt = f"You are a helpful assistant. Address the user as {user_name}."
+    return system_prompt
+
+# 模型调用前钩子
+@before_model
+def log_before_model(state: AgentState, runtime: Runtime[Context]) -> dict | None:  # [!code highlight]
+    print(f"Processing request for user: {runtime.context.user_name}")  # [!code highlight]
+    return None
+
+# 模型调用后钩子
+@after_model
+def log_after_model(state: AgentState, runtime: Runtime[Context]) -> dict | None:  # [!code highlight]
+    print(f"Completed request for user: {runtime.context.user_name}")  # [!code highlight]
+    return None
+
+agent = create_agent(
+    model="gpt-5-nano",
+    tools=[...],
+    middleware=[dynamic_system_prompt, log_before_model, log_after_model],  # [!code highlight]
+    context_schema=Context
+)
+
+agent.invoke(
+    {"messages": [{"role": "user", "content": "What's my name?"}]},
+    context=Context(user_name="John Smith")
+)
+```
+
+
+
+### 在中间件中访问执行信息和服务器信息
+
+中间件钩子也可以访问 `runtime.execution_info` 和 `runtime.server_info`：
+
+```python
+from langchain.agents import AgentState
+from langchain.agents.middleware import before_model
+from langgraph.runtime import Runtime
+
+
+@before_model
+def auth_gate(state: AgentState, runtime: Runtime) -> dict | None:
+    """在 LangGraph Server 上运行时阻止未认证用户。"""
+    server = runtime.server_info
+    if server is not None and server.user is None:  # [!code highlight]
+        raise ValueError("Authentication required")
+    print(f"Thread: {runtime.execution_info.thread_id}")  # [!code highlight]
+    return None
+```
+
+
+
+
+<Note>
+需要 `deepagents>=0.5.0`（或 `langgraph>=1.1.5`）。
+</Note>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/runtime.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

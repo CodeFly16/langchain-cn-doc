@@ -1,0 +1,115 @@
+---
+title: "AIMlAPIEmbeddings 集成"
+description: "使用 LangChain Python 集成 AIMlAPIEmbeddings 向量嵌入模型。"
+---
+
+This guide helps you get started with AI/ML API 向量嵌入模型 using LangChain.
+
+## 概述
+
+### 集成详情
+
+| 类 | 包 | 本地 | JS 支持 | 下载量 | 版本 |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| `AIMLAPIEmbeddings` | [`langchain-aimlapi`](https://reference.langchain.com/python/langchain-aimlapi) | ❌ | ❌ | ![PyPI - Downloads](https://img.shields.io/pypi/dm/langchain-aimlapi?style=flat-square&label=%20) | ![PyPI - Version](https://img.shields.io/pypi/v/langchain-aimlapi?style=flat-square&label=%20) |
+
+## 设置
+
+要访问 AI/ML API embedding 模型，您需要创建一个 账户，获取 API 密钥，并安装 `langchain-aimlapi` 集成包。
+
+### 凭证
+
+前往 [aimlapi.com](https://aimlapi.com/app/?utm_source=langchain&utm_medium=github&utm_campaign=integration) to sign up 并生成 API 密钥。 完成后设置 `AIMLAPI_API_KEY` 环境变量：
+
+```python
+import getpass
+import os
+
+if not os.getenv("AIMLAPI_API_KEY"):
+    os.environ["AIMLAPI_API_KEY"] = getpass.getpass("Enter your AI/ML API key: ")
+```
+
+要启用模型调用的自动追踪，请设置您的 [LangSmith](/langsmith/home) API key:
+
+```python
+os.environ["LANGSMITH_API_KEY"] = getpass.getpass("请输入您的 LangSmith API 密钥: ")
+os.environ["LANGSMITH_TRACING"] = "true"
+```
+
+### 安装
+
+LangChain 的 AI/ML API 集成位于 `langchain-aimlapi` 包中：
+
+```python
+pip install -qU langchain-aimlapi
+```
+
+## 实例化
+
+Now we can instantiate our embeddings model and perform embedding operations:
+
+```python
+from langchain_aimlapi import AIMLAPIEmbeddings
+
+embeddings = AIMLAPIEmbeddings(
+    model="text-embedding-ada-002",
+)
+```
+
+## 索引与检索
+
+向量嵌入模型常用于检索增强生成 (RAG) 流程中. Below is how to index and retrieve data using the `embeddings` object we initialized above with `InMemoryVectorStore`.
+
+```python
+from langchain_core.vectorstores import InMemoryVectorStore
+
+text = "LangChain is the framework for building context-aware reasoning applications"
+
+vectorstore = InMemoryVectorStore.from_texts(
+    [text],
+    embedding=embeddings,
+)
+
+retriever = vectorstore.as_retriever()
+
+retrieved_documents = retriever.invoke("What is LangChain?")
+retrieved_documents[0].page_content
+```
+
+```text
+'LangChain is the framework for building context-aware reasoning applications'
+```
+
+## 直接使用
+
+You can directly call `embed_query` and `embed_documents` for custom embedding scenarios.
+
+### Embed single text
+
+```python
+single_vector = embeddings.embed_query(text)
+print(str(single_vector)[:100])
+```
+
+### Embed multiple texts
+
+```python
+text2 = "LangGraph is a library for building stateful, multi-actor applications with LLMs"
+
+vectors = embeddings.embed_documents([text, text2])
+for vector in vectors:
+    print(str(vector)[:100])
+```
+
+---
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/embeddings/aimlapi.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

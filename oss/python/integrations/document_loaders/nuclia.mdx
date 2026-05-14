@@ -1,0 +1,86 @@
+---
+title: "Nuclia 集成"
+description: "使用 LangChain Python 集成 Nuclia 文档加载器。"
+---
+
+>[Nuclia](https://nuclia.com) 自动索引来自任何内部和外部来源的非结构化数据，提供优化的搜索结果和生成式答案。它可以处理视频和音频转录、图像内容提取和文档解析。
+
+>The `Nuclia Understanding API` supports the processing of unstructured data, including text, web pages, documents, and audio/video contents. It extracts all texts wherever they are (using speech-to-text or OCR when needed), it also extracts metadata, embedded files (like images in a PDF), and web links. If machine learning is enabled, it identifies entities, provides a summary of the content and generates embeddings for all the sentences.
+
+## 设置
+
+要使用 the `Nuclia Understanding API`，你需要have a Nuclia account. You can create one for free at [https://nuclia.cloud](https://nuclia.cloud), and then [create a NUA key](https://docs.nuclia.dev/docs/docs/using/understanding/intro).
+
+```python
+pip install -qU  protobuf
+pip install -qU  nucliadb-protos
+```
+
+```python
+import os
+
+os.environ["NUCLIA_ZONE"] = "<YOUR_ZONE>"  # e.g. europe-1
+os.environ["NUCLIA_NUA_KEY"] = "<YOUR_API_KEY>"
+```
+
+## 示例
+
+要使用 the Nuclia document loader，你需要instantiate a `NucliaUnderstandingAPI` tool:
+
+```python
+from langchain_community.tools.nuclia import NucliaUnderstandingAPI
+
+nua = NucliaUnderstandingAPI(enable_ml=False)
+```
+
+```python
+from langchain_community.document_loaders.nuclia import NucliaLoader
+
+loader = NucliaLoader("./interview.mp4", nua)
+```
+
+You can now call the `load` the document in a loop until you get the document.
+
+```python
+import time
+
+pending = True
+while pending:
+    time.sleep(15)
+    docs = loader.load()
+    if len(docs) > 0:
+        print(docs[0].page_content)
+        print(docs[0].metadata)
+        pending = False
+    else:
+        print("waiting...")
+```
+
+## Retrieved information
+
+Nuclia returns the following information:
+
+- file metadata
+- extracted text
+- nested text (like text in an embedded image)
+- paragraphs and sentences splitting (defined by the position of their first and last characters, plus start time and end time for a video or audio file)
+- links
+- a thumbnail
+- embedded files
+
+Note:
+
+  Generated files (thumbnail, extracted embedded files, etc.) are provided as a token. You can download them with the [`/processing/download` endpoint](https://docs.nuclia.dev/docs/api#operation/Download_binary_file_processing_download_get).
+
+  Also at any level, if an attribute exceeds a certain size, it will be put in a downloadable file and will be replaced in the document by a file pointer. This will consist of `{"file": {"uri": "JWT_TOKEN"}}`. The rule is that if the size of the message is greater than 1000000 characters, the biggest parts will be moved to downloadable files. First, the compression process will target vectors. If that is not enough, it will target large field metadata, and finally it will target extracted text.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [通过 MCP 将这些文档连接到](/use-these-docs) Claude、VSCode 等工具以获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/document_loaders/nuclia.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

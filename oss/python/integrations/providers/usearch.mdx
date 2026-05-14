@@ -1,0 +1,45 @@
+---
+title: "USearch 集成"
+description: "使用 LangChain Python 与 USearch 集成。"
+---
+
+>[USearch](https://unum-cloud.github.io/usearch/) is a Smaller & Faster Single-File Vector Search Engine.
+
+>`USearch's` base functionality is identical to `FAISS`, and the interface should look
+> familiar if you have ever investigated Approximate Nearest Neighbors search.
+> `USearch` and `FAISS` both employ `HNSW` algorithm, but they differ significantly
+> in their design principles. `USearch` is compact and broadly compatible with FAISS without
+> sacrificing performance, with a primary focus on user-defined metrics and fewer dependencies.
+>
+## 安装和设置
+
+我们需要安装 `usearch` Python 包.
+
+<CodeGroup>
+```bash pip
+pip install usearch
+```
+
+```bash uv
+uv add usearch
+```
+</CodeGroup>
+
+## 向量存储
+
+查看[使用示例](/oss/python/integrations/vectorstores/usearch).
+
+```python
+from langchain_community.vectorstores import USearch
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/usearch.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

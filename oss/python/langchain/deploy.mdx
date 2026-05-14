@@ -1,0 +1,35 @@
+---
+title: LangSmith 部署
+sidebarTitle: 部署
+---
+
+import DeployPy from '/snippets/oss/deploy-py.mdx';
+import DeployJs from '/snippets/oss/deploy-js.mdx';
+
+当你准备将 LangChain 智能体部署到生产环境时，LangSmith 提供了一个专为智能体工作负载设计的托管平台。传统的托管平台是为无状态、短生命周期的 Web 应用构建的，而 LangGraph 是**专为有状态、长时间运行的智能体构建的**，它们需要持久化状态和后台执行。LangSmith 处理基础设施、扩展和运维问题，让你可以直接从代码仓库进行部署。
+
+## 前提条件
+
+在开始之前，请确保你具备以下条件：
+
+- 一个 [GitHub 账号](https://github.com/)
+- 一个 [LangSmith 账号](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langchain-deploy)（免费注册）
+
+## 部署你的智能体
+
+### 1. 在 GitHub 上创建代码仓库
+
+你的应用代码必须存放在 GitHub 代码仓库中才能在 LangSmith 上部署。公开和私有仓库均受支持。对于本快速入门，首先按照[本地服务器设置指南](/oss/python/langchain/studio)确保你的应用与 LangGraph 兼容。然后，将代码推送到仓库。
+
+<DeployPy />
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时回答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/deploy.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

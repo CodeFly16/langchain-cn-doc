@@ -1,0 +1,102 @@
+---
+title: "Vedb for mysql 集成"
+description: "使用 LangChain Python 集成 Vedb for mysql 向量存储。"
+---
+
+> [veDB for MySQL](https://www.volcengine.com/docs/6357) is a cloud-native, high-performance database service developed by Volcano Engine(Volcengine). [Volcengine](https://www.volcengine.com/docs?lang=en) is a cloud service platform developed by ByteDance, the parent company of TikTok. This integration allows you to use veDB for MySQL as a vector store in LangChain.
+
+## 设置
+
+To use the veDB for MySQL vector store, you'll need a Volcengine account and a veDB for MySQL instance.
+
+### 安装
+
+Install the integration package:
+
+```bash pip
+pip install -U langchain-volcengine-mysql
+```
+---
+
+## 实例化
+
+Configure the `vedb` submodule, then access `vedb.vector_store`.
+
+```python
+from langchain_volcengine_mysql import vedb
+from langchain_openai import OpenAIEmbeddings
+
+embeddings = OpenAIEmbeddings()
+
+vedb.configure(
+    host="your-vedb-host.example.com",
+    port=3306,
+    user="your_user",
+    password="your_password",
+    database="your_db",
+    table_name="vector_embeddings",
+    embedding_dim=1536,
+    embedding_function=embeddings,
+)
+
+vector_store = vedb.vector_store
+retriever = vedb.retriever
+```
+
+---
+
+## 管理向量存储
+
+### Add items
+
+```python
+from langchain_core.documents import Document
+
+docs = [
+    Document(page_content="veDB for MySQL supports vector search.", metadata={"source": "docs"}),
+    Document(page_content="LangChain can query it via a unified interface.", metadata={"source": "docs"}),
+]
+
+vector_store.add_documents(documents=docs, ids=["1", "2"])
+```
+
+### Delete items
+
+```python
+vector_store.delete(ids=["1"])
+```
+
+---
+
+## 查询向量存储
+
+### 相似度搜索
+
+```python
+results = vector_store.similarity_search(query="Tell me about veDB", k=1)
+for doc in results:
+    print(f"* {doc.page_content} [{doc.metadata}]")
+```
+
+### Use as a retriever
+
+```python
+docs = retriever.invoke("Tell me about veDB")
+```
+
+---
+
+## API 参考
+
+See the official [PyPI docs](https://pypi.org/project/langchain-volcengine-mysql/).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/vectorstores/vedb_for_mysql.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

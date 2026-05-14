@@ -1,0 +1,57 @@
+---
+title: "Gradient AI 集成"
+description: "使用 LangChain JavaScript 集成 Gradient AI embedding model。"
+---
+
+The `GradientEmbeddings` class uses the Gradient AI API to generate embeddings for a given text.
+
+## 设置
+
+You'll need to install the official Gradient Node SDK as a peer dependency:
+
+```bash npm
+npm i @langchain/community @langchain/core @gradientai/nodejs-sdk
+```
+You will need to set the following environment variables for using the Gradient AI API.
+
+```
+export GRADIENT_ACCESS_TOKEN=<YOUR_ACCESS_TOKEN>
+export GRADIENT_WORKSPACE_ID=<YOUR_WORKSPACE_ID>
+```
+Alternatively, these can be set during the GradientAI Class instantiation as `gradientAccessKey` and `workspaceId` respectively.
+例如：
+
+```typescript
+const model = new GradientEmbeddings({
+  gradientAccessKey: "My secret Access Token"
+  workspaceId: "My secret workspace id"
+});
+```
+
+## 用法
+
+```typescript
+import { GradientEmbeddings } from "@langchain/community/embeddings/gradient_ai";
+
+const model = new GradientEmbeddings({});
+const res = await model.embedQuery(
+  "What would be a good company name a company that makes colorful socks?"
+);
+console.log({ res });
+```
+
+## 相关内容
+
+- Embedding model [conceptual guide](/oss/javascript/integrations/embeddings)
+- Embedding model [how-to guides](/oss/javascript/integrations/embeddings)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/embeddings/gradient_ai.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

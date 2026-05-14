@@ -1,0 +1,59 @@
+---
+title: "Linkup 集成"
+description: "使用 LangChain Python 与 Linkup 集成。"
+---
+
+> [Linkup](https://www.linkup.so/) provides an API to connect LLMs to the web and the Linkup Premium Partner sources.
+
+## 安装和设置
+
+To use the Linkup provider, you first need a valid API key, which you can find by [signing up on the Linkup site](https://app.linkup.so/sign-up).
+You will also need the `langchain-linkup` package, which you can install using pip:
+
+<CodeGroup>
+```bash pip
+pip install langchain-linkup
+```
+
+```bash uv
+uv add langchain-linkup
+```
+</CodeGroup>
+
+## 检索器
+
+查看[使用示例](/oss/python/integrations/retrievers/linkup_search).
+
+```python
+from langchain_linkup import LinkupSearchRetriever
+
+retriever = LinkupSearchRetriever(
+    depth="deep",  # "standard" or "deep"
+    linkup_api_key=None,  # API key can be passed here or set as the LINKUP_API_KEY environment variable
+)
+```
+
+## 工具
+
+查看[使用示例](/oss/python/integrations/tools/linkup_search).
+
+```python
+from langchain_linkup import LinkupSearchTool
+
+tool = LinkupSearchTool(
+    depth="deep",  # "standard" or "deep"
+    output_type="searchResults",  # "searchResults", "sourcedAnswer" or "structured"
+    linkup_api_key=None,  # API key can be passed here or set as the LINKUP_API_KEY environment variable
+)
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/linkup.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,63 @@
+---
+title: 安装 LangChain
+sidebarTitle: 安装
+---
+
+要安装 LangChain 包：
+
+<CodeGroup>
+    ```bash pip
+    pip install -U langchain
+    # 需要 Python 3.10+
+    ```
+
+    ```bash uv
+    uv add langchain
+    # 需要 Python 3.10+
+    ```
+</CodeGroup>
+
+
+
+LangChain 提供了数百种 LLM 和数千种其他集成。这些集成存在于独立的提供商包中。
+
+<CodeGroup>
+    ```bash pip
+    # 安装 OpenAI 集成
+    pip install -U langchain-openai
+
+    # 安装 Anthropic 集成
+    pip install -U langchain-anthropic
+    ```
+    ```bash uv
+    # 安装 OpenAI 集成
+    uv add langchain-openai
+
+    # 安装 Anthropic 集成
+    uv add langchain-anthropic
+    ```
+</CodeGroup>
+
+
+
+
+<Tip>
+请参阅[集成标签页](/oss/python/integrations/providers/overview)获取可用集成的完整列表。
+</Tip>
+
+现在你已安装 LangChain，可以按照[快速入门指南](/oss/python/langchain/quickstart)开始使用。
+
+<Tip>
+设置 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langchain-install) 追踪来调试你的第一个 LangChain 应用。按照[追踪快速入门](/langsmith/trace-with-langchain)开始。
+</Tip>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时回答。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/install.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

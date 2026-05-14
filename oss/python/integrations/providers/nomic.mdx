@@ -1,0 +1,79 @@
+---
+title: "Nomic 集成"
+description: "使用 LangChain Python 与 Nomic 集成。"
+---
+
+>[Nomic](https://www.nomic.ai/) builds tools that enable everyone to interact with AI scale datasets and run AI models on consumer computers.
+>
+>`Nomic` currently offers two products:
+>
+>- `Atlas`: the Visual Data Engine
+>- `GPT4All`: the Open Source Edge Language Model Ecosystem
+
+The Nomic integration exists in two partner packages: [langchain-nomic](https://pypi.org/project/langchain-nomic/)
+and in [langchain-community](https://pypi.org/project/langchain-community/).
+
+## 安装
+
+您可以安装m with:
+
+<CodeGroup>
+```bash pip
+pip install -U langchain-nomic
+pip install -U langchain-community
+```
+
+```bash uv
+uv add langchain-nomic
+uv add langchain-community
+```
+</CodeGroup>
+
+## 大语言模型 (LLM)
+
+### GPT4All
+
+See [a usage example](/oss/python/integrations/llms/gpt4all).
+
+```python
+from langchain_community.llms import GPT4All
+```
+
+## 向量嵌入模型
+
+### NomicEmbeddings
+
+See [a usage example](/oss/python/integrations/embeddings/nomic).
+
+```python
+from langchain_nomic import NomicEmbeddings
+```
+
+### GPT4All
+
+See [a usage example](/oss/python/integrations/embeddings/gpt4all).
+
+```python
+from langchain_community.embeddings import GPT4AllEmbeddings
+```
+
+## 向量存储
+
+### Atlas
+
+See [a usage example and installation instructions](/oss/python/integrations/vectorstores/atlas).
+
+```python
+from langchain_community.vectorstores import AtlasDB
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/nomic.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

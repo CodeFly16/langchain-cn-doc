@@ -1,0 +1,171 @@
+---
+title: "AWS 中间件集成"
+description: "使用 LangChain Python 集成 AWS 中间件。"
+---
+
+专为 AWS Bedrock 上托管的模型设计的中间件。了解更多关于[中间件](/oss/python/langchain/middleware/overview)的信息。
+
+| 中间件 | 描述 |
+|------------|-------------|
+| [提示词缓存](#prompt-caching) | 通过缓存重复的提示词前缀来降低成本 |
+
+## 提示词缓存
+
+通过在 Amazon Bedrock 上缓存频繁重用的提示词前缀来降低推理延迟和输入 Token 成本。 This middleware automatically places cache checkpoints after the system prompt, tool definitions, and the most recent message so that the model can skip recomputation of previously seen content on subsequent requests.
+
+提示词缓存适用于以下场景：
+
+- 具有长且一致的系统提示词的多轮对话
+- 具有在多次调用中保持不变的大量工具定义的智能体
+- 基于文档的问答，用户针对相同的上传上下文提出多个问题
+- 具有重复静态内容的批处理工作负载
+
+支持的模型：
+
+- **Anthropic Claude**
+- **Amazon Nova**
+
+<Info>
+    了解更多关于 [AWS Bedrock prompt caching](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html) strategies and limitations. Cached content must exceed 1,024 tokens for a cache checkpoint to take effect, sometimes more depending on model. See [supported models, regions, and limits](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html#prompt-caching-models).
+</Info>
+
+**API reference:** [`BedrockPromptCachingMiddleware`](https://reference.langchain.com/python/langchain-aws/middleware/prompt_caching/BedrockPromptCachingMiddleware)
+
+```python ChatBedrockConverse
+from langchain_aws import ChatBedrockConverse
+from langchain_aws.middleware.prompt_caching import BedrockPromptCachingMiddleware
+from langchain.agents import create_agent
+
+agent = create_agent(
+    model=ChatBedrockConverse(model="us.anthropic.claude-sonnet-4-5-20250929-v1:0"),
+    system_prompt="<Your long system prompt here>",
+    middleware=[BedrockPromptCachingMiddleware(ttl="1h")], # [!code highlight]
+)
+```
+
+```python ChatBedrock
+from langchain_aws import ChatBedrock
+from langchain_aws.middleware.prompt_caching import BedrockPromptCachingMiddleware
+from langchain.agents import create_agent
+
+agent = create_agent(
+    model=ChatBedrock(model="us.anthropic.claude-sonnet-4-5-20250929-v1:0"),
+    system_prompt="<Your long system prompt here>",
+    middleware=[BedrockPromptCachingMiddleware(ttl="5m")], # [!code highlight]
+)
+```
+
+<Accordion title="配置选项">
+
+<ParamField body="type" type="string" default="ephemeral">
+    Cache type. For `ChatBedrock`, only `'ephemeral'` is currently supported. For `ChatBedrockConverse`, this value is ignored as the Converse API always uses `"default"` cache type.
+</ParamField>
+
+<ParamField body="ttl" type="string" default="5m">
+    Time to live for cached content. Valid values: `'5m'` or `'1h'`. 请注意 Amazon Nova models only support `'5m'`.
+</ParamField>
+
+<ParamField body="min_messages_to_cache" type="number" default="0">
+    Minimum number of messages before caching starts.
+</ParamField>
+
+<ParamField body="unsupported_model_behavior" type="string" default="warn">
+    Behavior when using unsupported models. Options: `'ignore'`, `'warn'`, or `'raise'`.
+</ParamField>
+
+</Accordion>
+
+<Accordion title="完整示例">
+
+The middleware caches content up 提供自然语言接口d including the latest message in each request. On subsequent requests within the TTL window (5 minutes or 1 hour), previously seen content is retrieved from cache rather than reprocessed, reducing costs and latency.
+
+**How it works:**
+1. First request: System prompt, tools, and the user message are sent to the API and cached
+2. Second request: The cached content is retrieved from cache. Only the new message needs to be processed
+3. This pattern continues for each turn, with each request reusing the cached conversation history
+
+<Note>
+    Prompt caching reduces API costs by caching tokens, but does **not** provide conversation memory. To persist conversation history across invocations, use a [checkpointer](https://langchain-ai.github.io/langgraph/concepts/persistence/#checkpointer-libraries) like `MemorySaver`.
+</Note>
+
+```python
+from langchain_aws import ChatBedrockConverse
+from langchain_aws.middleware.prompt_caching import BedrockPromptCachingMiddleware
+from langchain.agents import create_agent
+from langchain_core.runnables import RunnableConfig
+from langchain.messages import HumanMessage
+from langchain.tools import tool
+from langgraph.checkpoint.memory import MemorySaver
+
+
+@tool
+def get_weather(city: str) -> str:
+    """Get the current weather for a city."""
+    return f"The weather in {city} is sunny and 72F."
+
+
+# System prompt must exceed 1,024 tokens for caching to take effect
+LONG_PROMPT = (
+    "You are a helpful weather assistant with deep expertise in meteorology, "
+    "climate science, and atmospheric phenomena. When answering questions about "
+    "weather, provide accurate and up-to-date information. "
+    + "You should always strive to give the most helpful response possible. " * 85
+)
+
+agent = create_agent(
+    model=ChatBedrockConverse(model="us.anthropic.claude-sonnet-4-5-20250929-v1:0"),
+    system_prompt=LONG_PROMPT,
+    tools=[get_weather],
+    middleware=[BedrockPromptCachingMiddleware(ttl="5m")], # [!code highlight]
+    checkpointer=MemorySaver(),  # Persists conversation history
+)
+
+# Use a thread_id to maintain conversation state
+config: RunnableConfig = {"configurable": {"thread_id": "user-123"}}
+
+# First invocation: Creates cache with system prompt, tools, and user message
+response = agent.invoke(
+    {"messages": [HumanMessage("What is the weather in Miami?")]}, config=config
+)
+
+last_msg = response["messages"][-1]
+print(last_msg.content)
+
+# Check cache token usage
+um = last_msg.usage_metadata
+if um:
+    details = um.get("input_token_details", {})
+    cache_read = details.get("cache_read", 0) or 0
+    cache_write = details.get("cache_creation", 0) or 0
+    print(f"Cache read: {cache_read}, Cache write: {cache_write}")
+
+# Second invocation: Reuses cached system prompt, tools, and previous messages
+response = agent.invoke(
+    {"messages": [HumanMessage("How about Seattle?")]}, config=config
+)
+print(response["messages"][-1].content)
+```
+
+</Accordion>
+
+### 特定模型行为
+
+中间件自动处理不同 API 和模型系列之间的差异：
+
+| Feature | ChatBedrockConverse (Anthropic) | ChatBedrockConverse (Nova) | ChatBedrock (Anthropic) |
+|---------|:-------------------------------:|:--------------------------:|:-----------------------:|
+| 系统提示词缓存 | ✅ | ✅ | ✅ |
+| 工具定义缓存 | ✅ | ❌ | ✅ |
+| 消息缓存 | ✅ | ✅ (excludes tool result messages) | ✅ |
+| 扩展 TTL（`1h`）| ✅ | ❌ | ✅ |
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/middleware/aws.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

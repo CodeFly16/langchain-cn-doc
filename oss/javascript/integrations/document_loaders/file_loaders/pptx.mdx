@@ -1,0 +1,32 @@
+---
+title: "PPTX files 集成"
+description: "使用 LangChain JavaScript 集成 PPTX files document loader。"
+---
+
+This example goes over how to load data from PPTX files. By default, one document will be created for all pages in the PPTX file.
+
+## 设置
+
+```bash npm
+npm install officeparser
+```
+## Usage, one document per page
+
+```typescript
+import { PPTXLoader } from "@langchain/community/document_loaders/fs/pptx";
+
+const loader = new PPTXLoader("src/document_loaders/example_data/example.pptx");
+
+const docs = await loader.load();
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/document_loaders/file_loaders/pptx.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

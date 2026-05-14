@@ -1,0 +1,51 @@
+---
+title: "Nlpcloud 集成"
+description: "使用 LangChain Python 与 Nlpcloud 集成。"
+---
+
+>[NLP Cloud](https://docs.nlpcloud.com/#introduction) is an artificial intelligence platform that allows you to use the most advanced AI engines, and even train your own engines with your own data.
+
+
+## 安装和设置
+
+- Install the `nlpcloud` 包。
+
+<CodeGroup>
+```bash pip
+pip install nlpcloud
+```
+
+```bash uv
+uv add nlpcloud
+```
+</CodeGroup>
+
+- Get an NLPCloud api key and set it as an environment variable (`NLPCLOUD_API_KEY`)
+
+
+## 大语言模型 (LLM)
+
+查看[使用示例](/oss/python/integrations/llms/nlpcloud).
+
+```python
+from langchain_community.llms import NLPCloud
+```
+
+## 文本向量嵌入模型
+
+查看[使用示例](/oss/python/integrations/embeddings/nlp_cloud)
+
+```python
+from langchain_community.embeddings import NLPCloudEmbeddings
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/nlpcloud.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

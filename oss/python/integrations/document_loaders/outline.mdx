@@ -1,0 +1,86 @@
+---
+title: "Outline 集成"
+description: "使用 LangChain Python 集成 Outline 文档加载器。"
+---
+
+>[Outline](https://www.getoutline.com/) is an open-source collaborative knowledge base platform designed for team information sharing.
+
+本 notebook 展示how to obtain langchain Documents from your Outline collections.
+
+## 概述
+
+The [Outline Document Loader](https://github.com/10Pines/langchain-outline) can be used to load Outline collections as LangChain Documents for integration into Retrieval-Augmented Generation (RAG) workflows.
+
+此示例演示：
+
+* Setting up a Document Loader to load all documents from an Outline instance.
+
+### 设置
+
+开始之前，请确保设置了以下环境变量：
+
+* OUTLINE_API_KEY: Your API key for authenticating with your Outline instance ([www.getoutline.com/developers#section/Authentication](https://www.getoutline.com/developers#section/Authentication)).
+* OUTLINE_INSTANCE_URL: The URL (including protocol) of your Outline instance.
+
+```python
+import os
+
+os.environ["OUTLINE_API_KEY"] = "ol_api_xyz123"
+os.environ["OUTLINE_INSTANCE_URL"] = "https://app.getoutline.com"
+```
+
+## 初始化
+
+To initialize the OutlineLoader, you need the following parameters:
+
+* outline_base_url: The URL of your outline instance (or it will be taken from the environment variable).
+* outline_api_key: Your API key for authenticating with your Outline instance (or it will be taken from the environment variable).
+* outline_collection_id_list: List of collection ids to be retrieved. If None all will be retrieved.
+* page_size: Because the Outline API uses paginated results you can configure how many results (documents) per page will be retrieved per API request.  If this is not specified a default will be used.
+
+## Instantiation
+
+```python
+# Option 1: Using environment variables (ensure they are set)
+from langchain_outline.document_loaders.outline import OutlineLoader
+
+loader = OutlineLoader()
+
+# Option 2: Passing parameters directly
+loader = OutlineLoader(
+    outline_base_url="YOUR_OUTLINE_URL", outline_api_key="YOUR_API_KEY"
+)
+```
+
+## 加载
+
+To load and return all documents available in the Outline instance
+
+```python
+loader.load()
+```
+
+## 惰性加载
+
+The lazy_load method allows you to iteratively load documents from the Outline collection, yielding each document as it is fetched:
+
+```python
+loader.lazy_load()
+```
+
+---
+
+## API 参考
+
+For detailed documentation of all `Outline` features and configurations head to the API reference: [www.getoutline.com/developers](https://www.getoutline.com/developers)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [通过 MCP 将这些文档连接到](/use-these-docs) Claude、VSCode 等工具以获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/document_loaders/outline.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

@@ -1,0 +1,317 @@
+---
+title: 流式输出
+description: 从智能体运行中流式传输实时更新
+---
+
+import StreamingReasoningTokensPy from '/snippets/code-samples/streaming-reasoning-tokens-py.mdx';
+import StreamingReasoningTokensJs from '/snippets/code-samples/streaming-reasoning-tokens-js.mdx';
+
+<Info>
+**预览中：** 尝试事件流式类型化智能体投影，涵盖消息、工具调用、状态和最终输出。从 [LangChain 事件流](/oss/javascript/langchain/event-streaming)开始，或探索[流式输出 cookbook](https://github.com/langchain-ai/streaming-cookbook) 中的可运行示例。
+</Info>
+
+LangChain 实现了一个流式系统来展示实时更新。
+
+流式输出对于增强基于 LLM 构建的应用的响应性至关重要。通过逐步显示输出，即使在完整响应准备好之前，流式输出也能显著改善用户体验（UX），特别是在处理 LLM 的延迟时。
+
+## 概述
+
+LangChain 的流式系统让你可以将智能体运行的实时反馈展示到你的应用中。
+
+LangChain 流式输出的功能：
+
+* <Icon icon="brain" size={16} /> [**流式智能体进度**](#agent-progress)——在每个智能体步骤后获取状态更新。
+* <Icon icon="binary" size={16} /> [**流式 LLM Token**](#llm-tokens)——在语言模型 Token 生成时进行流式传输。
+* <Icon icon="bulb" size={16} /> [**流式思考/推理 Token**](#streaming-thinking-/-reasoning-tokens)——在模型推理生成时展示。
+* <Icon icon="table" size={16} /> [**流式自定义更新**](#custom-updates)——发送用户定义的信号（例如 `"已获取 10/100 条记录"`）。
+* <Icon icon="stack-push" size={16} /> [**流式多模式**](#stream-multiple-modes)——从 `updates`（智能体进度）、`messages`（LLM Token + 元数据）或 `custom`（任意用户数据）中选择。
+
+请参阅下面的[常见模式](#common-patterns)部分获取更多端到端示例。
+
+## 支持的流式模式
+
+
+
+将以下一种或多种流式模式作为列表传递给 [`stream`](https://reference.langchain.com/javascript/classes/_langchain_langgraph.index.CompiledStateGraph.html#stream) 方法：
+
+
+| 模式       | 描述                                                                                                 |
+| ---------- | ----------------------------------------------------------------------------------------------------------- |
+| `updates`  | 在每个智能体步骤后流式传输状态更新。如果在同一步骤中进行了多个更新（例如运行了多个节点），这些更新将分别流式传输。 |
+| `messages` | 从调用 LLM 的任何图节点流式传输 `(token, metadata)` 元组。 |
+| `custom`   | 使用流式写入器从图节点内部流式传输自定义数据。 |
+
+## 智能体进度
+
+
+
+要流式传输智能体进度，使用 [`stream`](https://reference.langchain.com/javascript/classes/_langchain_langgraph.index.CompiledStateGraph.html#stream) 方法并设置 `streamMode: "updates"`。这会在每个智能体步骤后发出事件。
+
+
+例如，如果你有一个调用一次工具的智能体，你应该看到以下更新：
+
+* **LLM 节点**：包含工具调用请求的 [`AIMessage`](https://reference.langchain.com/javascript/langchain-core/messages/AIMessage)
+* **工具节点**：包含执行结果的 [`ToolMessage`](https://reference.langchain.com/javascript/langchain-core/messages/ToolMessage)
+* **LLM 节点**：最终 AI 响应
+
+
+
+```typescript
+import z from "zod";
+import { createAgent, tool } from "langchain";
+
+const getWeather = tool(
+    async ({ city }) => {
+        return `The weather in ${city} is always sunny!`;
+    },
+    {
+        name: "get_weather",
+        description: "Get weather for a given city.",
+        schema: z.object({
+        city: z.string(),
+        }),
+    }
+);
+
+const agent = createAgent({
+    model: "gpt-5-nano",
+    tools: [getWeather],
+});
+
+for await (const chunk of await agent.stream(
+    { messages: [{ role: "user", content: "旧金山的天气怎么样" }] },
+    { streamMode: "updates" }
+)) {
+    const [step, content] = Object.entries(chunk)[0];
+    console.log(`步骤: ${step}`);
+    console.log(`内容: ${JSON.stringify(content, null, 2)}`);
+}
+```
+
+
+## LLM Token
+
+
+
+要在 LLM 生成 Token 时进行流式传输，使用 `streamMode: "messages"`：
+
+```typescript
+import z from "zod";
+import { createAgent, tool } from "langchain";
+
+const getWeather = tool(
+    async ({ city }) => {
+        return `The weather in ${city} is always sunny!`;
+    },
+    {
+        name: "get_weather",
+        description: "Get weather for a given city.",
+        schema: z.object({
+        city: z.string(),
+        }),
+    }
+);
+
+const agent = createAgent({
+    model: "gpt-5.4-mini",
+    tools: [getWeather],
+});
+
+for await (const [token, metadata] of await agent.stream(
+    { messages: [{ role: "user", content: "旧金山的天气怎么样" }] },
+    { streamMode: "messages" }
+)) {
+    console.log(`节点: ${metadata.langgraph_node}`);
+    console.log(`内容: ${JSON.stringify(token.contentBlocks, null, 2)}`);
+}
+```
+
+
+## 自定义更新
+
+
+
+要在工具执行时流式传输更新，你可以使用配置中的 `writer` 参数。
+
+```typescript
+import z from "zod";
+import { tool, createAgent } from "langchain";
+import { LangGraphRunnableConfig } from "@langchain/langgraph";
+
+const getWeather = tool(
+    async (input, config: LangGraphRunnableConfig) => {
+        // 流式传输任意数据
+        config.writer?.(`正在查找城市数据: ${input.city}`);
+        // ... 获取城市数据
+        config.writer?.(`已获取城市数据: ${input.city}`);
+        return `It's always sunny in ${input.city}!`;
+    },
+    {
+        name: "get_weather",
+        description: "Get weather for a given city.",
+        schema: z.object({
+        city: z.string().describe("The city to get weather for."),
+        }),
+    }
+);
+
+const agent = createAgent({
+    model: "gpt-5.4-mini",
+    tools: [getWeather],
+});
+
+for await (const chunk of await agent.stream(
+    { messages: [{ role: "user", content: "旧金山的天气怎么样" }] },
+    { streamMode: "custom" }
+)) {
+    console.log(chunk);
+}
+```
+
+```shell title="输出"
+正在查找城市数据: San Francisco
+已获取城市数据: San Francisco
+```
+
+<Note>
+    如果你向工具添加了 `writer` 参数，在没有提供 writer 函数的情况下，你将无法在 LangGraph 执行上下文之外调用该工具。
+</Note>
+
+
+## 流式多模式
+
+
+
+你可以通过将 streamMode 作为数组传递来指定多种流式模式：`streamMode: ["updates", "messages", "custom"]`。
+
+流式输出将是 `[mode, chunk]` 的元组，其中 `mode` 是流式模式的名称，`chunk` 是该模式流式传输的数据。
+
+```typescript
+import z from "zod";
+import { tool, createAgent } from "langchain";
+import { LangGraphRunnableConfig } from "@langchain/langgraph";
+
+const getWeather = tool(
+    async (input, config: LangGraphRunnableConfig) => {
+        // 流式传输任意数据
+        config.writer?.(`正在查找城市数据: ${input.city}`);
+        // ... 获取城市数据
+        config.writer?.(`已获取城市数据: ${input.city}`);
+        return `It's always sunny in ${input.city}!`;
+    },
+    {
+        name: "get_weather",
+        description: "Get weather for a given city.",
+        schema: z.object({
+        city: z.string().describe("The city to get weather for."),
+        }),
+    }
+);
+
+const agent = createAgent({
+    model: "gpt-5.4-mini",
+    tools: [getWeather],
+});
+
+for await (const [streamMode, chunk] of await agent.stream(
+    { messages: [{ role: "user", content: "旧金山的天气怎么样" }] },
+    { streamMode: ["updates", "messages", "custom"] }
+)) {
+    console.log(`${streamMode}: ${JSON.stringify(chunk, null, 2)}`);
+}
+```
+
+
+## 常见模式
+
+以下是展示流式输出常见用例的示例。
+
+### 流式思考/推理 Token
+
+某些模型在生成最终答案之前会执行内部推理。你可以通过过滤[标准内容块](/oss/javascript/langchain/messages#standard-content-blocks)中 `type` 为 `"reasoning"` 的块来流式传输这些思考/推理 Token。
+
+<Note>
+    必须在模型上启用推理输出。
+
+    请参阅[推理部分](/oss/javascript/langchain/models#reasoning)和你的[提供商集成页面](/oss/javascript/integrations/providers/overview)了解配置详情。
+
+    要快速检查模型的推理支持，请参阅 [models.dev](https://models.dev)。
+</Note>
+
+
+
+要从智能体流式传输思考 Token，使用 `streamMode: "messages"` 并过滤推理内容块。当模型支持时，使用启用了扩展思考的模型实例（例如 `ChatAnthropic`）：
+
+<StreamingReasoningTokensJs />
+
+```shell title="输出"
+[thinking] The user is asking about the weather in San Francisco. I have a tool
+[thinking]  available to get this information. Let me call the get_weather tool
+[thinking]  with "San Francisco" as the city parameter.
+The weather in San Francisco is: It's always sunny in San Francisco!
+```
+
+
+
+无论模型提供商如何，这都以相同方式工作——LangChain 通过 [`content_blocks`](/oss/javascript/langchain/messages#standard-content-blocks) 属性将提供商特定的格式（Anthropic `thinking` 块、OpenAI `reasoning` 摘要等）规范化为标准的 `"reasoning"` 内容块类型。
+
+要直接从聊天模型（不使用智能体）流式传输推理 Token，请参阅[使用聊天模型流式输出](/oss/javascript/langchain/models#reasoning)。
+
+
+
+## 禁用流式输出
+
+在某些应用中，你可能需要为给定模型禁用单个 Token 的流式输出。这在以下情况下很有用：
+
+- 使用[多智能体](/oss/javascript/langchain/multi-agent)系统来控制哪些智能体流式输出其结果
+- 混合支持流式输出的模型和不支持的模型
+- 部署到 [LangSmith](/langsmith/home) 并希望防止某些模型输出流式传输到客户端
+
+
+
+在初始化模型时设置 `streaming: false`。
+
+```typescript
+import { ChatOpenAI } from "@langchain/openai";
+
+const model = new ChatOpenAI({
+  model: "gpt-5.4",
+  streaming: false,  // [!code highlight]
+});
+```
+
+
+<Tip>
+部署到 LangSmith 时，在你不希望将输出流式传输到客户端的任何模型上设置 `streaming=False`。这在部署前在你的图代码中配置。
+</Tip>
+
+
+
+<Note>
+并非所有聊天模型集成都支持 `streaming` 参数。如果你的模型不支持，改用 `disableStreaming: true`。此参数通过基类在所有聊天模型上可用。
+</Note>
+
+
+请参阅 [LangGraph 流式输出指南](/oss/javascript/langgraph/streaming#disable-streaming-for-specific-chat-models)了解更多详情。
+
+
+
+## 相关内容
+
+- [前端流式输出](/oss/javascript/langchain/streaming/frontend)——使用 `useStream` 构建 React UI 进行实时智能体交互
+- [使用聊天模型流式输出](/oss/javascript/langchain/models#stream)——直接从聊天模型流式传输 Token，不使用智能体或图
+- [使用聊天模型推理](/oss/javascript/langchain/models#reasoning)——配置和访问聊天模型的推理输出
+- [标准内容块](/oss/javascript/langchain/messages#standard-content-blocks)——了解用于推理、文本和其他内容类型的规范化内容块格式
+- [使用人机协作流式输出](/oss/javascript/langchain/human-in-the-loop#streaming-with-human-in-the-loop)——在处理人工审核中断时流式传输智能体进度
+- [LangGraph 流式输出](/oss/javascript/langgraph/streaming)——高级流式输出选项，包括 `values`、`debug` 模式和子图流式输出
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/streaming.mdx)或[提交 Issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

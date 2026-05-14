@@ -1,0 +1,121 @@
+---
+title: "DirectoryLoader 集成"
+description: "使用 LangChain JavaScript 集成 DirectoryLoader document loader。"
+---
+
+
+<Tip>
+**Compatibility**: Only available on Node.js.
+</Tip>
+
+This notebook provides a quick overview for getting started with `DirectoryLoader` [document loaders](/oss/javascript/integrations/document_loaders). For detailed documentation of all `DirectoryLoader` features and configurations head to the [API reference](https://reference.langchain.com/javascript/langchain-core/document_loaders/base/BaseDocumentLoader).
+
+This example goes over how to load data from folders with multiple files. The second argument is a map of file extensions to loader factories. Each file will be passed to the matching loader, and the resulting documents will be concatenated together.
+
+Example folder:
+
+```text
+src/document_loaders/example_data/example/
+├── example.json
+├── example.jsonl
+├── example.txt
+└── example.csv
+```
+
+## 概述
+
+### 集成详情
+
+| Class | Package | Compatibility | Local | PY support |
+| :--- | :--- | :---: | :---: |  :---: |
+| [`DirectoryLoader`](https://reference.langchain.com/javascript/langchain-core/document_loaders/base/BaseDocumentLoader) | [langchain](https://www.npmjs.com/package/langchain) | Node-only | ✅ | ✅ |
+
+## 设置
+
+要访问 `DirectoryLoader` document loader，你需要install the `langchain` package.
+
+### 安装
+
+LangChain 的 DirectoryLoader 集成位于 `langchain` 包中：
+
+<CodeGroup>
+```bash npm
+npm install langchain @langchain/core
+```
+```bash yarn
+yarn add langchain @langchain/core
+```
+```bash pnpm
+pnpm add langchain @langchain/core
+```
+</CodeGroup>
+
+## 实例化
+
+Now we can instantiate our model object and load documents:
+
+```typescript
+import { DirectoryLoader } from "@langchain/classic/document_loaders/fs/directory";
+import {
+  JSONLoader,
+  JSONLinesLoader,
+} from "@langchain/classic/document_loaders/fs/json";
+import { TextLoader } from "@langchain/classic/document_loaders/fs/text";
+import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
+
+const loader = new DirectoryLoader(
+  "../../../../../../examples/src/document_loaders/example_data",
+  {
+    ".json": (path) => new JSONLoader(path, "/texts"),
+    ".jsonl": (path) => new JSONLinesLoader(path, "/html"),
+    ".txt": (path) => new TextLoader(path),
+    ".csv": (path) => new CSVLoader(path, "text"),
+  }
+);
+```
+
+## Load
+
+```typescript
+const docs = await loader.load()
+// disable console.warn calls
+console.warn = () => {}
+docs[0]
+```
+
+```javascript
+Document {
+  pageContent: 'Foo\nBar\nBaz\n\n',
+  metadata: {
+    source: '/Users/bracesproul/code/lang-chain-ai/langchainjs/examples/src/document_loaders/example_data/example.txt'
+  },
+  id: undefined
+}
+```
+
+```typescript
+console.log(docs[0].metadata)
+```
+
+```javascript
+{
+  source: '/Users/bracesproul/code/lang-chain-ai/langchainjs/examples/src/document_loaders/example_data/example.txt'
+}
+```
+
+---
+
+## API 参考
+
+有关所有 `DirectoryLoader` 功能和配置的详细文档，请前往 [API 参考](https://reference.langchain.com/javascript/langchain-core/document_loaders/base/BaseDocumentLoader)。
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/document_loaders/file_loaders/directory.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

@@ -1,0 +1,64 @@
+---
+title: "Nimble 集成"
+description: "使用 LangChain Python 与 Nimble 集成。"
+---
+
+[Nimble](https://www.nimbleway.com/) provides real-time web data access through a search API that browses the live web rather than relying on prebuilt indexes. Unlike traditional search APIs, Nimble uses headless browsers to navigate websites in real-time—handling JavaScript rendering, dynamic content, pagination, and complex multi-step navigation flows.
+
+**Key technical capabilities:**
+
+- **Live web browsing**: Real-time access to current web content, not cached indexes
+- **JavaScript rendering**: Handles modern SPAs, lazy loading, and client-side rendering
+- **Flexible modes**: Fast mode for SERP data or deep mode for full content extraction
+- **AI summaries**: Optional LLM-generated answers alongside raw search results
+- **Production-ready**: Built for scale with async support and comprehensive error handling
+
+For more information, visit [nimbleway.com](https://www.nimbleway.com/) or explore the [official Nimble documentation](https://docs.nimbleway.com/).
+
+## 安装和设置
+
+The Nimble integration exists in its own partner 包。 您可以安装 with:
+
+<CodeGroup>
+```bash pip
+pip install -U langchain-nimble
+```
+```bash uv
+uv add langchain-nimble
+```
+</CodeGroup>
+
+To use the package, you'll need to set the `NIMBLE_API_KEY` environment variable to your Nimble API key. You can obtain an API key by signing up at [Nimble](https://www.nimbleway.com/).
+
+## 工具和工具包
+
+<Columns cols={2}>
+  <Card title="NimbleSearchTool" href="/oss/python/integrations/tools/nimble_search" cta="开始使用" icon="magnifying-glass" arrow>
+    Real-time web search for agents. Supports deep mode for full content extraction, domain/date filtering, and optional AI-generated summaries.
+  </Card>
+  <Card title="NimbleExtractTool" href="/oss/python/integrations/tools/nimble_extract" cta="开始使用" icon="file-lines" arrow>
+    Extract rendered content from specific URLs. Handles JavaScript-heavy sites with configurable parsing formats.
+  </Card>
+</Columns>
+
+## 检索器
+
+<Columns cols={2}>
+  <Card title="NimbleSearchRetriever" href="/oss/python/integrations/retrievers/nimble_search" cta="开始使用" icon="magnifying-glass" arrow>
+    Search retriever with fast/deep modes. Navigate dynamic sites and extract full page content for RAG applications.
+  </Card>
+  <Card title="NimbleExtractRetriever" href="/oss/python/integrations/retrievers/nimble_extract" cta="开始使用" icon="file-lines" arrow>
+    Content extraction retriever for known URLs. Returns structured data in plain text, markdown, or HTML formats.
+  </Card>
+</Columns>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/nimble.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

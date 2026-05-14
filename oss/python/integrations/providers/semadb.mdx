@@ -1,0 +1,33 @@
+---
+title: "Semadb 集成"
+description: "使用 LangChain Python 与 Semadb 集成。"
+---
+
+>[SemaDB](https://semafind.com/) is a no fuss vector similarity search engine. 它提供 a low-cost cloud hosted version to help you build AI applications with ease.
+
+With SemaDB Cloud, our hosted version, no fuss means no pod size calculations, no schema definitions, no partition settings, no parameter tuning, no search algorithm tuning, no complex installation, no complex API. It is integrated with [RapidAPI](https://rapidapi.com/semafind-semadb/api/semadb) providing transparent billing, automatic sharding and an interactive API playground.
+
+## 安装
+
+None required, get started directly with SemaDB Cloud at [RapidAPI](https://rapidapi.com/semafind-semadb/api/semadb).
+
+## 向量存储
+
+There is a basic wrapper around `SemaDB` collections allowing you to use it as a vectorstore.
+
+```python
+from langchain_community.vectorstores import SemaDB
+```
+
+You can follow a tutorial on how to use the wrapper in [this notebook](/oss/python/integrations/vectorstores/semadb).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/semadb.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

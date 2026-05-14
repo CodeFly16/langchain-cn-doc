@@ -1,0 +1,35 @@
+---
+title: "Fmp data (financial data prep) 集成"
+description: "使用 LangChain Python 与 Fmp data (financial data prep) 集成。"
+---
+
+> [FMP-Data](https://pypi.org/project/fmp-data/) is a Python 包 for connecting to
+> Financial Data Prep API. It simplifies how you can access production quality data.
+
+
+## 安装和设置
+
+Get an `FMP Data` API key by
+visiting [this page](https://site.financialmodelingprep.com/pricing-plans?couponCode=mehdi).
+ and set it as an environment variable (`FMP_API_KEY`).
+
+Then, install [langchain-fmp-data](https://pypi.org/project/langchain-fmp-data/).
+
+## 工具
+
+See an [example](https://github.com/MehdiZare/langchain-fmp-data/tree/main/docs).
+
+```python
+from langchain_fmp_data import FMPDataTool, FMPDataToolkit
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/fmp-data.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

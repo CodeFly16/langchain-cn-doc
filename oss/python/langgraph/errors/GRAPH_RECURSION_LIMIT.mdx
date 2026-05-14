@@ -1,0 +1,46 @@
+---
+title: GRAPH_RECURSION_LIMIT
+---
+
+你的 LangGraph [`StateGraph`](https://langchain-ai.github.io/langgraph/reference/graphs/#langgraph.graph.state.StateGraph) 在达到停止条件之前已达到最大步数限制。
+这通常是由于无限循环导致的，例如以下代码：
+
+```python
+class State(TypedDict):
+    some_key: str
+
+builder = StateGraph(State)
+builder.add_node("a", ...)
+builder.add_node("b", ...)
+builder.add_edge("a", "b")
+builder.add_edge("b", "a")
+...
+
+graph = builder.compile()
+```
+
+
+
+
+然而，复杂的图可能会自然地达到默认限制。
+
+## 故障排除
+
+* 如果你不期望图经历很多次迭代，那你可能存在循环。请检查你的逻辑是否存在无限循环。
+
+* 如果你有一个复杂的图，可以在调用图时通过 `config` 对象传入更高的 `recursion_limit` 值，如下所示：
+
+```python
+graph.invoke({...}, {"recursion_limit": 100})
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/errors/GRAPH_RECURSION_LIMIT.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

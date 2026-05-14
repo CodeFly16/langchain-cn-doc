@@ -1,0 +1,86 @@
+---
+title: "Writer 集成"
+description: "使用 LangChain Python 与 Writer 集成。"
+---
+
+All functionality related to WRITER
+
+
+>This page covers how to use the [WRITER](https://writer.com/) ecosystem within LangChain. For further information see Writer [docs](https://dev.writer.com/home/introduction).
+>[Palmyra](https://writer.com/blog/palmyra/) is a Large Language Model (LLM) developed by `WRITER`.
+>
+>The [Writer API](https://dev.writer.com/api-guides/introduction) is powered by a diverse set of Palmyra sub-models with different capabilities and price points.
+
+## 安装和设置
+
+Install the integration package with
+<CodeGroup>
+```bash pip
+pip install langchain-writer
+```
+
+```bash uv
+uv add langchain-writer
+```
+</CodeGroup>
+
+Get a WRITER API key and set it as an environment variable (`WRITER_API_KEY`)
+
+## 聊天模型
+
+```python
+from langchain_writer import ChatWriter
+```
+查看[详情](/oss/python/integrations/chat/writer).
+
+
+## PDF parser
+
+```python
+from langchain_writer.pdf_parser import PDFParser
+```
+<Warning>
+**Deprecation notice**: The parse PDF tool is deprecated and will be removed on **December 22, 2025**.
+
+**Migration path**: We plan to introduce a prebuilt PDF parsing tool for chat completions that will provide similar functionality. 此工具 will work similarly to other prebuilt tools. We will provide more details about this alternative when it becomes available.
+</Warning>
+
+查看[详情](/oss/python/integrations/document_loaders/parsers/writer_pdf_parser).
+
+## Tools calling
+
+### Functions
+
+Support of basic function calls defined via dicts, Pydantic, python functions etc.
+
+### 图
+
+```python
+from langchain_writer.tools import GraphTool
+```
+查看[详情](/oss/python/integrations/tools/writer).
+
+### Web search tool
+
+```python
+from langchain_writer.tools import WebSearchTool
+```
+查看[详情](/oss/python/integrations/tools/writer).
+
+### Translation tool
+
+```python
+from langchain_writer.tools import TranslationTool
+```
+查看[详情](/oss/python/integrations/tools/writer).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/writer.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,45 @@
+---
+title: "Copy paste 集成"
+description: "使用 LangChain Python 集成 Copy paste 文档加载器。"
+---
+
+本 notebook 介绍如何load a document object from something you just want to copy and paste. In this case, you don't even need to use a DocumentLoader, but rather can just construct the Document directly.
+
+```python
+from langchain_core.documents import Document
+```
+
+```python
+text = "..... put the text you copy pasted here......"
+```
+
+```python
+doc = Document(page_content=text)
+```
+
+## 元数据
+
+If you want to add metadata about the where you got this piece of text, you easily can with the metadata key.
+
+```python
+metadata = {"source": "internet", "date": "Friday"}
+```
+
+```python
+doc = Document(page_content=text, metadata=metadata)
+```
+
+```python
+
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [通过 MCP 将这些文档连接到](/use-these-docs) Claude、VSCode 等工具以获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/document_loaders/copypaste.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

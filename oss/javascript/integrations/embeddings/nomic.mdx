@@ -1,0 +1,53 @@
+---
+title: "Nomic 集成"
+description: "使用 LangChain JavaScript 集成 Nomic embedding model。"
+---
+
+The `NomicEmbeddings` class uses the Nomic AI API to generate embeddings for a given text.
+
+## 设置
+
+In order to use the Nomic API you'll need to [sign up for a Nomic account and create an API key](https://atlas.nomic.ai/).
+
+You'll first need to install the [`@langchain/nomic`](https://www.npmjs.com/package/@langchain/nomic) package:
+
+<Tip>
+请参阅[此部分了解安装 LangChain 包的通用说明](/oss/javascript/langchain/install)。
+</Tip>
+
+```bash npm
+npm install @langchain/nomic @langchain/core
+```
+
+## 用法
+
+```typescript
+import { NomicEmbeddings } from "@langchain/nomic";
+
+/* Embed queries */
+const nomicEmbeddings = new NomicEmbeddings();
+const res = await nomicEmbeddings.embedQuery("Hello world");
+console.log(res);
+/* Embed documents */
+const documentRes = await nomicEmbeddings.embedDocuments([
+  "Hello world",
+  "Bye bye",
+]);
+console.log(documentRes);
+```
+
+## 相关内容
+
+- Embedding model [conceptual guide](/oss/javascript/integrations/embeddings)
+- Embedding model [how-to guides](/oss/javascript/integrations/embeddings)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/embeddings/nomic.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

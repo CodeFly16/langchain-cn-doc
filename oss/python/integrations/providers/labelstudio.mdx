@@ -1,0 +1,42 @@
+---
+title: "Label studio 集成"
+description: "使用 LangChain Python 与 Label studio 集成。"
+---
+
+>[Label Studio](https://labelstud.io/guide/get_started) 是一个开源的 data labeling platform that provides LangChain with flexibility when it comes to labeling data for fine-tuning large language models (LLMs). It also enables the preparation of custom training data and the collection and evaluation of responses through human feedback.
+
+## 安装和设置
+
+See the [Label Studio installation guide](https://labelstud.io/guide/install) for installation options.
+
+我们需要安装  `label-studio` and `label-studio-sdk-python` Python 包s:
+
+<CodeGroup>
+```bash pip
+pip install label-studio label-studio-sdk
+```
+
+```bash uv
+uv add label-studio label-studio-sdk
+```
+</CodeGroup>
+
+
+## 回调
+
+查看[使用示例](/oss/python/integrations/callbacks/labelstudio).
+
+```python
+from langchain.callbacks import LabelStudioCallbackHandler
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/labelstudio.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

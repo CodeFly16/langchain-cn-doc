@@ -1,0 +1,108 @@
+---
+title: 概述
+description: 构建显示深度智能体实时子智能体流、任务进度和沙箱的 UI
+---
+
+构建实时可视化深度智能体工作流的前端。 这些模式展示了如何渲染子智能体进度、任务规划、流式内容, 以及类 IDE 沙箱体验 `createDeepAgent`.
+
+## 架构
+
+深度智能体使用协调者-工作者架构。 主智能体规划任务并委派给专门的子智能体, 每个子智能体在隔离环境中运行。 On the frontend, `useStream` surfaces both the coordinator's messages and each subagent's streaming state.
+
+```mermaid
+%%{
+  init: {
+    "fontFamily": "monospace",
+    "flowchart": {
+      "curve": "curve"
+    }
+  }
+}%%
+graph LR
+  FRONTEND["useStream()"]
+  BACKEND["createDeepAgent()"]
+  SUB1["Subagent A"]
+  SUB2["Subagent B"]
+
+  BACKEND --"stream"--> FRONTEND
+  FRONTEND --"submit"--> BACKEND
+  BACKEND --"delegate"--> SUB1
+  BACKEND --"delegate"--> SUB2
+  SUB1 --"result"--> BACKEND
+  SUB2 --"result"--> BACKEND
+
+  classDef blueHighlight fill:#E5F4FF,stroke:#006DDD,color:#030710;
+  classDef greenHighlight fill:#F6FFDB,stroke:#6E8900,color:#2E3900;
+  classDef purpleHighlight fill:#EBD0F0,stroke:#885270,color:#441E33;
+  class FRONTEND blueHighlight;
+  class BACKEND greenHighlight;
+  class SUB1,SUB2 purpleHighlight;
+```
+
+
+
+```ts
+import { createDeepAgent } from "deepagents";
+
+const agent = createDeepAgent({
+  tools: [getWeather],
+  system: "You are a helpful assistant",
+  subagents: [
+    {
+      name: "researcher",
+      description: "Research assistant",
+    },
+  ],
+});
+```
+
+
+
+On the frontend, connect with `useStream` the same way as with `createAgent`. Deep agent patterns use additional `useStream` features like `stream.subagents`, `stream.values.todos`, and `filterSubagentMessages` to render subagent-specific UIs.
+
+```ts
+import { useStream } from "@langchain/react";
+
+function App() {
+  const stream = useStream<typeof agent>({
+    apiUrl: "http://localhost:2024",
+    assistantId: "agent",
+  });
+
+  // Deep agent state beyond messages
+  const todos = stream.values?.todos;
+  const subagents = stream.subagents;
+}
+```
+
+## Patterns
+
+<CardGroup cols={3}>
+  <Card title="Subagent streaming" icon="arrows-split" href="/oss/javascript/deepagents/frontend/subagent-streaming">
+    Display specialist subagents with streaming content, progress tracking, and collapsible cards.
+  </Card>
+  <Card title="Todo list" icon="list-check" href="/oss/javascript/deepagents/frontend/todo-list">
+    Track agent progress with a real-time todo list synced from agent state.
+  </Card>
+  <Card title="Sandbox" icon="code" href="/oss/javascript/deepagents/frontend/sandbox">
+    Build an IDE-like UI with a file browser, code viewer, and diff panel backed by a sandbox.
+  </Card>
+</CardGroup>
+
+## 相关资源 patterns
+
+The [LangChain frontend patterns](/oss/javascript/langchain/frontend/overview), including
+markdown messages, tool calling, and human-in-the-loop, all work with deep
+agents too. Deep Agents are built on the same LangGraph runtime, so
+`useStream` provides the same core API.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/frontend/overview.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

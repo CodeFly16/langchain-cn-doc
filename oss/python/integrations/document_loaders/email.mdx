@@ -1,0 +1,99 @@
+---
+title: "Email 集成"
+description: "使用 LangChain Python 集成 Email 文档加载器。"
+---
+
+本 notebook 展示how to load email (`.eml`) or `Microsoft Outlook` (`.msg`) files.
+
+Please see [Unstructured](/oss/python/integrations/providers/unstructured/) for more instructions on setting up Unstructured locally, including setting up required system dependencies.
+
+## Using unstructured
+
+```python
+pip install -qU unstructured
+```
+
+```python
+from langchain_community.document_loaders import UnstructuredEmailLoader
+
+loader = UnstructuredEmailLoader("./example_data/fake-email.eml")
+
+data = loader.load()
+
+data
+```
+
+```python
+[Document(page_content='This is a test email to use for unit tests.\n\nImportant points:\n\nRoses are red\n\nViolets are blue', metadata={'source': './example_data/fake-email.eml'})]
+```
+
+### Retain elements
+
+在底层，Unstructured 为不同的文本块创建不同的 "elements"。默认情况下我们将它们组合在一起，但你可以通过指定 `mode="elements"` 轻松保持这种分离。
+
+```python
+loader = UnstructuredEmailLoader("example_data/fake-email.eml", mode="elements")
+
+data = loader.load()
+
+data[0]
+```
+
+```python
+Document(page_content='This is a test email to use for unit tests.', metadata={'source': 'example_data/fake-email.eml', 'file_directory': 'example_data', 'filename': 'fake-email.eml', 'last_modified': '2022-12-16T17:04:16-05:00', 'sent_from': ['Matthew Robinson [mrobinson@unstructured.io](mailto:mrobinson@unstructured.io)'], 'sent_to': ['Matthew Robinson [mrobinson@unstructured.io](mailto:mrobinson@unstructured.io)'], 'subject': 'Test Email', 'languages': ['eng'], 'filetype': 'message/rfc822', 'category': 'NarrativeText'})
+```
+
+### Processing attachments
+
+You can process attachments with `UnstructuredEmailLoader` by setting `process_attachments=True` in the constructor. By default, attachments will be partitioned using the `partition` function from `unstructured`. You can use a different partitioning function by passing the function to the `attachment_partitioner` kwarg.
+
+```python
+loader = UnstructuredEmailLoader(
+    "example_data/fake-email.eml",
+    mode="elements",
+    process_attachments=True,
+)
+
+data = loader.load()
+
+data[0]
+```
+
+```python
+Document(page_content='This is a test email to use for unit tests.', metadata={'source': 'example_data/fake-email.eml', 'file_directory': 'example_data', 'filename': 'fake-email.eml', 'last_modified': '2022-12-16T17:04:16-05:00', 'sent_from': ['Matthew Robinson [mrobinson@unstructured.io](mailto:mrobinson@unstructured.io)'], 'sent_to': ['Matthew Robinson [mrobinson@unstructured.io](mailto:mrobinson@unstructured.io)'], 'subject': 'Test Email', 'languages': ['eng'], 'filetype': 'message/rfc822', 'category': 'NarrativeText'})
+```
+
+## Using OutlookMessageLoader
+
+```python
+pip install -qU extract_msg
+```
+
+```python
+from langchain_community.document_loaders import OutlookMessageLoader
+
+loader = OutlookMessageLoader("example_data/fake-email.msg")
+
+data = loader.load()
+
+data[0]
+```
+
+```python
+Document(page_content='This is a test email to experiment with the MS Outlook MSG Extractor\r\n\r\n\r\n-- \r\n\r\n\r\nKind regards\r\n\r\n\r\n\r\n\r\nBrian Zhou\r\n\r\n', metadata={'source': 'example_data/fake-email.msg', 'subject': 'Test for TIF files', 'sender': 'Brian Zhou [brizhou@gmail.com](mailto:brizhou@gmail.com)', 'date': datetime.datetime(2013, 11, 18, 0, 26, 24, tzinfo=zoneinfo.ZoneInfo(key='America/Los_Angeles'))})
+```
+
+```python
+
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [通过 MCP 将这些文档连接到](/use-these-docs) Claude、VSCode 等工具以获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/document_loaders/email.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

@@ -1,0 +1,156 @@
+---
+title: "Outlines 集成"
+description: "使用 LangChain Python 集成 Outlines 大语言模型 (LLM)。"
+---
+
+本指南将帮助您开始使用 Outlines LLM. 有关所有 Outlines 功能和配置的详细文档，请前往 [API reference](https://reference.langchain.com/python/langchain-community/llms/outlines/Outlines).
+
+[Outlines](https://github.com/outlines-dev/outlines) is a library for constrained language generation. It allows you to use Large Language Models (LLMs) with various backends while applying constraints to the generated output.
+
+## 概述
+
+### 集成详情
+
+| 类 | 包 | 本地 | 可序列化 | JS 支持 | 下载量 | 版本 |
+| :--- | :--- | :---: | :---: |  :---: | :---: | :---: |
+| [`Outlines`](https://reference.langchain.com/python/langchain-community/llms/outlines/Outlines) | [`langchain-community`](https://reference.langchain.com/python/langchain-community) | ✅ | beta | ❌ | ![PyPI - Downloads](https://img.shields.io/pypi/dm/langchain-community?style=flat-square&label=%20) | ![PyPI - Version](https://img.shields.io/pypi/v/langchain-community?style=flat-square&label=%20) |
+
+## 设置
+
+要访问 Outlines models you'll need to have an internet connection to download the model weights from huggingface. Depending on the backend you need to install the required dependencies (see [Outlines docs](https://dottxt-ai.github.io/outlines/latest/installation/))
+
+### 凭证
+
+There is no built-in auth mechanism for Outlines.
+
+## 安装
+
+LangChain 的 Outlines 集成位于 `langchain-community` package and requires the `outlines` library:
+
+```python
+pip install -qU langchain-community outlines
+```
+
+## 实例化
+
+现在我们可以实例化模型对象并生成聊天补全：
+
+```python
+from langchain_community.llms import Outlines
+
+# For use with llamacpp backend
+model = Outlines(model="microsoft/Phi-3-mini-4k-instruct", backend="llamacpp")
+
+# For use with vllm backend (not available on Mac)
+model = Outlines(model="microsoft/Phi-3-mini-4k-instruct", backend="vllm")
+
+# For use with mlxlm backend (only available on Mac)
+model = Outlines(model="microsoft/Phi-3-mini-4k-instruct", backend="mlxlm")
+
+# For use with huggingface transformers backend
+model = Outlines(
+    model="microsoft/Phi-3-mini-4k-instruct"
+)  # defaults to backend="transformers"
+```
+
+## 调用
+
+```python
+model.invoke("Hello how are you?")
+```
+
+## 链式调用
+
+```python
+from langchain_core.prompts import PromptTemplate
+
+prompt = PromptTemplate.from_template("How to say {input} in {output_language}:\n")
+
+chain = prompt | model
+chain.invoke(
+    {
+        "output_language": "German",
+        "input": "I love programming.",
+    }
+)
+```
+
+### 流式输出
+
+Outlines supports streaming of tokens:
+
+```python
+for chunk in model.stream("Count to 10 in French:"):
+    print(chunk, end="", flush=True)
+```
+
+### Constrained generation
+
+Outlines allows you to apply various constraints to the generated output:
+
+#### Regex constraint
+
+```python
+model.regex = r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)"
+response = model.invoke("What is the IP address of Google's DNS server?")
+
+response
+```
+
+### Type constraints
+
+```python
+model.type_constraints = int
+response = model.invoke("What is the answer to life, the universe, and everything?")
+```
+
+#### JSON schema
+
+```python
+from pydantic import BaseModel
+
+
+class Person(BaseModel):
+    name: str
+
+
+model.json_schema = Person
+response = model.invoke("Who is the author of LangChain?")
+person = Person.model_validate_json(response)
+
+person
+```
+
+#### Grammar constraint
+
+```python
+model.grammar = """
+?start: expression
+?expression: term (("+" | "-") term)
+?term: factor (("" | "/") factor)
+?factor: NUMBER | "-" factor | "(" expression ")"
+%import common.NUMBER
+%import common.WS
+%ignore WS
+"""
+response = model.invoke("Give me a complex arithmetic expression:")
+
+response
+```
+
+---
+
+## Outlines documentation
+
+[dottxt-ai.github.io/outlines/latest/](https://dottxt-ai.github.io/outlines/latest/)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/llms/outlines.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,70 @@
+---
+title: "Docx files 集成"
+description: "使用 LangChain JavaScript 集成 Docx files document loader。"
+---
+
+The `DocxLoader` allows you to extract text data from Microsoft Word documents. It supports both the modern `.docx` format and the legacy `.doc` format. Depending on the file type, additional dependencies are required.
+
+---
+
+## 设置
+
+To use `DocxLoader`, you'll need the `@langchain/community` integration along with either `mammoth` or `word-extractor` package:
+
+- **`mammoth`**: For processing `.docx` files.
+- **`word-extractor`**: For handling `.doc` files.
+
+### 安装
+
+#### For `.docx` files
+
+```bash npm
+npm install @langchain/community @langchain/core mammoth
+```
+#### For `.doc` files
+
+```bash npm
+npm install @langchain/community @langchain/core word-extractor
+```
+## 用法
+
+### Loading `.docx` files
+
+For `.docx` files, there is no need to explicitly specify any parameters when initializing the loader:
+
+```javascript
+import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
+
+const loader = new DocxLoader(
+  "src/document_loaders/tests/example_data/attention.docx"
+);
+
+const docs = await loader.load();
+```
+### Loading `.doc` files
+
+For `.doc` files, you must explicitly specify the `type` as `doc` when initializing the loader:
+
+```javascript
+import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
+
+const loader = new DocxLoader(
+  "src/document_loaders/tests/example_data/attention.doc",
+  {
+    type: "doc",
+  }
+);
+
+const docs = await loader.load();
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+        [将这些文档连接到](/use-these-docs) Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+        [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/document_loaders/file_loaders/docx.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>

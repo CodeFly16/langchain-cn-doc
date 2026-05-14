@@ -1,0 +1,67 @@
+---
+title: "DeepInfra 集成"
+description: "使用 LangChain Python 与 DeepInfra 集成。"
+---
+
+>[DeepInfra](https://deepinfra.com/docs) allows us to run the
+> [latest machine learning models](https://deepinfra.com/models) with ease.
+> DeepInfra takes care of all the heavy lifting related to running, scaling and monitoring
+> the models. Users can focus on your application and integrate the models with simple REST API calls.
+
+>DeepInfra provides [examples](https://deepinfra.com/docs/advanced/langchain) of integration与 LangChain 配合使用。
+
+This page covers how to use the `DeepInfra` ecosystem within `LangChain`.
+It is broken into two parts: installation and setup, and then references to specific DeepInfra wrappers.
+
+## 安装和设置
+
+- Get your DeepInfra API key from the [DeepInfra website](https://deepinfra.com/).
+- Get an DeepInfra api key and set it as an environment variable (`DEEPINFRA_API_TOKEN`)
+
+## Available models
+
+DeepInfra provides a range of Open Source LLMs ready for deployment.
+
+您可以查看 supported models for
+[text-generation](https://deepinfra.com/models?type=text-generation) and
+[embeddings](https://deepinfra.com/models?type=embeddings).
+
+You can view a [list of request and response parameters](https://deepinfra.com/meta-llama/Llama-2-70b-chat-hf/api).
+
+Chat models [follow openai api](https://deepinfra.com/meta-llama/Llama-2-70b-chat-hf/api?example=openai-http)
+
+
+## 大语言模型 (LLM)
+
+查看[使用示例](/oss/python/integrations/llms/deepinfra).
+
+```python
+from langchain_community.llms import DeepInfra
+```
+
+## 向量嵌入
+
+查看[使用示例](/oss/python/integrations/embeddings/deepinfra).
+
+```python
+from langchain_community.embeddings import DeepInfraEmbeddings
+```
+
+## 聊天模型
+
+查看[使用示例](/oss/python/integrations/chat/deepinfra).
+
+```python
+from langchain_community.chat_models import ChatDeepInfra
+```
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [将这些文档连接](/use-these-docs) 到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/providers/deepinfra.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

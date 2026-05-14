@@ -1,0 +1,79 @@
+---
+title: 安全政策
+sidebarTitle: 安全
+---
+
+LangChain 拥有庞大的集成生态系统，与各种外部资源（如本地和远程文件系统、API 和数据库）进行对接。这些集成使开发者能够创建多功能的应用程序，将大语言模型 (LLM) 的能力与访问、交互和操作外部资源的能力相结合。
+
+## 最佳实践
+
+在构建此类应用程序时，开发者应牢记以下良好的安全实践：
+
+* [**限制权限**](https://en.wikipedia.org/wiki/Principle_of_least_privilege)：将权限精确限定在应用程序的需求范围内。授予过于宽泛或过多的权限可能引入重大安全漏洞。为避免此类漏洞，请根据应用程序的具体情况考虑使用只读凭证、禁止访问敏感资源、使用沙箱技术（如在容器中运行）、指定代理配置以控制外部请求等措施。
+* **预防潜在滥用**：正如人类可能犯错一样，大语言模型 (LLM) 也可能出错。始终假设任何系统访问权限或凭证可能会以其被分配的权限所允许的任何方式被使用。例如，如果一对数据库凭证允许删除数据，那么最安全的做法是假设任何能使用这些凭证的 LLM 实际上都可能删除数据。
+* [**纵深防御**](https://en.wikipedia.org/wiki/Defense_in_depth_(computing))：没有完美的安全技术。微调和良好的链设计可以降低但不能消除大语言模型 (LLM) 犯错的概率。最好将多个分层安全方法结合使用，而不是依赖单一防御层来确保安全。例如：同时使用只读权限和沙箱，确保 LLM 只能访问明确指定给它们使用的数据。
+
+不遵循以上实践的风险包括但不限于：
+
+* 数据损坏或丢失。
+* 未经授权访问机密信息。
+* 关键资源的性能或可用性受损。
+
+示例场景及缓解策略：
+
+* 用户可能要求一个有文件系统访问权限的智能体删除不应删除的文件或读取包含敏感信息的文件内容。缓解方法：限制智能体只能使用特定目录，并且只允许其读写安全的文件。考虑进一步将智能体在容器中沙箱运行。
+* 用户可能要求一个有外部 API 写入权限的智能体向 API 写入恶意数据或从 API 中删除数据。缓解方法：给智能体只读 API 密钥，或限制其只能使用已经能抵御此类滥用的端点。
+* 用户可能要求一个有数据库访问权限的智能体删除表或修改架构。缓解方法：将凭证的作用域限定在智能体需要访问的表，并考虑颁发只读凭证。
+
+如果你正在构建访问外部资源（如文件系统、API 或数据库）的应用程序，请考虑与公司的安全团队沟通，以确定如何最好地设计和保护你的应用程序。
+
+## 报告 OSS 漏洞
+
+请使用以下流程报告与 LangChain 开源项目相关的安全漏洞：
+
+1. 在存在漏洞的 GitHub 仓库的"Security"标签页中**提交安全建议**。
+2. 向 `security@langchain.dev` **发送邮件**，通知我们你已提交了安全问题以及对应的仓库。
+
+在报告漏洞之前，请查看上方的[最佳实践](#最佳实践)部分，了解我们对安全漏洞与开发者责任的界定。
+
+### Bug 赏金资格
+
+我们欢迎所有 LangChain 库的安全漏洞报告。但是，我们可能仅对以下包中的漏洞提供临时 Bug 赏金：
+
+* 由 LangChain 团队拥有和维护的核心库：`langchain-core`、`langchain`（v1）、`langgraph` 及相关的 checkpointer 包（或其 JavaScript 等价物）
+* 由 LangChain 团队维护的热门集成（例如 `langchain-openai`、`langchain-anthropic` 等，或其 JavaScript 等价物）
+
+漏洞必须存在于库代码本身，而非示例代码或示例应用程序中。
+
+我们欢迎所有其他 LangChain 包的报告并会处理有效的安全问题，但不会为超出此范围的包提供 Bug 赏金。这包括 `langchain-community`，由于其社区驱动的性质，不符合 Bug 赏金条件，但我们会接受并处理相关报告。
+
+### 超出范围的目标
+
+以下内容不在安全漏洞报告的范围内：
+
+* **langchain-experimental**：此仓库用于实验性代码，不在安全报告范围内（参见[包警告](https://pypi.org/project/langchain-experimental/)）。
+* **示例和示例应用程序**：示例代码和演示应用程序不在安全报告范围内。
+* **带有安全说明的代码**：这将根据具体情况决定，但很可能不在范围内，因为代码已附有开发者应遵循的安全指南以确保应用程序安全。
+* **LangSmith 相关仓库或 API**：参见下方的[报告 LangSmith 漏洞](#报告-langsmith-漏洞)。
+
+## 报告 LangSmith 漏洞
+
+请通过电子邮件 `security@langchain.dev` 报告与 LangSmith 相关的安全漏洞。
+
+* LangSmith 站点：[https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-security-policy](https://smith.langchain.com)
+* SDK 客户端：[https://github.com/langchain-ai/langsmith-sdk](https://github.com/langchain-ai/langsmith-sdk)
+
+### 其他安全问题
+
+对于任何其他安全问题，请通过 `security@langchain.dev` 联系我们。
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+</Callout>
+<Callout icon="edit">
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/security-policy.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+</Callout>
+</div>
