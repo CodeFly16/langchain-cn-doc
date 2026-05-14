@@ -1,23 +1,23 @@
 ---
-title: 快速入门
-description: 在几分钟内构建你的第一个深度智能体
+title: 快速开始
+description: 几分钟内构建你的第一个深度智能体
 ---
 
-本指南将引导你创建第一个具备规划、文件系统工具和子智能体功能的深度智能体。你将构建一个能够进行研究并撰写报告的研究型智能体。
+本指南将引导你使用规划、文件系统工具和子智能体功能来创建你的第一个深度智能体。你将构建一个能够进行研究并撰写报告的研究智能体。
 
 <Tip>
     **正在使用 AI 编程助手？**
 
-    - 安装 [LangChain Docs MCP 服务器](/use-these-docs)，让你的智能体访问最新的 LangChain 文档和示例。
-    - 安装 [LangChain Skills](https://github.com/langchain-ai/langchain-skills) 以提升你的智能体在 LangChain 生态系统任务上的性能。
+    - 安装 [LangChain 文档 MCP 服务器](/use-these-docs)，让你的智能体能够访问最新的 LangChain 文档和示例。
+    - 安装 [LangChain Skills](https://github.com/langchain-ai/langchain-skills)，提升你的智能体在 LangChain 生态系统任务上的表现。
 </Tip>
 
 ## 前置条件
 
-开始之前，请确保你拥有模型提供商的 API 密钥（例如 Gemini、Anthropic、OpenAI）。
+开始之前，请确保你有一个模型提供商的 API 密钥（例如 Gemini、Anthropic、OpenAI）。
 
 <Note>
-    深度智能体需要支持[工具调用](/oss/javascript/langchain/models#tool-calling)的模型。请参阅[自定义](/oss/javascript/deepagents/customization#model)了解如何配置你的模型。
+    深度智能体需要支持[工具调用](/oss/javascript/langchain/models#tool-calling)的模型。参阅[自定义配置](/oss/javascript/deepagents/customization#model)了解如何配置你的模型。
 </Note>
 
 ## 步骤 1：安装依赖
@@ -84,8 +84,8 @@ description: 在几分钟内构建你的第一个深度智能体
     </Tab>
     <Tab title="Ollama">
         ```bash
-        # 本地：Ollama 必须在你的机器上运行
-        # 云端：设置你的 Ollama API 密钥用于托管推理
+        # 本地运行：Ollama 必须在你的机器上运行
+        # 云端运行：设置你的 Ollama API 密钥用于托管推理
         export OLLAMA_API_KEY="your-api-key"
         export TAVILY_API_KEY="your-tavily-api-key"
         ```
@@ -97,7 +97,7 @@ description: 在几分钟内构建你的第一个深度智能体
         export TAVILY_API_KEY="your-tavily-api-key"
         ```
 
-        深度智能体支持任何 [LangChain 聊天模型](/oss/javascript/deepagents/models#supported-models)。请设置你的提供商的 API 密钥。
+        深度智能体可与任何 [LangChain 聊天模型](/oss/javascript/deepagents/models#supported-models)配合使用。请设置你的提供商对应的 API 密钥。
     </Tab>
 </Tabs>
 
@@ -132,24 +132,24 @@ const internetSearch = tool(
   },
   {
     name: "internet_search",
-    description: "运行网络搜索",
+    description: "Run a web search",
     schema: z.object({
-      query: z.string().describe("搜索查询"),
+      query: z.string().describe("The search query"),
       maxResults: z
         .number()
-        .可选()
+        .optional()
         .default(5)
-        .describe("返回的最大结果数"),
+        .describe("Maximum number of results to return"),
       topic: z
         .enum(["general", "news", "finance"])
-        .可选()
+        .optional()
         .default("general")
-        .describe("搜索主题类别"),
+        .describe("Search topic category"),
       includeRawContent: z
         .boolean()
-        .可选()
+        .optional()
         .default(false)
-        .describe("是否包含原始内容"),
+        .describe("Whether to include raw content"),
     }),
   },
 );
@@ -163,7 +163,7 @@ const internetSearch = tool(
 ```typescript
 import { createDeepAgent } from "deepagents";
 
-// 系统提示，引导智能体成为专业研究员
+// 系统提示词，引导智能体成为专业研究员
 const researchInstructions = `You are an expert researcher. Your job is to conduct thorough research and then write a polished report.
 
 You have access to an internet search tool as your primary means of gathering information.
@@ -174,7 +174,7 @@ Use this to run an internet search for a given query. You can specify the max nu
 `;
 ```
 
-从你的提供商中选择一个模型。默认情况下，`createDeepAgent` 使用 `claude-sonnet-4-6`。传入 `model` 字符串以使用不同的提供商——完整列表请参阅[推荐模型](/oss/javascript/deepagents/models#suggested-models)。
+从你的提供商中选择一个模型。默认情况下，`createDeepAgent` 使用 `claude-sonnet-4-6`。传入 `model` 字符串以使用不同的提供商——参阅[推荐模型](/oss/javascript/deepagents/models#suggested-models)获取完整列表。
 
 <Tabs>
     <Tab title="Google">
@@ -235,7 +235,7 @@ Use this to run an internet search for a given query. You can specify the max nu
         传入任何[支持的模型字符串](/oss/javascript/deepagents/models#supported-models)，或一个已初始化的模型实例：
 
         <CodeGroup>
-            ```typescript 模型字符串
+            ```typescript model string
             const agent = createDeepAgent({
               model: "provider:model-name",
               tools: [internetSearch],
@@ -252,7 +252,7 @@ Use this to run an internet search for a given query. You can specify the max nu
               systemPrompt: researchInstructions,
             });
             ```
-            ```typescript 模型类
+            ```typescript model class
             import { Chat<Provider> } from "@langchain/<provider>";
 
             const model = new Chat<Provider>({ model: "model-name" });
@@ -282,33 +282,33 @@ console.log(result.messages[result.messages.length - 1].content);
 
 
 <Tip>
-使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-deepagents-quickstart) 跟踪智能体的规划步骤、工具调用和子智能体委派。按照[可观测性快速入门](/langsmith/observability-quickstart)进行设置。
+使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-deepagents-quickstart) 追踪你的智能体的规划步骤、工具调用和子智能体委托。按照[可观测性快速开始](/langsmith/observability-quickstart)进行设置。
 </Tip>
 
-## 工作原理
+## 它是如何工作的？
 
-你的深度智能体会自动：
+你的深度智能体会自动执行以下操作：
 
-1. **规划方法**，使用内置的 [`write_todos`](/oss/javascript/deepagents/harness#planning-capabilities) 工具来分解研究任务。
-1. **进行研究**，调用 `internet_search` 工具收集信息。
-1. **管理上下文**，使用文件系统工具（[`write_file`](/oss/javascript/deepagents/harness#virtual-filesystem-access)、[`read_file`](/oss/javascript/deepagents/harness#virtual-filesystem-access)）卸载大量搜索结果。
-1. **生成子智能体**，根据需要将复杂子任务委派给专门的子智能体。
-1. **综合报告**，将发现编译成连贯的响应。
+1. **规划方法**，使用内置的 [`write_todos`](/oss/javascript/deepagents/harness#planning-capabilities) 工具将研究任务分解。
+1. **进行研究**，通过调用 `internet_search` 工具收集信息。
+1. **管理上下文**，使用文件系统工具（[`write_file`](/oss/javascript/deepagents/harness#virtual-filesystem-access)、[`read_file`](/oss/javascript/deepagents/harness#virtual-filesystem-access)）来卸载大型搜索结果。
+1. **生成子智能体**，根据需要将复杂子任务委托给专门的子智能体。
+1. **合成报告**，将研究发现整合为连贯的响应。
 
 ## 示例
 
-关于你可以使用深度智能体构建的智能体、模式和应用程序，请参阅[示例](https://github.com/langchain-ai/deepagents/tree/main/examples)。
+有关使用深度智能体构建的智能体、模式和应用，请参阅[示例](https://github.com/langchain-ai/deepagents/tree/main/examples)。
 
 ## 流式输出
 
-深度智能体内置了[流式输出](/oss/javascript/langchain/streaming/overview)功能，可使用 LangGraph 从智能体执行中获取实时更新。
-这允许你逐步观察输出，并审查和调试智能体和子智能体的工作，例如工具调用、工具结果和 LLM 响应。
+深度智能体内置了[流式输出](/oss/javascript/langchain/streaming/overview)功能，可以使用 LangGraph 从智能体执行中获取实时更新。
+这让你可以渐进式地观察输出，并审查和调试智能体及子智能体的工作，例如工具调用、工具结果和 LLM 响应。
 
 ## 后续步骤
 
 现在你已经构建了第一个深度智能体：
 
-- **自定义你的智能体**：了解[自定义选项](/oss/javascript/deepagents/customization)，包括自定义系统提示、工具和子智能体。
+- **自定义你的智能体**：了解[自定义选项](/oss/javascript/deepagents/customization)，包括自定义系统提示词、工具和子智能体。
 - **添加长期记忆**：启用跨对话的[持久化记忆](/oss/javascript/deepagents/memory)。
 - **部署到生产环境**：了解深度智能体的[部署选项](/oss/javascript/deepagents/deploy)。
 
@@ -316,7 +316,7 @@ console.log(result.messages[result.messages.length - 1].content);
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时解答。
 </Callout>
 <Callout icon="edit">
     [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/quickstart.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。

@@ -3,36 +3,36 @@ title: 解释器
 description: 在深度智能体内运行轻量级代码以组合工具、编排子智能体和转换结构化数据
 ---
 
-解释器为智能体提供了一个可编程的工作空间 在其中它们可以探索数据、协调工具调用, 并将中间工作保持在模型上下文之外。 智能体编写代码来表达其意图, 然后一个**内存**运行时执行该代码 并返回相关结果。
+解释器为智能体提供了一个可编程工作区，可以在其中探索数据、协调工具调用，并将中间工作保留在模型上下文之外。智能体编写代码来表达其意图，然后**内存中**的运行时执行该代码并返回相关结果。
 
-Where [sandboxes](/oss/javascript/deepagents/sandboxes) are a code-first way for acting on an environment (such as running commands, installing dependencies, and editing files), interpreters are a code-first way for acting inside the agent loop: composing tools, preserving state, and deciding what information should return to the model.
+[沙箱](/oss/javascript/deepagents/sandboxes)是一种以代码为先的方式来作用于环境（例如运行命令、安装依赖和编辑文件），而解释器是一种以代码为先的方式来作用于智能体循环内部：组合工具、保持状态，以及决定什么信息应该返回给模型。
 
 <Warning>
-    Interpreters are experimental. APIs and lifecycle behavior may change between releases.
+    解释器是实验性的。API 和生命周期行为可能在版本之间发生变化。
 </Warning>
 
 
 
-## 何时使用 an interpreter
+## 何时使用解释器
 
-Most agent work alternates between model reasoning and tool execution. That works for simple actions, but it becomes awkward when the agent needs to compose many steps, reason over structured data, or manage intermediate state.
+大多数智能体工作在模型推理和工具执行之间交替。这对简单操作有效，但当智能体需要组合许多步骤、对结构化数据进行推理或管理中间状态时就变得笨拙了。
 
-An interpreter gives the agent a runtime for that work. Instead of asking the model to choose every next step one tool call at a time, the agent can write a small program that runs control flow, calls allowlisted tools, stores variables, and returns a compact result to the model.
+解释器为智能体提供了一个运行时来完成这项工作。智能体可以编写一个小程序来运行控制流、调用允许列表中的工具、存储变量并向模型返回紧凑的结果，而不是让模型每次一个工具调用地选择下一步。
 
-Use interpreters when the agent needs to:
+在以下情况使用解释器：
 
-- Compose multiple tool calls with code, including loops, branching, retries, and concurrency.
-- Coordinate subagents from code by splitting work into focused calls, storing their results, and stitching those results into a final synthesis.
-- Keep intermediate values in runtime state instead of sending every temporary result back through the model context.
-- Transform structured data deterministically, such as sorting, grouping, parsing, validating, scoring, or aggregating.
-- Explore a large variable space and return only selected evidence, summaries, or outputs to the model.
+- 用代码组合多个工具调用，包括循环、分支、重试和并发。
+- 从代码中协调子智能体，将工作拆分为聚焦的调用、存储结果并将结果拼接成最终综合。
+- 将中间值保存在运行时状态中，而不是将每个临时结果发送回模型上下文。
+- 确定性地转换结构化数据，例如排序、分组、解析、验证、评分或聚合。
+- 探索大型变量空间并仅向模型返回选定的证据、摘要或输出。
 
 ```mermaid
 graph LR
-    Model[Model] --> Program[Writes a small program]
-    Program --> Runtime[Interpreter runtime]
-    Runtime --> Tools[Calls tools and updates variables]
-    Runtime --> Result[Yields compact result]
+    Model[模型] --> Program[编写一个小程序]
+    Program --> Runtime[解释器运行时]
+    Runtime --> Tools[调用工具并更新变量]
+    Runtime --> Result[产出紧凑结果]
     Result --> Model
 
     classDef trigger fill:#F6FFDB,stroke:#6E8900,stroke-width:2px,color:#2E3900
@@ -46,23 +46,23 @@ graph LR
     class Result output
 ```
 
-This works by running code against [**QuickJS**](https://github.com/quickjs-ng/quickjs), a lightweight JavaScript runtime designed for embedded execution. The runtime gives the agent a place to evaluate code without exposing host filesystem, network, shell, package, or clock APIs by default.
+这通过在 [**QuickJS**](https://github.com/quickjs-ng/quickjs) 上运行代码来实现，QuickJS 是一个为嵌入式执行设计的轻量级 JavaScript 运行时。该运行时为智能体提供了一个评估代码的地方，默认不暴露宿主文件系统、网络、shell、包或时钟 API。
 
-QuickJS is the execution boundary for interpreter code. Explicit bridges, such as programmatic tool calling, decide what capabilities the code can access.
+QuickJS 是解释器代码的执行边界。显式桥接（如程序化工具调用）决定代码可以访问哪些能力。
 
 ## 选择正确的执行路径
 
-| Need | Use |
+| 需求 | 使用 |
 | --- | --- |
-| One or two simple external calls | Normal tool calling |
-| A small program that loops, branches, retries, or aggregates results | Interpreter |
-| Many selected tool calls that should run from code | Interpreter with programmatic tool calling |
-| Reusable helpers used across threads | Interpreter with [interpreter skills](/oss/javascript/deepagents/skills#use-interpreter-skills) |
-| Shell commands, package installs, tests, or full OS filesystem access | [Sandboxes](/oss/javascript/deepagents/sandboxes) |
+| 一两个简单的外部调用 | 普通工具调用 |
+| 一个循环、分支、重试或聚合结果的小程序 | 解释器 |
+| 许多应该从代码运行的选定工具调用 | 带程序化工具调用的解释器 |
+| 跨线程使用的可复用辅助工具 | 带[解释器技能](/oss/javascript/deepagents/skills#use-interpreter-skills)的解释器 |
+| Shell 命令、包安装、测试或完整的操作系统文件系统访问 | [沙箱](/oss/javascript/deepagents/sandboxes) |
 
-## 为智能体添加解释器
+## 向智能体添加解释器
 
-安装 QuickJS middleware package, then add the middleware when creating the agent.
+安装 QuickJS 中间件包，然后在创建智能体时添加中间件。
 
 
 
@@ -93,9 +93,9 @@ const agent = createDeepAgent({
 
 ## 在解释器中运行代码
 
-The middleware adds an `eval` tool to the agent. The tool runs TypeScript in a persistent context, captures `console.log`, and returns the result of the last expression.
+中间件向智能体添加了一个 `eval` 工具。该工具在持久化上下文中运行 TypeScript，捕获 `console.log`，并返回最后一个表达式的结果。
 
-The agent can write code like this:
+智能体可以编写如下代码：
 
 ```javascript
 const rows = [
@@ -115,23 +115,23 @@ totals;
 
 
 
-## 编程式工具调用
+## 程序化工具调用
 
-Programmatic tool calling (PTC) exposes selected agent tools inside the interpreter under the global `tools` namespace. Instead of asking the model to issue one tool call, wait for the result, and then decide the next call, the agent can write code that calls tools in loops, branches, retries, or parallel batches.
+程序化工具调用（PTC）将选定的智能体工具暴露在解释器的全局 `tools` 命名空间下。智能体可以编写代码在循环、分支、重试或并行批次中调用工具，而不是让模型发出一个工具调用、等待结果，然后决定下一个调用。
 
-这在以下情况很有用 when intermediate tool results are only inputs to the next step. The interpreter can process, filter, or aggregate those results before anything returns to the model context, which can make multi-tool/multi-step workflows more token efficient.
+当中间工具结果仅作为下一步的输入时，这很有用。解释器可以在任何内容返回到模型上下文之前处理、过滤或聚合这些结果，这可以使多工具/多步骤工作流更加 Token 高效。
 
-PTC is model-agnostic in Deep Agents. It is implemented by middleware rather than a provider-specific code-execution or tool-calling API.
+PTC 在深度智能体中是模型无关的。它由中间件实现，而不是提供商特定的代码执行或工具调用 API。
 
 ### 工作原理
 
-1. You choose which tools the interpreter can call with the `ptc` allowlist.
-2. The middleware exposes those tools as async JavaScript functions under `tools`.
-3. The agent writes interpreter code that calls those functions with `await`.
-4. The interpreter runs the tool bridge, receives the tool result, and continues executing code.
-5. The model receives the final interpreter output, not every intermediate value.
+1. 你用 `ptc` 允许列表选择解释器可以调用哪些工具。
+2. 中间件将这些工具作为 `tools` 下的异步 JavaScript 函数暴露。
+3. 智能体编写使用 `await` 调用这些函数的解释器代码。
+4. 解释器运行工具桥接，接收工具结果并继续执行代码。
+5. 模型接收最终的解释器输出，而不是每个中间值。
 
-Each allowlisted tool becomes an async function. Tool names are converted to camel case, but the input object still follows the tool's schema. 例如, a tool named `web_search` becomes `tools.webSearch(...)`:
+每个允许列表中的工具变成一个异步函数。工具名称被转换为驼峰命名法，但输入对象仍遵循工具的 schema。例如，名为 `web_search` 的工具变为 `tools.webSearch(...)`：
 
 ```typescript
 const result: string = await tools.webSearch({
@@ -141,18 +141,18 @@ const result: string = await tools.webSearch({
 
 ### 有用的模式
 
-| **Pattern** | **What the interpreter can do** |
+| **模式** | **解释器可以做什么** |
 | --- | --- |
-| Batch processing | Loop over many inputs and call a tool for each one. |
-| Parallel work | Use `Promise.all` for independent calls. |
-| Conditional logic | Choose the next tool call based on earlier results. |
-| Early termination | Stop calling tools once a success condition is met. |
-| Data filtering | Return only relevant rows, snippets, errors, or summaries to the model. |
-| Recursive orchestration | Call `task` repeatedly, then combine subagent results in code. |
+| 批处理 | 循环遍历多个输入并为每个调用工具。 |
+| 并行工作 | 对独立调用使用 `Promise.all`。 |
+| 条件逻辑 | 根据早期结果选择下一个工具调用。 |
+| 提前终止 | 一旦满足成功条件就停止调用工具。 |
+| 数据过滤 | 仅向模型返回相关的行、片段、错误或摘要。 |
+| 递归编排 | 重复调用 `task`，然后在代码中组合子智能体结果。 |
 
 ### 启用 PTC
 
-Enable PTC with an explicit allowlist:
+使用显式允许列表启用 PTC：
 
 
 
@@ -167,7 +167,7 @@ const agent = createDeepAgent({
 ```
 
 
-After PTC is enabled, the agent can call the allowlisted tool from interpreter code. This example launches several subagents in parallel and combines their final reports before returning to the model:
+启用 PTC 后，智能体可以从解释器代码调用允许列表中的工具。以下示例并行启动多个子智能体并在返回模型之前组合其最终报告：
 
 ```javascript
 const topics = ["retrieval", "memory", "evaluation"];
@@ -184,7 +184,7 @@ const reports = await Promise.all(
 reports.join("\n\n");
 ```
 
-Because this is code, the agent can also handle failures locally:
+因为这是代码，智能体也可以在本地处理失败：
 
 ```javascript
 try {
@@ -199,25 +199,25 @@ try {
 ```
 
 <Warning>
-    PTC calls currently execute through the interpreter bridge and do not go through the normal tool calling path. As a result, `interrupt_on` approval workflows are not enforced per PTC-invoked tool call.
+    PTC 调用目前通过解释器桥接执行，不经过正常的工具调用路径。因此，`interrupt_on` 审批工作流不会针对每个 PTC 调用的工具执行。
 </Warning>
 
 ## 递归语言模型
 
-Recursive language models use an interpreter as a workspace for decomposition. The model keeps a large input or working set in runtime variables, writes code to inspect and split it, calls subagents or other model tools on smaller pieces, and then stitches the returned results together in code.
+递归语言模型使用解释器作为分解的工作区。模型将大型输入或工作集保存在运行时变量中，编写代码检查和拆分它，对较小的片段调用子智能体或其他模型工具，然后在代码中将返回的结果拼接在一起。
 
-This separates the variable space from the agent's context. The variable space is information stored in the interpreter, and the agent's context is what the model actually processes in the next model call. The model can decide which snippets become subagent tasks, which results need another pass, and what final synthesis should return to the main conversation.
+这将变量空间与智能体的上下文分离。变量空间是存储在解释器中的信息，智能体的上下文是模型在下一次模型调用中实际处理的内容。模型可以决定哪些片段成为子智能体任务，哪些结果需要再次处理，以及什么最终综合应该返回到主对话。
 
 ```mermaid
 flowchart TB
-    Model[Model] --> Runtime[Interpreter variable space]
+    Model[模型] --> Runtime[解释器变量空间]
 
-    subgraph Runtime[Interpreter variable space]
-        Data[Long input and working notes]
-        Select{Select next slice}
-        Task[Call subagent]
-        Store[Store subagent result]
-        Stitch[Stitch results in code]
+    subgraph Runtime[解释器变量空间]
+        Data[长输入和工作笔记]
+        Select{选择下一个切片}
+        Task[调用子智能体]
+        Store[存储子智能体结果]
+        Stitch[在代码中拼接结果]
 
         Data --> Select
         Select --> Task
@@ -226,7 +226,7 @@ flowchart TB
         Store --> Stitch
     end
 
-    Stitch --> Answer[Compact synthesis]
+    Stitch --> Answer[紧凑综合]
     Answer --> Model
 
     classDef trigger fill:#F6FFDB,stroke:#6E8900,stroke-width:2px,color:#2E3900
@@ -242,9 +242,9 @@ flowchart TB
     class Answer output
 ```
 
-For background on this pattern, see the [Recursive Language Models paper](https://arxiv.org/abs/2512.24601).
+有关此模式的背景，请参阅[递归语言模型论文](https://arxiv.org/abs/2512.24601)。
 
-In Deep Agents, the recursive call is often the `task` tool exposed through programmatic tool calling. The interpreter can call subagents over many slices, combine their answers, and return a single synthesized result:
+在深度智能体中，递归调用通常是通过程序化工具调用暴露的 `task` 工具。解释器可以在多个切片上调用子智能体，组合其答案，并返回单个综合结果：
 
 ```javascript
 const candidates = notes
@@ -269,30 +269,30 @@ releaseSummary;
 
 ## 解释器技能
 
-Interpreter skills are [skills](/oss/javascript/deepagents/skills) that expose code modules to an interpreter. When configured with interpreter middleware, the agent can import these modules from code and use them for deterministic helper logic.
+解释器技能是将代码模块暴露给解释器的[技能](/oss/javascript/deepagents/skills)。当与解释器中间件一起配置时，智能体可以从代码中导入这些模块并将它们用于确定性的辅助逻辑。
 
-Interpreter skills are useful when the agent needs reusable helpers for structured data workflows, such as sorting, grouping, scoring, parsing, validating, or aggregating data. For setup details, see [Interpreter skills](/oss/javascript/deepagents/skills#use-interpreter-skills).
-
-
-
-## 安全和限制
-
-Interpreters use QuickJS to run untrusted JavaScript with strict default isolation. Treat that as a scoped interpreter runtime, not a full production sandbox backend.
-
-Every tool you expose through PTC is an outside capability that interpreter code can use. Treat the PTC allowlist as a permission boundary: expose only the tools the agent needs, and avoid bridging broad tools that can access sensitive systems, spend money, mutate data, or call unrestricted networks unless that behavior is intentional.
+解释器技能在智能体需要用于结构化数据工作流的可复用辅助工具时很有用，例如排序、分组、评分、解析、验证或聚合数据。设置详情请参阅[解释器技能](/oss/javascript/deepagents/skills#use-interpreter-skills)。
 
 
-| Capability | Available by default | How to expose it |
+
+## 安全性和限制
+
+解释器使用 QuickJS 运行不受信任的 JavaScript，具有严格的默认隔离。将其视为受限的解释器运行时，而不是完整的生产沙箱后端。
+
+你通过 PTC 暴露的每个工具都是解释器代码可以使用的外部能力。将 PTC 允许列表视为权限边界：仅暴露智能体需要的工具，避免桥接可以访问敏感系统、花费金钱、修改数据或调用不受限制的网络的广泛工具，除非该行为是有意的。
+
+
+| 能力 | 默认可用 | 如何暴露 |
 | --- | --- | --- |
-| JavaScript execution | Yes | Add interpreter middleware |
-| Top-level `await` | Yes | Use promises in interpreter code |
-| `console.log` capture | Yes | Disable with `captureConsole: false` |
-| Agent tools | No | Add a PTC allowlist |
-| Interpreter skill modules | No | Add a `module` entry and configure `skills_backend` or `skillsBackend` |
-| Filesystem access | No | Add the [built-in filesystem tools](/oss/javascript/deepagents/harness#virtual-filesystem-access) via the PTC allowlist |
-| Network access | No | Expose a specific network tool through PTC |
-| Wall-clock or datetime access | No | Expose an explicit time tool if needed |
-| Shell commands, package installs, tests, OS-level execution | No | Use a [sandbox backend](/oss/javascript/deepagents/sandboxes) |
+| JavaScript 执行 | 是 | 添加解释器中间件 |
+| 顶层 `await` | 是 | 在解释器代码中使用 Promise |
+| `console.log` 捕获 | 是 | 使用 `captureConsole: false` 禁用 |
+| 智能体工具 | 否 | 添加 PTC 允许列表 |
+| 解释器技能模块 | 否 | 添加 `module` 条目并配置 `skills_backend` 或 `skillsBackend` |
+| 文件系统访问 | 否 | 通过 PTC 允许列表添加[内置文件系统工具](/oss/javascript/deepagents/harness#virtual-filesystem-access) |
+| 网络访问 | 否 | 通过 PTC 暴露特定的网络工具 |
+| 挂钟或日期时间访问 | 否 | 如果需要，暴露显式的时间工具 |
+| Shell 命令、包安装、测试、操作系统级执行 | 否 | 使用[沙箱后端](/oss/javascript/deepagents/sandboxes) |
 
 
 
@@ -301,26 +301,26 @@ Every tool you expose through PTC is an outside capability that interpreter code
 
 
 
-`createCodeInterpreterMiddleware` accepts the following options:
+`createCodeInterpreterMiddleware` 接受以下选项：
 
-| Option | Default | Purpose |
+| 选项 | 默认值 | 用途 |
 | --- | --- | --- |
-| `ptc` | omitted | PTC allowlist: array of tool names or `StructuredToolInterface` instances. |
-| `memoryLimitBytes` | `64 * 1024 * 1024` <br/>(64 MB) | QuickJS memory limit in bytes. |
-| `maxStackSizeBytes` | `320 * 1024` | QuickJS stack size limit in bytes. |
-| `executionTimeoutMs` | `5000` | Per-eval timeout in milliseconds. Negative values disable the timeout. |
-| `systemPrompt` | `null` | Override the built-in interpreter system prompt. |
-| `skillsBackend` | omitted | Backend used to resolve interpreter skill modules. |
-| `maxPtcCalls` | `256` | Maximum `tools.*` calls per eval. Use `null` only in trusted environments. |
-| `maxResultChars` | `4000` | Maximum characters retained from console output, result, and error strings. |
-| `toolName` | `"eval"` | Name of the interpreter tool exposed to the model. |
-| `captureConsole` | `true` | Whether `console.log`, `console.warn`, and `console.error` output is captured. |
+| `ptc` | 省略 | PTC 允许列表：工具名称或 `StructuredToolInterface` 实例数组。 |
+| `memoryLimitBytes` | `64 * 1024 * 1024` <br/>(64 MB) | QuickJS 内存限制（字节）。 |
+| `maxStackSizeBytes` | `320 * 1024` | QuickJS 栈大小限制（字节）。 |
+| `executionTimeoutMs` | `5000` | 每次 eval 的超时时间（毫秒）。负值禁用超时。 |
+| `systemPrompt` | `null` | 覆盖内置解释器系统提示。 |
+| `skillsBackend` | 省略 | 用于解析解释器技能模块的后端。 |
+| `maxPtcCalls` | `256` | 每次 eval 的最大 `tools.*` 调用次数。仅在受信任环境中使用 `null`。 |
+| `maxResultChars` | `4000` | 从控制台输出、结果和错误字符串中保留的最大字符数。 |
+| `toolName` | `"eval"` | 暴露给模型的解释器工具名称。 |
+| `captureConsole` | `true` | 是否捕获 `console.log`、`console.warn` 和 `console.error` 输出。 |
 
 ---
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时解答。
 </Callout>
 <Callout icon="edit">
     [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/interpreters.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。

@@ -3,17 +3,17 @@ title: CopilotKit
 description: 向 LangGraph 部署添加自定义 CopilotKit 端点，并在 React 中渲染结构化生成式 UI
 ---
 
-[CopilotKit](https://www.copilotkit.ai/) provides a full React chat runtime and pairs especially well with LangGraph when you want the agent to return **structured UI payloads** instead of only plain text. In this pattern, your LangGraph deployment serves both the graph API and a custom CopilotKit endpoint, while the frontend parses assistant messages into dynamic React components.
+[CopilotKit](https://www.copilotkit.ai/) 提供完整的 React 聊天运行时，在你希望智能体返回**结构化 UI 载荷**而不仅仅是纯文本时，与 LangGraph 配合尤为出色。在此模式中，你的 LangGraph 部署同时服务图 API 和自定义 CopilotKit 端点，而前端将助手消息解析为动态 React 组件。
 
-This approach is useful when you want:
+此方法适用于以下场景：
 
-- a ready-made chat runtime instead of wiring `stream.messages` yourself
-- a custom server endpoint that can add provider-specific behavior next to your deployed graph
-- structured generative UI rendered from a constrained component registry
+- 你想要一个现成的聊天运行时，而非自己连接 `stream.messages`
+- 你需要一个自定义服务端点，可以在部署的图旁边添加特定于提供商的行为
+- 从受约束的组件注册表渲染结构化生成式 UI
 
 <Info>
-  For CopilotKit-specific APIs, UI patterns, and runtime configuration, see the
-  [CopilotKit docs](https://docs.copilotkit.ai/langgraph).
+  有关 CopilotKit 特定的 API、UI 模式和运行时配置，请参阅
+  [CopilotKit 文档](https://docs.copilotkit.ai/langgraph)。
 </Info>
 
 import { ExampleEmbed } from "/snippets/example-embed.jsx"
@@ -22,12 +22,12 @@ import { ExampleEmbed } from "/snippets/example-embed.jsx"
 
 ## 工作原理
 
-At a high level, CopilotKit sits between your React app and the LangGraph deployment. The frontend sends conversation state to a custom `/api/copilotkit` route mounted alongside the graph API, that route forwards the request to LangGraph, and the response comes back with both assistant messages and any structured UI payloads your component registry can render.
+总体而言，CopilotKit 位于你的 React 应用和 LangGraph 部署之间。前端将对话状态发送到挂载在图 API 旁边的自定义 `/api/copilotkit` 路由，该路由将请求转发到 LangGraph，响应返回时包含助手消息和你的组件注册表可以渲染的结构化 UI 载荷。
 
-1. **Deploy the graph as usual** using LangSmith or using a LangGraph development server.
-2. **Extend the deployment with an HTTP app** that mounts a CopilotKit route next to the graph API.
-3. **Wrap the frontend in `CopilotKit`** and point it at that custom runtime URL.
-4. **Register dynamic UI components** and parse assistant responses into those components at render time.
+1. **照常部署图**，使用 LangSmith 或 LangGraph 开发服务器。
+2. **用 HTTP 应用扩展部署**，在图 API 旁边挂载 CopilotKit 路由。
+3. **用 `CopilotKit` 包裹前端**，并指向该自定义运行时 URL。
+4. **注册动态 UI 组件**，并在渲染时将助手响应解析为这些组件。
 
 ```mermaid
 %%{
@@ -39,11 +39,11 @@ At a high level, CopilotKit sits between your React app and the LangGraph deploy
   }
 }%%
 graph LR
-  USER["User input"]
-  UI["CopilotKit React app"]
+  USER["用户输入"]
+  UI["CopilotKit React 应用"]
   ENDPOINT["/api/copilotkit"]
-  GRAPH["LangGraph deployment"]
-  RENDER["Hashbrown UI kit"]
+  GRAPH["LangGraph 部署"]
+  RENDER["Hashbrown UI 工具包"]
 
   USER --> UI
   UI --> ENDPOINT
@@ -55,7 +55,7 @@ graph LR
 
 ## 安装
 
-For the backend endpoint:
+后端端点：
 
 
 
@@ -64,17 +64,17 @@ uv add copilotkit ag-ui-langgraph fastapi uvicorn
 ```
 
 
-For the frontend app:
+前端应用：
 
 ```bash
 bun add @copilotkit/react-core @copilotkit/react-ui @hashbrownai/core @hashbrownai/react
 ```
 
-## 使用自定义端点扩展 LangGraph 部署
+## 用自定义端点扩展 LangGraph 部署
 
-The key idea is that the LangGraph deployment does not only serve graphs. It can also load an HTTP app, which lets you mount extra routes next to the deployment itself.
+关键思路是 LangGraph 部署不仅仅服务图。它还可以加载 HTTP 应用，让你在部署本身旁边挂载额外的路由。
 
-In `langgraph.json`, point `http.app` at your custom app entrypoint:
+在 `langgraph.json` 中，将 `http.app` 指向你的自定义应用入口点：
 
 
 
@@ -93,7 +93,7 @@ In `langgraph.json`, point `http.app` at your custom app entrypoint:
 
 
 
-In Python, create a `FastAPI` app and expose the LangGraph agent through CopilotKit's AG-UI bridge:
+在 Python 中，创建一个 `FastAPI` 应用，并通过 CopilotKit 的 AG-UI 桥接暴露 LangGraph 智能体：
 
 ```python main.py
 from typing import Any, TypedDict
@@ -124,8 +124,7 @@ agent = create_agent(
     context_schema=AgentContext,
     state_schema=AgentState,
     system_prompt=(
-        "You are a helpful UI assistant. Build visual responses using the "
-        "available components."
+        "你是一个有帮助的 UI 助手。使用可用组件构建可视化响应。"
     ),
 )
 
@@ -135,7 +134,7 @@ add_langgraph_fastapi_endpoint(
     app=app,
     agent=LangGraphAGUIAgent(
         name="copilotkit_shadify",
-        description="A UI assistant that returns structured component payloads.",
+        description="一个返回结构化组件载荷的 UI 助手。",
         graph=agent,
     ),
     path="/",
@@ -143,11 +142,11 @@ add_langgraph_fastapi_endpoint(
 ```
 
 
-This custom app is the important extension point: it mounts a CopilotKit-aware runtime without replacing the underlying LangGraph deployment.
+这个自定义应用是重要的扩展点：它挂载了一个 CopilotKit 感知的运行时，而不会替换底层的 LangGraph 部署。
 
 
 
-In Python, the equivalent work happens in middleware: normalize the CopilotKit context and forward the `output_schema` from `useAgentContext(...)` into the model's structured output configuration.
+在 Python 中，等效的工作在中间件中完成：规范化 CopilotKit 上下文，并将 `useAgentContext(...)` 中的 `output_schema` 转发到模型的结构化输出配置中。
 
 ```python expandable src/middleware.py
 import json
@@ -204,15 +203,15 @@ def normalize_context(state, runtime):
 ```
 
 
-The result is a clean separation of concerns:
+最终实现了清晰的关注点分离：
 
-- LangGraph still owns graph execution and persistence
-- CopilotKit owns the chat-facing runtime contract
-- your custom endpoint glues them together inside one deployment
+- LangGraph 仍然负责图的执行和持久化
+- CopilotKit 负责面向聊天的运行时契约
+- 你的自定义端点在一个部署中将它们粘合在一起
 
-## 构建前端应用结构
+## 构建前端应用
 
-On the frontend, wrap your app in `CopilotKit` and point it at the custom runtime URL:
+在前端，用 `CopilotKit` 包裹你的应用并指向自定义运行时 URL：
 
 ```tsx
 import { CopilotKit } from "@copilotkit/react-core";
@@ -242,14 +241,14 @@ function Page() {
 }
 ```
 
-There are two important pieces here:
+这里有两个重要部分：
 
-- `runtimeUrl="/api/copilotkit"` sends the chat to your custom backend route rather than directly to the raw LangGraph API
-- `useAgentContext(...)` sends the UI schema to the agent so the model knows what structured output format it should produce
+- `runtimeUrl="/api/copilotkit"` 将聊天发送到你的自定义后端路由，而不是直接发送到原始 LangGraph API
+- `useAgentContext(...)` 将 UI schema 发送给智能体，让模型知道应该产生什么结构化输出格式
 
 ## 注册动态组件
 
-The component registry lives in `useChatKit()`. This is where you define the set of components the agent is allowed to emit, such as cards, rows, columns, charts, code blocks, and buttons.
+组件注册表位于 `useChatKit()` 中。这里你定义智能体被允许发出的组件集合，如卡片、行、列、图表、代码块和按钮。
 
 ```tsx
 import { s } from "@hashbrownai/core";
@@ -267,13 +266,13 @@ export function useChatKit() {
       exposeMarkdown(),
       exposeComponent(Card, {
         name: "card",
-        description: "Card to wrap generative UI content.",
+        description: "用于包裹生成式 UI 内容的卡片。",
         children: "any",
       }),
       exposeComponent(Row, {
         name: "row",
         props: {
-          gap: s.string("Tailwind gap size") as never,
+          gap: s.string("Tailwind 间距大小") as never,
         },
         children: "any",
       }),
@@ -284,16 +283,16 @@ export function useChatKit() {
       exposeComponent(SimpleChart, {
         name: "chart",
         props: {
-          labels: s.array("Category labels", s.string("A label")),
-          values: s.array("Numeric values", s.number("A value")),
+          labels: s.array("类别标签", s.string("一个标签")),
+          values: s.array("数值", s.number("一个数值")),
         },
         children: false,
       }),
       exposeComponent(CodeBlock, {
         name: "code_block",
         props: {
-          code: s.streaming.string("The code to display"),
-          language: s.string("Programming language") as never,
+          code: s.streaming.string("要显示的代码"),
+          language: s.string("编程语言") as never,
         },
         children: false,
       }),
@@ -306,15 +305,15 @@ export function useChatKit() {
 }
 ```
 
-This registry becomes the contract between the agent and the UI. The model is not generating arbitrary JSX. It is generating structured data that must validate against the components and props you exposed.
+这个注册表成为智能体和 UI 之间的契约。模型不是在生成任意 JSX，而是生成必须根据你暴露的组件和 props 进行验证的结构化数据。
 
 ## 将助手消息渲染为动态 UI
 
-Once the assistant response arrives, the custom message renderer decides how to display it. In this example:
+助手响应到达后，自定义消息渲染器决定如何显示它。在这个示例中：
 
-- assistant messages are parsed as structured JSON against the UI kit schema
-- valid structured output is rendered as real React components
-- user messages are rendered as ordinary chat bubbles
+- 助手消息被解析为针对 UI 工具包 schema 的结构化 JSON
+- 有效的结构化输出被渲染为真实的 React 组件
+- 用户消息被渲染为普通聊天气泡
 
 ```tsx
 import type { AssistantMessage } from "@ag-ui/core";
@@ -357,27 +356,27 @@ export function CustomMessageRenderer({ message }: RenderMessageProps) {
 }
 ```
 
-This renderer pattern is what makes the integration feel native:
+这种渲染器模式使集成感觉很原生：
 
-- CopilotKit handles chat state and transport
-- the custom renderer decides how assistant payloads become UI
-- [Hashbrown](https://hashbrown.dev/) turns validated structured data into concrete React elements
+- CopilotKit 处理聊天状态和传输
+- 自定义渲染器决定如何将助手载荷变成 UI
+- [Hashbrown](https://hashbrown.dev/) 将经过验证的结构化数据转换为具体的 React 元素
 
 ## 最佳实践
 
-- **Keep the custom endpoint thin:** use it to adapt CopilotKit to your graph deployment, not to duplicate business logic already inside the graph
-- **Send the schema explicitly:** `useAgentContext` should describe the UI contract every time the page mounts
-- **Register a constrained component set:** expose only the components and props you actually want the model to use
-- **Treat rendering as a parsing step:** parse assistant content against your schema before rendering it
-- **Keep user messages plain:** only assistant messages need the structured renderer; user messages can stay normal chat bubbles
+- **保持自定义端点精简：**使用它来将 CopilotKit 适配到你的图部署，而不是复制图内部已有的业务逻辑
+- **显式发送 schema：**每次页面加载时，`useAgentContext` 应描述 UI 契约
+- **注册受约束的组件集：**只暴露你实际希望模型使用的组件和 props
+- **将渲染视为解析步骤：**在渲染之前，先将助手内容针对你的 schema 进行解析
+- **保持用户消息简单：**只有助手消息需要结构化渲染器；用户消息可以保持普通聊天气泡
 
 ---
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时回答。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/frontend/integrations/copilotkit.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/frontend/integrations/copilotkit.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

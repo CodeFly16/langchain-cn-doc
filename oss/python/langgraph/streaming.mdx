@@ -6,20 +6,20 @@ import NostreamTagPy from '/snippets/code-samples/nostream-tag-py.mdx';
 import NostreamTagJs from '/snippets/code-samples/nostream-tag-js.mdx';
 
 <Info>
-**In preview:** Try event streaming typed projections over messages, state, subgraphs, output, and custom extensions. Start with the [Event Streaming summary](/oss/python/langgraph/streaming/event-streaming), or explore runnable examples in the [streaming cookbook](https://github.com/langchain-ai/streaming-cookbook).
+**预览版：** 尝试对消息、状态、子图、输出和自定义扩展的事件流类型化投影。从[事件流概述](/oss/python/langgraph/streaming/event-streaming)开始，或在[流式输出 cookbook](https://github.com/langchain-ai/streaming-cookbook) 中探索可运行的示例。
 </Info>
 
-LangGraph implements a streaming system to surface real-time updates. Streaming is crucial for enhancing the responsiveness of applications built on LLMs. By displaying output progressively, even before a complete response is ready, streaming significantly improves user experience (UX), particularly when dealing with the latency of LLMs.
+LangGraph 实现了一个流式输出系统来呈现实时更新。流式输出对于增强基于 LLM 构建的应用的响应能力至关重要。通过在完整响应准备好之前逐步显示输出，流式输出显著改善了用户体验（UX），特别是在处理 LLM 延迟时。
 
 <Tip>
-Debug streaming events, inspect token-by-token LLM output, and monitor latency with [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-streaming). Follow the [tracing quickstart](/langsmith/trace-with-langgraph) to get set up.
+使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-streaming) 调试流式事件、检查逐 Token 的 LLM 输出和监控延迟。按照[追踪快速入门](/langsmith/trace-with-langgraph)进行设置。
 </Tip>
 
-## Get started
+## 快速开始
 
 ### 基本用法
 
-LangGraph graphs expose the [`stream`](https://reference.langchain.com/python/langgraph/pregel/#langgraph.pregel.Pregel.stream) (sync) and [`astream`](https://reference.langchain.com/python/langgraph/pregel/#langgraph.pregel.Pregel.astream) (async) methods to yield streamed outputs as iterators. Pass one or more [stream modes](#stream-modes) to control what data you receive.
+LangGraph 图暴露了 [`stream`](https://reference.langchain.com/python/langgraph/pregel/#langgraph.pregel.Pregel.stream)（同步）和 [`astream`](https://reference.langchain.com/python/langgraph/pregel/#langgraph.pregel.Pregel.astream)（异步）方法来以迭代器的形式产出流式输出。传入一个或多个[流模式](#stream-modes)来控制你接收的数据。
 
 ```python
 for chunk in graph.stream(
@@ -29,17 +29,17 @@ for chunk in graph.stream(
 ):
     if chunk["type"] == "updates":
         for node_name, state in chunk["data"].items():
-            print(f"Node {node_name} updated: {state}")
+            print(f"节点 {node_name} 已更新：{state}")
     elif chunk["type"] == "custom":
-        print(f"Status: {chunk['data']['status']}")
+        print(f"状态：{chunk['data']['status']}")
 ```
 
-```shell title="Output"
-Status: thinking of a joke...
-Node generate_joke updated: {'joke': 'Why did the ice cream go to school? To get a sundae education!'}
+```shell title="输出"
+状态：thinking of a joke...
+节点 generate_joke 已更新：{'joke': 'Why did the ice cream go to school? To get a sundae education!'}
 ```
 
-<Accordion title="Full example">
+<Accordion title="完整示例">
 ```python
 from typing import TypedDict
 from langgraph.graph import StateGraph, START, END
@@ -71,54 +71,54 @@ for chunk in graph.stream(
 ):
     if chunk["type"] == "updates":
         for node_name, state in chunk["data"].items():
-            print(f"Node {node_name} updated: {state}")
+            print(f"节点 {node_name} 已更新：{state}")
     elif chunk["type"] == "custom":
-        print(f"Status: {chunk['data']['status']}")
+        print(f"状态：{chunk['data']['status']}")
 ```
 
-```shell title="Output"
-Status: thinking of a joke...
-Node generate_joke updated: {'joke': 'Why did the ice cream go to school? To get a sundae education!'}
+```shell title="输出"
+状态：thinking of a joke...
+节点 generate_joke 已更新：{'joke': 'Why did the ice cream go to school? To get a sundae education!'}
 ```
 </Accordion>
 
 
 
 
-### Stream output format (v2)
+### 流输出格式 (v2)
 
 <Note>
-Requires LangGraph >= 1.1. All examples on this page use `version="v2"`.
+需要 LangGraph >= 1.1。本页所有示例使用 `version="v2"`。
 </Note>
 
-Pass `version="v2"` to `stream()` or `astream()` to get a unified output format. Every chunk is a `StreamPart` dict with a consistent shape — regardless of stream mode, number of modes, or subgraph settings:
+将 `version="v2"` 传递给 `stream()` 或 `astream()` 以获得统一的输出格式。每个 chunk 都是一个具有一致结构的 `StreamPart` 字典——无论流模式、模式数量或子图设置如何：
 
 ```python
 {
     "type": "values" | "updates" | "messages" | "custom" | "checkpoints" | "tasks" | "debug",
-    "ns": (),           # namespace tuple, populated for subgraph events
-    "data": ...,        # the actual payload (type varies by stream mode)
+    "ns": (),           # 命名空间元组，子图事件时会填充
+    "data": ...,        # 实际负载（类型因流模式而异）
 }
 ```
 
-Each stream mode has a corresponding `TypedDict` containing [`ValuesStreamPart`](https://reference.langchain.com/python/langgraph/types/ValuesStreamPart), [`UpdatesStreamPart`](https://reference.langchain.com/python/langgraph/types/UpdatesStreamPart), [`MessagesStreamPart`](https://reference.langchain.com/python/langgraph/types/MessagesStreamPart), [`CustomStreamPart`](https://reference.langchain.com/python/langgraph/types/CustomStreamPart), [`CheckpointStreamPart`](https://reference.langchain.com/python/langgraph/types/CheckpointStreamPart), [`TasksStreamPart`](https://reference.langchain.com/python/langgraph/types/TasksStreamPart), [`DebugStreamPart`](https://reference.langchain.com/python/langgraph/types/DebugStreamPart). You can import these types from `langgraph.types`. The union type [`StreamPart`](https://reference.langchain.com/python/langgraph/types/StreamPart) is a disjoing union on `part["type"]`, enabling full type narrowing in editors and type checkers.
+每种流模式都有对应的 `TypedDict`，包含 [`ValuesStreamPart`](https://reference.langchain.com/python/langgraph/types/ValuesStreamPart)、[`UpdatesStreamPart`](https://reference.langchain.com/python/langgraph/types/UpdatesStreamPart)、[`MessagesStreamPart`](https://reference.langchain.com/python/langgraph/types/MessagesStreamPart)、[`CustomStreamPart`](https://reference.langchain.com/python/langgraph/types/CustomStreamPart)、[`CheckpointStreamPart`](https://reference.langchain.com/python/langgraph/types/CheckpointStreamPart)、[`TasksStreamPart`](https://reference.langchain.com/python/langgraph/types/TasksStreamPart)、[`DebugStreamPart`](https://reference.langchain.com/python/langgraph/types/DebugStreamPart)。你可以从 `langgraph.types` 中导入这些类型。联合类型 [`StreamPart`](https://reference.langchain.com/python/langgraph/types/StreamPart) 是基于 `part["type"]` 的不相交联合，可在编辑器和类型检查器中实现完整的类型缩窄。
 
-With v1 (default), the output format changes based on your streaming options (single mode returns raw data, multiple modes return `(mode, data)` tuples, subgraphs return `(namespace, data)` tuples). With v2, the format is always the same:
+使用 v1（默认值），输出格式会根据你的流选项变化（单模式返回原始数据，多模式返回 `(mode, data)` 元组，子图返回 `(namespace, data)` 元组）。使用 v2，格式始终相同：
 
 <CodeGroup>
-```python v2 (new)
+```python v2（新版）
 for chunk in graph.stream(inputs, stream_mode="updates", version="v2"):
     print(chunk["type"])  # "updates"
     print(chunk["ns"])    # ()
     print(chunk["data"])  # {"node_name": {"key": "value"}}
 ```
-```python v1 (current default)
+```python v1（当前默认）
 for chunk in graph.stream(inputs, stream_mode="updates"):
     print(chunk)  # {"node_name": {"key": "value"}}
 ```
 </CodeGroup>
 
-The v2 format also enables type narrowing, which means you can filter chunks by `chunk["type"]` and get the correct payload type. Each branch narrows `part["data"]` to the specific type for that mode:
+v2 格式还支持类型缩窄，这意味着你可以通过 `chunk["type"]` 过滤 chunk 并获得正确的负载类型。每个分支会将 `part["data"]` 缩窄为该模式的特定类型：
 
 ```python
 for part in graph.stream(
@@ -127,47 +127,47 @@ for part in graph.stream(
     version="v2",
 ):
     if part["type"] == "values":
-        # ValuesStreamPart — full state snapshot after each step
-        print(f"State: topic={part['data']['topic']}")
+        # ValuesStreamPart — 每步后的完整状态快照
+        print(f"状态：topic={part['data']['topic']}")
     elif part["type"] == "updates":
-        # UpdatesStreamPart — only the changed keys from each node
+        # UpdatesStreamPart — 每个节点变更的键
         for node_name, state in part["data"].items():
-            print(f"Node `{node_name}` updated: {state}")
+            print(f"节点 `{node_name}` 已更新：{state}")
     elif part["type"] == "messages":
-        # MessagesStreamPart — (message_chunk, metadata) from LLM calls
+        # MessagesStreamPart — 来自 LLM 调用的 (message_chunk, metadata)
         msg, metadata = part["data"]
         print(msg.content, end="", flush=True)
     elif part["type"] == "custom":
-        # CustomStreamPart — arbitrary data from get_stream_writer()
-        print(f"Progress: {part['data']['progress']}%")
+        # CustomStreamPart — 来自 get_stream_writer() 的任意数据
+        print(f"进度：{part['data']['progress']}%")
 ```
 
 
-## Stream modes
+## 流模式
 
-Pass one or more of the following stream modes as a list to the [`stream`](https://reference.langchain.com/python/langgraph/graphs/#langgraph.graph.state.CompiledStateGraph.stream) or [`astream`](https://reference.langchain.com/python/langgraph/graphs/#langgraph.graph.state.CompiledStateGraph.astream) methods:
+将以下一个或多个流模式作为列表传递给 [`stream`](https://reference.langchain.com/python/langgraph/graphs/#langgraph.graph.state.CompiledStateGraph.stream) 或 [`astream`](https://reference.langchain.com/python/langgraph/graphs/#langgraph.graph.state.CompiledStateGraph.astream) 方法：
 
-| Mode | Type | Description |
+| 模式 | 类型 | 描述 |
 | :--- | :--- | :---------- |
-| [values](#graph-state) | [`ValuesStreamPart`](https://reference.langchain.com/python/langgraph/types/ValuesStreamPart) | Full state after each step. |
-| [updates](#graph-state) | [`UpdatesStreamPart`](https://reference.langchain.com/python/langgraph/types/UpdatesStreamPart) | State updates after each step. Multiple updates in the same step are streamed separately. |
-| [messages](#llm-tokens) | [`MessagesStreamPart`](https://reference.langchain.com/python/langgraph/types/MessagesStreamPart) | 2-tuples of (LLM token, metadata) from LLM calls. |
-| [custom](#custom-data) | [`CustomStreamPart`](https://reference.langchain.com/python/langgraph/types/CustomStreamPart) | Custom data emitted from nodes via [`get_stream_writer`](https://reference.langchain.com/python/langgraph/config/get_stream_writer). |
-| [checkpoints](#checkpoints) | [`CheckpointStreamPart`](https://reference.langchain.com/python/langgraph/types/CheckpointStreamPart) | Checkpoint events (same format as `get_state()`). Requires a checkpointer. |
-| [tasks](#tasks) | [`TasksStreamPart`](https://reference.langchain.com/python/langgraph/types/TasksStreamPart) | Task start/finish events with results and errors. Requires a checkpointer. |
-| [debug](#debug) | [`DebugStreamPart`](https://reference.langchain.com/python/langgraph/types/DebugStreamPart) | All available info — combines `checkpoints` and `tasks` with extra metadata. |
+| [values](#graph-state) | [`ValuesStreamPart`](https://reference.langchain.com/python/langgraph/types/ValuesStreamPart) | 每步后的完整状态。 |
+| [updates](#graph-state) | [`UpdatesStreamPart`](https://reference.langchain.com/python/langgraph/types/UpdatesStreamPart) | 每步后的状态更新。同一步中的多个更新会分别流式输出。 |
+| [messages](#llm-tokens) | [`MessagesStreamPart`](https://reference.langchain.com/python/langgraph/types/MessagesStreamPart) | 来自 LLM 调用的 (LLM Token, 元数据) 二元组。 |
+| [custom](#custom-data) | [`CustomStreamPart`](https://reference.langchain.com/python/langgraph/types/CustomStreamPart) | 通过 [`get_stream_writer`](https://reference.langchain.com/python/langgraph/config/get_stream_writer) 从节点发出的自定义数据。 |
+| [checkpoints](#checkpoints) | [`CheckpointStreamPart`](https://reference.langchain.com/python/langgraph/types/CheckpointStreamPart) | 检查点事件（与 `get_state()` 输出格式相同）。需要检查点器。 |
+| [tasks](#tasks) | [`TasksStreamPart`](https://reference.langchain.com/python/langgraph/types/TasksStreamPart) | 任务开始/完成事件，包含结果和错误。需要检查点器。 |
+| [debug](#debug) | [`DebugStreamPart`](https://reference.langchain.com/python/langgraph/types/DebugStreamPart) | 所有可用信息——合并了 `checkpoints` 和 `tasks` 并带有额外元数据。 |
 
 
 
 
 <a id="messages"></a>
 
-### Graph state
+### 图状态
 
-Use the stream modes `updates` and `values` to stream the state of the graph as it executes.
+使用流模式 `updates` 和 `values` 来在图执行时流式输出图的状态。
 
-* `updates` streams the **updates** to the state after each step of the graph.
-* `values` streams the **full value** of the state after each step of the graph.
+* `updates` 流式输出图每步之后的状态**更新**。
+* `values` 流式输出图每步之后的**完整状态**值。
 
 ```python
 from typing import TypedDict
@@ -202,7 +202,7 @@ graph = (
 
 <Tabs>
     <Tab title="updates">
-    Use this to stream only the **state updates** returned by the nodes after each step. The streamed outputs include the name of the node as well as the update.
+    使用此模式仅流式输出节点在每步之后返回的**状态更新**。流式输出包含节点名称和更新内容。
 
     ```python
     for chunk in graph.stream(
@@ -212,19 +212,19 @@ graph = (
     ):
         if chunk["type"] == "updates":
             for node_name, state in chunk["data"].items():
-                print(f"Node `{node_name}` updated: {state}")
+                print(f"节点 `{node_name}` 已更新：{state}")
     ```
 
-    ```shell title="Output"
-    Node `refine_topic` updated: {'topic': 'ice cream and cats'}
-    Node `generate_joke` updated: {'joke': 'This is a joke about ice cream and cats'}
+    ```shell title="输出"
+    节点 `refine_topic` 已更新：{'topic': 'ice cream and cats'}
+    节点 `generate_joke` 已更新：{'joke': 'This is a joke about ice cream and cats'}
     ```
 
 
 
     </Tab>
     <Tab title="values">
-    Use this to stream the **full state** of the graph after each step.
+    使用此模式流式输出图每步之后的**完整状态**。
 
     ```python
     for chunk in graph.stream(
@@ -236,7 +236,7 @@ graph = (
             print(f"topic: {chunk['data']['topic']}, joke: {chunk['data']['joke']}")
     ```
 
-    ```shell title="Output"
+    ```shell title="输出"
     topic: ice cream, joke:
     topic: ice cream and cats, joke:
     topic: ice cream and cats, joke: This is a joke about ice cream and cats
@@ -249,18 +249,18 @@ graph = (
 
 ### LLM Token
 
-Use the `messages` streaming mode to stream Large Language Model (LLM) outputs **token by token** from any part of your graph, including nodes, tools, subgraphs, or tasks.
+使用 `messages` 流模式从图的任何部分（包括节点、工具、子图或任务）**逐 Token** 流式输出大语言模型（LLM）的输出。
 
-The streamed output from [`messages` mode](#stream-modes) is a tuple `(message_chunk, metadata)` where:
+[`messages` 模式](#stream-modes)的流式输出是一个元组 `(message_chunk, metadata)`，其中：
 
-* `message_chunk`: the token or message segment from the LLM.
-* `metadata`: a dictionary containing details about the graph node and LLM invocation.
+* `message_chunk`：来自 LLM 的 Token 或消息片段。
+* `metadata`：包含图节点和 LLM 调用详情的字典。
 
-> If your LLM is not available as a LangChain integration, you can stream its outputs using `custom` mode instead. See [use with any LLM](#use-with-any-llm) for details.
+> 如果你的 LLM 没有提供 LangChain 集成，你可以使用 `custom` 模式来流式输出其输出。详见[与任意 LLM 配合使用](#use-with-any-llm)。
 
 <Warning>
-**Manual config required for async in Python < 3.11**
-When using Python < 3.11 with async code, you must explicitly pass [`RunnableConfig`](https://reference.langchain.com/python/langchain-core/runnables/config/RunnableConfig) to `ainvoke()` to enable proper streaming. See [Async with Python < 3.11](#async) for details or upgrade to Python 3.11+.
+**Python < 3.11 的异步代码需要手动传递 config**
+在 Python < 3.11 使用异步代码时，你必须显式将 [`RunnableConfig`](https://reference.langchain.com/python/langchain-core/runnables/config/RunnableConfig) 传递给 `ainvoke()` 以启用正确的流式输出。详见 [Python < 3.11 的异步](#async)，或升级到 Python 3.11+。
 </Warning>
 
 ```python
@@ -279,8 +279,8 @@ class MyState:
 model = init_chat_model(model="gpt-5.4-mini")
 
 def call_model(state: MyState):
-    """Call the LLM to generate a joke about a topic"""
-    # Note that message events are emitted even when the LLM is run using .invoke rather than .stream
+    """调用 LLM 生成关于某主题的笑话"""
+    # 注意即使使用 .invoke 而非 .stream 运行 LLM，消息事件也会被发出
     model_response = model.invoke(  # [!code highlight]
         [
             {"role": "user", "content": f"Generate a joke about {state.topic}"}
@@ -295,8 +295,8 @@ graph = (
     .compile()
 )
 
-# The "messages" stream mode streams LLM tokens with metadata
-# Use version="v2" for a unified StreamPart format
+# "messages" 流模式流式输出 LLM Token 及元数据
+# 使用 version="v2" 获得统一的 StreamPart 格式
 for chunk in graph.stream(
     {"topic": "ice cream"},
     stream_mode="messages",  # [!code highlight]
@@ -311,22 +311,22 @@ for chunk in graph.stream(
 
 
 
-#### Filter by LLM invocation
+#### 按 LLM 调用过滤
 
-You can associate `tags` with LLM invocations to filter the streamed tokens by LLM invocation.
+你可以将 `tags` 与 LLM 调用关联，以按 LLM 调用过滤流式 Token。
 
 ```python
 from langchain.chat_models import init_chat_model
 
-# model_1 is tagged with "joke"
+# model_1 标记为 "joke"
 model_1 = init_chat_model(model="gpt-5.4-mini", tags=['joke'])
-# model_2 is tagged with "poem"
+# model_2 标记为 "poem"
 model_2 = init_chat_model(model="gpt-5.4-mini", tags=['poem'])
 
-graph = ... # define a graph that uses these LLMs
+graph = ... # 定义使用这些 LLM 的图
 
-# The stream_mode is set to "messages" to stream LLM tokens
-# The metadata contains information about the LLM invocation, including the tags
+# stream_mode 设置为 "messages" 以流式输出 LLM Token
+# metadata 包含有关 LLM 调用的信息，包括 tags
 async for chunk in graph.astream(
     {"topic": "cats"},
     stream_mode="messages",  # [!code highlight]
@@ -334,8 +334,8 @@ async for chunk in graph.astream(
 ):
     if chunk["type"] == "messages":
         msg, metadata = chunk["data"]
-        # Filter the streamed tokens by the tags field in the metadata to only include
-        # the tokens from the LLM invocation with the "joke" tag
+        # 通过 metadata 中的 tags 字段过滤流式 Token，
+        # 仅包含带有 "joke" 标签的 LLM 调用的 Token
         if metadata["tags"] == ["joke"]:
             print(msg.content, end="|", flush=True)
 ```
@@ -343,16 +343,16 @@ async for chunk in graph.astream(
 
 
 
-<Accordion title="Extended example: filtering by tags">
+<Accordion title="扩展示例：按标签过滤">
   ```python
   from typing import TypedDict
 
   from langchain.chat_models import init_chat_model
   from langgraph.graph import START, StateGraph
 
-  # The joke_model is tagged with "joke"
+  # joke_model 标记为 "joke"
   joke_model = init_chat_model(model="gpt-5.4-mini", tags=["joke"])
-  # The poem_model is tagged with "poem"
+  # poem_model 标记为 "poem"
   poem_model = init_chat_model(model="gpt-5.4-mini", tags=["poem"])
 
 
@@ -364,16 +364,16 @@ async for chunk in graph.astream(
 
   async def call_model(state, config):
         topic = state["topic"]
-        print("Writing joke...")
-        # Note: Passing the config through explicitly is required for python < 3.11
-        # Since context var support wasn't added before then: https://docs.python.org/3/library/asyncio-task.html#creating-tasks
-        # The config is passed through explicitly to ensure the context vars are propagated correctly
-        # This is required for Python < 3.11 when using async code. Please see the async section for more details
+        print("正在写笑话...")
+        # 注意：显式传递 config 对于 python < 3.11 是必需的
+        # 因为之前不支持上下文变量：https://docs.python.org/3/library/asyncio-task.html#creating-tasks
+        # 显式传递 config 以确保上下文变量正确传播
+        # 这在 Python < 3.11 使用异步代码时是必需的。请参阅异步部分了解更多详情
         joke_response = await joke_model.ainvoke(
               [{"role": "user", "content": f"Write a joke about {topic}"}],
               config,
         )
-        print("\n\nWriting poem...")
+        print("\n\n正在写诗...")
         poem_response = await poem_model.ainvoke(
               [{"role": "user", "content": f"Write a short poem about {topic}"}],
               config,
@@ -388,8 +388,8 @@ async for chunk in graph.astream(
         .compile()
   )
 
-  # The stream_mode is set to "messages" to stream LLM tokens
-  # The metadata contains information about the LLM invocation, including the tags
+  # stream_mode 设置为 "messages" 以流式输出 LLM Token
+  # metadata 包含有关 LLM 调用的信息，包括 tags
   async for chunk in graph.astream(
         {"topic": "cats"},
         stream_mode="messages",
@@ -405,14 +405,14 @@ async for chunk in graph.astream(
 
 </Accordion>
 
-#### Omit messages from the stream
+#### 从流中排除消息
 
-Use the `nostream` tag to exclude LLM output from the stream entirely. Invocations tagged with `nostream` still run and produce output; their tokens are simply not emitted in `messages` mode.
+使用 `nostream` 标签完全从流中排除 LLM 输出。带有 `nostream` 标签的调用仍然会运行并产生输出；它们的 Token 只是不会在 `messages` 模式中发出。
 
-This is useful when:
+这在以下情况下很有用：
 
-- You need LLM output for internal processing (例如 structured output) but do not want to stream it to the client
-- You stream the same content through a different channel (例如 custom UI messages) and want to avoid duplicate output in the `messages` stream
+- 你需要 LLM 输出用于内部处理（例如结构化输出），但不想将其流式传输给客户端
+- 你通过不同的渠道（例如自定义 UI 消息）流式传输相同内容，并希望避免在 `messages` 流中出现重复输出
 
 <NostreamTagPy />
 
@@ -420,13 +420,13 @@ This is useful when:
 
 
 
-#### Filter by node
+#### 按节点过滤
 
-To stream tokens only from specific nodes, use `stream_mode="messages"` and filter the outputs by the `langgraph_node` field in the streamed metadata:
+要仅从特定节点流式输出 Token，使用 `stream_mode="messages"` 并通过流式元数据中的 `langgraph_node` 字段过滤输出：
 
 ```python
-# The "messages" stream mode streams LLM tokens with metadata
-# Use version="v2" for a unified StreamPart format
+# "messages" 流模式流式输出 LLM Token 及元数据
+# 使用 version="v2" 获得统一的 StreamPart 格式
 for chunk in graph.stream(
     inputs,
     stream_mode="messages",  # [!code highlight]
@@ -434,8 +434,8 @@ for chunk in graph.stream(
 ):
     if chunk["type"] == "messages":
         msg, metadata = chunk["data"]
-        # Filter the streamed tokens by the langgraph_node field in the metadata
-        # to only include the tokens from the specified node
+        # 通过 metadata 中的 langgraph_node 字段过滤流式 Token，
+        # 仅包含来自指定节点的 Token
         if msg.content and metadata["langgraph_node"] == "some_node_name":
             ...
 ```
@@ -443,7 +443,7 @@ for chunk in graph.stream(
 
 
 
-<Accordion title="Extended example: streaming LLM tokens from specific nodes">
+<Accordion title="扩展示例：从特定节点流式输出 LLM Token">
   ```python
   from typing import TypedDict
   from langgraph.graph import START, StateGraph
@@ -478,14 +478,14 @@ for chunk in graph.stream(
         StateGraph(State)
         .add_node(write_joke)
         .add_node(write_poem)
-        # write both the joke and the poem concurrently
+        # 同时写笑话和诗
         .add_edge(START, "write_joke")
         .add_edge(START, "write_poem")
         .compile()
   )
 
-  # The "messages" stream mode streams LLM tokens with metadata
-  # Use version="v2" for a unified StreamPart format
+  # "messages" 流模式流式输出 LLM Token 及元数据
+  # 使用 version="v2" 获得统一的 StreamPart 格式
   for chunk in graph.stream(
       {"topic": "cats"},
       stream_mode="messages",  # [!code highlight]
@@ -493,8 +493,8 @@ for chunk in graph.stream(
   ):
       if chunk["type"] == "messages":
           msg, metadata = chunk["data"]
-          # Filter the streamed tokens by the langgraph_node field in the metadata
-          # to only include the tokens from the write_poem node
+          # 通过 metadata 中的 langgraph_node 字段过滤流式 Token，
+          # 仅包含来自 write_poem 节点的 Token
           if msg.content and metadata["langgraph_node"] == "write_poem":
               print(msg.content, end="|", flush=True)
   ```
@@ -503,22 +503,22 @@ for chunk in graph.stream(
 
 </Accordion>
 
-### Custom data
+### 自定义数据
 
-To send **custom user-defined data** from inside a LangGraph node or tool, follow these steps:
+要从 LangGraph 节点或工具内部发送**自定义用户定义数据**，请按照以下步骤操作：
 
-1. Use [`get_stream_writer`](https://reference.langchain.com/python/langgraph/config/get_stream_writer) to access the stream writer and emit custom data.
-2. Set `stream_mode="custom"` when calling `.stream()` or `.astream()` to get the custom data in the stream. You can combine multiple modes (e.g., `["updates", "custom"]`), but at least one must be `"custom"`.
+1. 使用 [`get_stream_writer`](https://reference.langchain.com/python/langgraph/config/get_stream_writer) 访问流写入器并发出自定义数据。
+2. 调用 `.stream()` 或 `.astream()` 时设置 `stream_mode="custom"` 以在流中获取自定义数据。你可以组合多个模式（例如 `["updates", "custom"]`），但至少一个必须是 `"custom"`。
 
 <Warning>
-**No [`get_stream_writer`](https://reference.langchain.com/python/langgraph/config/get_stream_writer) in async for Python < 3.11**
-In async code running on Python < 3.11, [`get_stream_writer`](https://reference.langchain.com/python/langgraph/config/get_stream_writer) will not work.
-Instead, add a `writer` parameter to your node or tool and pass it manually.
-See [Async with Python < 3.11](#async) for usage examples.
+**Python < 3.11 的异步中无法使用 [`get_stream_writer`](https://reference.langchain.com/python/langgraph/config/get_stream_writer)**
+在 Python < 3.11 运行的异步代码中，[`get_stream_writer`](https://reference.langchain.com/python/langgraph/config/get_stream_writer) 将不起作用。
+请改为向你的节点或工具添加 `writer` 参数并手动传递。
+参见 [Python < 3.11 的异步](#async)了解用法示例。
 </Warning>
 
 <Tabs>
-    <Tab title="node">
+    <Tab title="节点">
     ```python
     from typing import TypedDict
     from langgraph.config import get_stream_writer
@@ -529,9 +529,9 @@ See [Async with Python < 3.11](#async) for usage examples.
         answer: str
 
     def node(state: State):
-        # Get the stream writer to send custom data
+        # 获取流写入器以发送自定义数据
         writer = get_stream_writer()
-        # Emit a custom key-value pair (e.g., progress update)
+        # 发出自定义键值对（例如进度更新）
         writer({"custom_key": "Generating custom data inside node"})
         return {"answer": "some data"}
 
@@ -544,33 +544,33 @@ See [Async with Python < 3.11](#async) for usage examples.
 
     inputs = {"query": "example"}
 
-    # Set stream_mode="custom" to receive the custom data in the stream
+    # 设置 stream_mode="custom" 以在流中接收自定义数据
     for chunk in graph.stream(inputs, stream_mode="custom", version="v2"):
         if chunk["type"] == "custom":
-            print(f"Custom event: {chunk['data']['custom_key']}")
+            print(f"自定义事件：{chunk['data']['custom_key']}")
     ```
     </Tab>
-    <Tab title="tool">
+    <Tab title="工具">
     ```python
     from langchain.tools import tool
     from langgraph.config import get_stream_writer
 
     @tool
     def query_database(query: str) -> str:
-        """Query the database."""
-        # Access the stream writer to send custom data
+        """查询数据库。"""
+        # 访问流写入器以发送自定义数据
         writer = get_stream_writer()  # [!code highlight]
-        # Emit a custom key-value pair (e.g., progress update)
+        # 发出自定义键值对（例如进度更新）
         writer({"data": "Retrieved 0/100 records", "type": "progress"})  # [!code highlight]
-        # perform query
-        # Emit another custom key-value pair
+        # 执行查询
+        # 发出另一个自定义键值对
         writer({"data": "Retrieved 100/100 records", "type": "progress"})
         return "some-answer"
 
 
-    graph = ... # define a graph that uses this tool
+    graph = ... # 定义使用此工具的图
 
-    # Set stream_mode="custom" to receive the custom data in the stream
+    # 设置 stream_mode="custom" 以在流中接收自定义数据
     for chunk in graph.stream(inputs, stream_mode="custom", version="v2"):
         if chunk["type"] == "custom":
             print(f"{chunk['data']['type']}: {chunk['data']['data']}")
@@ -583,15 +583,15 @@ See [Async with Python < 3.11](#async) for usage examples.
 
 
 
-### Subgraph outputs
+### 子图输出
 
-To include outputs from [subgraphs](/oss/python/langgraph/use-subgraphs) in the streamed outputs, you can set `subgraphs=True` in the `.stream()` method of the parent graph. This will stream outputs from both the parent graph and any subgraphs.
+要在流式输出中包含来自[子图](/oss/python/langgraph/use-subgraphs)的输出，你可以在父图的 `.stream()` 方法中设置 `subgraphs=True`。这将流式输出父图和任何子图的输出。
 
-The outputs will be streamed as tuples `(namespace, data)`, where `namespace` is a tuple with the path to the node where a subgraph is invoked, e.g. `("parent_node:<task_id>", "child_node:<task_id>")`.
+输出将以元组 `(namespace, data)` 的形式流式传输，其中 `namespace` 是一个包含调用子图的节点路径的元组，例如 `("parent_node:<task_id>", "child_node:<task_id>")`。
 
 <Tabs>
     <Tab title="v2 (LangGraph >= 1.1)">
-    With `version="v2"`, subgraph events use the same `StreamPart` format. The `ns` field identifies the source:
+    使用 `version="v2"` 时，子图事件使用相同的 `StreamPart` 格式。`ns` 字段标识来源：
 
     ```python
     for chunk in graph.stream(
@@ -601,15 +601,15 @@ The outputs will be streamed as tuples `(namespace, data)`, where `namespace` is
         version="v2", # [!code highlight]
     ):
         print(chunk["type"])  # "updates"
-        print(chunk["ns"])    # () for root, ("node_name:<task_id>",) for subgraph
+        print(chunk["ns"])    # () 表示根图，("node_name:<task_id>",) 表示子图
         print(chunk["data"])  # {"node_name": {"key": "value"}}
     ```
     </Tab>
-    <Tab title="v1 (default)">
+    <Tab title="v1（默认）">
     ```python
     for chunk in graph.stream(
         {"foo": "foo"},
-        # Set subgraphs=True to stream outputs from subgraphs
+        # 设置 subgraphs=True 以流式输出子图的输出
         subgraphs=True,  # [!code highlight]
         stream_mode="updates",
     ):
@@ -621,14 +621,14 @@ The outputs will be streamed as tuples `(namespace, data)`, where `namespace` is
 
 
 
-<Accordion title="Extended example: streaming from subgraphs">
+<Accordion title="扩展示例：从子图流式输出">
   ```python
   from langgraph.graph import START, StateGraph
   from typing import TypedDict
 
-  # Define subgraph
+  # 定义子图
   class SubgraphState(TypedDict):
-      foo: str  # note that this key is shared with the parent graph state
+      foo: str  # 注意此键与父图状态共享
       bar: str
 
   def subgraph_node_1(state: SubgraphState):
@@ -644,7 +644,7 @@ The outputs will be streamed as tuples `(namespace, data)`, where `namespace` is
   subgraph_builder.add_edge("subgraph_node_1", "subgraph_node_2")
   subgraph = subgraph_builder.compile()
 
-  # Define parent graph
+  # 定义父图
   class ParentState(TypedDict):
       foo: str
 
@@ -661,36 +661,36 @@ The outputs will be streamed as tuples `(namespace, data)`, where `namespace` is
   for chunk in graph.stream(
       {"foo": "foo"},
       stream_mode="updates",
-      # Set subgraphs=True to stream outputs from subgraphs
+      # 设置 subgraphs=True 以流式输出子图的输出
       subgraphs=True,  # [!code highlight]
       version="v2",  # [!code highlight]
   ):
       if chunk["type"] == "updates":
           if chunk["ns"]:
-              print(f"Subgraph {chunk['ns']}: {chunk['data']}")
+              print(f"子图 {chunk['ns']}: {chunk['data']}")
           else:
-              print(f"Root: {chunk['data']}")
+              print(f"根图: {chunk['data']}")
   ```
 
 
 
 
   ```
-  Root: {'node_1': {'foo': 'hi! foo'}}
-  Subgraph ('node_2:dfddc4ba-c3c5-6887-5012-a243b5b377c2',): {'subgraph_node_1': {'bar': 'bar'}}
-  Subgraph ('node_2:dfddc4ba-c3c5-6887-5012-a243b5b377c2',): {'subgraph_node_2': {'foo': 'hi! foobar'}}
-  Root: {'node_2': {'foo': 'hi! foobar'}}
+  根图: {'node_1': {'foo': 'hi! foo'}}
+  子图 ('node_2:dfddc4ba-c3c5-6887-5012-a243b5b377c2',): {'subgraph_node_1': {'bar': 'bar'}}
+  子图 ('node_2:dfddc4ba-c3c5-6887-5012-a243b5b377c2',): {'subgraph_node_2': {'foo': 'hi! foobar'}}
+  根图: {'node_2': {'foo': 'hi! foobar'}}
   ```
 
 
 
 
-  **Note** that we are receiving not just the node updates, but we also the namespaces which tell us what graph (or subgraph) we are streaming from.
+  **注意**我们不仅接收到了节点更新，还接收到了命名空间，它告诉我们正在从哪个图（或子图）进行流式输出。
 </Accordion>
 
-### Checkpoints
+### 检查点
 
-Use the `checkpoints` streaming mode to receive checkpoint events as the graph executes. Each checkpoint event has the same format as the output of `get_state()`. Requires a [checkpointer](/oss/python/langgraph/persistence).
+使用 `checkpoints` 流模式在图执行时接收检查点事件。每个检查点事件的格式与 `get_state()` 的输出相同。需要[检查点器](/oss/python/langgraph/persistence)。
 
 ```python
 from langgraph.checkpoint.memory import MemorySaver
@@ -717,9 +717,9 @@ for chunk in graph.stream(
         print(chunk["data"])
 ```
 
-### Tasks
+### 任务
 
-Use the `tasks` streaming mode to receive task start and finish events as the graph executes. Task events include information about which node is running, its results, and any errors. Requires a [checkpointer](/oss/python/langgraph/persistence).
+使用 `tasks` 流模式在图执行时接收任务开始和完成事件。任务事件包含有关哪个节点正在运行、其结果和任何错误的信息。需要[检查点器](/oss/python/langgraph/persistence)。
 
 ```python
 from langgraph.checkpoint.memory import MemorySaver
@@ -748,9 +748,9 @@ for chunk in graph.stream(
 
 
 <a id="debug"></a>
-### Debug
+### 调试
 
-Use the `debug` streaming mode to stream as much information as possible throughout the execution of the graph. The streamed outputs include the name of the node as well as the full state.
+使用 `debug` 流模式在图执行过程中流式输出尽可能多的信息。流式输出包含节点名称和完整状态。
 
 ```python
 for chunk in graph.stream(
@@ -766,24 +766,24 @@ for chunk in graph.stream(
 
 
 <Note>
-The `debug` mode combines `checkpoints` and `tasks` events with additional metadata. Use `checkpoints` or `tasks` directly if you only need a subset of the debug information.
+`debug` 模式合并了 `checkpoints` 和 `tasks` 事件及额外的元数据。如果你只需要调试信息的子集，请直接使用 `checkpoints` 或 `tasks`。
 </Note>
 
 
-### Multiple modes at once
+### 同时使用多个模式
 
-You can pass a list as the `stream_mode` parameter to stream multiple modes at once.
+你可以将列表作为 `stream_mode` 参数传递，同时流式输出多个模式。
 
-With `version="v2"`, every chunk is a `StreamPart` dict. Use `chunk["type"]` to distinguish between modes:
+使用 `version="v2"` 时，每个 chunk 都是一个 `StreamPart` 字典。使用 `chunk["type"]` 来区分模式：
 
 <CodeGroup>
 ```python v2
 for chunk in graph.stream(inputs, stream_mode=["updates", "custom"], version="v2"):
     if chunk["type"] == "updates":
         for node_name, state in chunk["data"].items():
-            print(f"Node `{node_name}` updated: {state}")
+            print(f"节点 `{node_name}` 已更新：{state}")
     elif chunk["type"] == "custom":
-        print(f"Custom event: {chunk['data']}")
+        print(f"自定义事件：{chunk['data']}")
 ```
 ```python v1
 for mode, chunk in graph.stream(inputs, stream_mode=["updates", "custom"]):
@@ -794,49 +794,49 @@ for mode, chunk in graph.stream(inputs, stream_mode=["updates", "custom"]):
 
 
 
-## Advanced
+## 高级
 
-### Use with any LLM
+### 与任意 LLM 配合使用
 
-You can use `stream_mode="custom"` to stream data from **any LLM API**—even if that API does **not** implement the LangChain chat model interface.
+你可以使用 `stream_mode="custom"` 从**任何 LLM API** 流式输出数据——即使该 API **没有**实现 LangChain 聊天模型接口。
 
-This lets you integrate raw LLM clients or external services that provide their own streaming interfaces, making LangGraph highly flexible for custom setups.
+这让你可以集成原始 LLM 客户端或提供自己流式接口的外部服务，使 LangGraph 在自定义设置中非常灵活。
 
 ```python
 from langgraph.config import get_stream_writer
 
 def call_arbitrary_model(state):
-    """Example node that calls an arbitrary model and streams the output"""
-    # Get the stream writer to send custom data
+    """调用任意模型并流式输出结果的示例节点"""
+    # 获取流写入器以发送自定义数据
     writer = get_stream_writer()  # [!code highlight]
-    # Assume you have a streaming client that yields chunks
-    # Generate LLM tokens using your custom streaming client
+    # 假设你有一个产出 chunk 的流式客户端
+    # 使用你的自定义流式客户端生成 LLM Token
     for chunk in your_custom_streaming_client(state["topic"]):
-        # Use the writer to send custom data to the stream
+        # 使用 writer 向流发送自定义数据
         writer({"custom_llm_chunk": chunk})  # [!code highlight]
     return {"result": "completed"}
 
 graph = (
     StateGraph(State)
     .add_node(call_arbitrary_model)
-    # Add other nodes and edges as needed
+    # 根据需要添加其他节点和边
     .compile()
 )
-# Set stream_mode="custom" to receive the custom data in the stream
+# 设置 stream_mode="custom" 以在流中接收自定义数据
 for chunk in graph.stream(
     {"topic": "cats"},
     stream_mode="custom",  # [!code highlight]
     version="v2",  # [!code highlight]
 ):
     if chunk["type"] == "custom":
-        # The chunk data will contain the custom data streamed from the llm
+        # chunk 数据将包含从 LLM 流式传输的自定义数据
         print(chunk["data"])
 ```
 
 
 
 
-<Accordion title="Extended example: streaming arbitrary chat model">
+<Accordion title="扩展示例：流式输出任意聊天模型">
   ```python
   import operator
   import json
@@ -866,9 +866,9 @@ for chunk in graph.stream(
               yield {"role": role, "content": delta.content}
 
 
-  # this is our tool
+  # 这是我们的工具
   async def get_items(place: str) -> str:
-      """Use this tool to list items one might find in a place you're asked about."""
+      """使用此工具列出你被问到的某个地方可能找到的物品。"""
       writer = get_stream_writer()
       response = ""
       async for msg_chunk in stream_tokens(
@@ -895,7 +895,7 @@ for chunk in graph.stream(
       messages: Annotated[list[dict], operator.add]
 
 
-  # this is the tool-calling graph node
+  # 这是工具调用图节点
   async def call_tool(state: State):
       ai_message = state["messages"][-1]
       tool_call = ai_message["tool_calls"][-1]
@@ -925,7 +925,7 @@ for chunk in graph.stream(
   )
   ```
 
-  Let's invoke the graph with an [`AIMessage`](https://reference.langchain.com/python/langchain-core/messages/ai/AIMessage) that includes a tool call:
+  让我们用包含工具调用的 [`AIMessage`](https://reference.langchain.com/python/langchain-core/messages/ai/AIMessage) 来调用图：
 
   ```python
   inputs = {
@@ -960,12 +960,11 @@ for chunk in graph.stream(
 
 </Accordion>
 
-### Disable streaming for specific chat models
+### 禁用特定聊天模型的流式输出
 
-If your application mixes models that support streaming with those that do not, you may need to explicitly disable streaming for
-models that do not support it.
+如果你的应用混合使用支持流式输出和不支持流式输出的模型，你可能需要显式禁用不支持流式输出的模型的流式功能。
 
-Set `streaming=False` when initializing the model.
+初始化模型时设置 `streaming=False`。
 
 <Tabs>
     <Tab title="init_chat_model">
@@ -974,16 +973,16 @@ Set `streaming=False` when initializing the model.
 
     model = init_chat_model(
         "claude-sonnet-4-6",
-        # Set streaming=False to disable streaming for the chat model
+        # 设置 streaming=False 以禁用聊天模型的流式输出
         streaming=False  # [!code highlight]
     )
     ```
     </Tab>
-    <Tab title="Chat model interface">
+    <Tab title="聊天模型接口">
     ```python
     from langchain_openai import ChatOpenAI
 
-    # Set streaming=False to disable streaming for the chat model
+    # 设置 streaming=False 以禁用聊天模型的流式输出
     model = ChatOpenAI(model="o1-preview", streaming=False)
     ```
     </Tab>
@@ -993,30 +992,30 @@ Set `streaming=False` when initializing the model.
 
 
 <Note>
-Not all chat model integrations support the `streaming` parameter. If your model doesn't support it, use `disable_streaming=True` instead. This parameter is available on all chat models via the base class.
+并非所有聊天模型集成都支持 `streaming` 参数。如果你的模型不支持，请改用 `disable_streaming=True`。此参数通过基类在所有聊天模型上可用。
 </Note>
 
 
 
 
-### Migrate to v2
+### 迁移到 v2
 
-The v2 streaming format (used throughout this page) provides a unified output format. Here's a summary of the key differences and how to migrate:
+v2 流式输出格式（本页全程使用）提供了统一的输出格式。以下是主要差异和迁移方法摘要：
 
-| Scenario | v1 (default) | v2 (`version="v2"`) |
+| 场景 | v1（默认） | v2 (`version="v2"`) |
 |---|---|---|
-| Single stream mode | Raw data (dict) | `StreamPart` dict with `type`, `ns`, `data` |
-| Multiple stream modes | `(mode, data)` tuples | Same `StreamPart` dict, filter on `chunk["type"]` |
-| Subgraph streaming | `(namespace, data)` tuples | Same `StreamPart` dict, check `chunk["ns"]` |
-| Multiple modes + subgraphs | `(namespace, mode, data)` triples | Same `StreamPart` dict |
-| `invoke()` return type | Plain dict (state) | `GraphOutput` with `.value` and `.interrupts` |
-| Interrupt location (stream) | `__interrupt__` key in state dict | `interrupts` field on `values` stream parts |
-| Interrupt location (invoke) | `__interrupt__` key in result dict | `.interrupts` attribute on `GraphOutput` |
-| Pydantic/dataclass output | Returns plain dict | Coerces to model/dataclass instance |
+| 单个流模式 | 原始数据（dict） | 带有 `type`、`ns`、`data` 的 `StreamPart` 字典 |
+| 多个流模式 | `(mode, data)` 元组 | 相同的 `StreamPart` 字典，按 `chunk["type"]` 过滤 |
+| 子图流式输出 | `(namespace, data)` 元组 | 相同的 `StreamPart` 字典，检查 `chunk["ns"]` |
+| 多模式 + 子图 | `(namespace, mode, data)` 三元组 | 相同的 `StreamPart` 字典 |
+| `invoke()` 返回类型 | 普通 dict（状态） | 带有 `.value` 和 `.interrupts` 的 `GraphOutput` |
+| 中断位置（stream） | 状态字典中的 `__interrupt__` 键 | `values` 流部分的 `interrupts` 字段 |
+| 中断位置（invoke） | 结果字典中的 `__interrupt__` 键 | `GraphOutput` 上的 `.interrupts` 属性 |
+| Pydantic/dataclass 输出 | 返回普通 dict | 强制转换为模型/dataclass 实例 |
 
-#### v2 invoke format
+#### v2 invoke 格式
 
-When you pass `version="v2"` to `invoke()` or `ainvoke()`, it returns a [`GraphOutput`](https://reference.langchain.com/python/langgraph/types/GraphOutput) object with `.value` and `.interrupts` attributes:
+当你将 `version="v2"` 传递给 `invoke()` 或 `ainvoke()` 时，它返回一个带有 `.value` 和 `.interrupts` 属性的 [`GraphOutput`](https://reference.langchain.com/python/langgraph/types/GraphOutput) 对象：
 
 ```python
 from langgraph.types import GraphOutput
@@ -1024,20 +1023,20 @@ from langgraph.types import GraphOutput
 result = graph.invoke(inputs, version="v2")
 
 assert isinstance(result, GraphOutput)
-result.value       # your output — dict, Pydantic model, or dataclass
-result.interrupts  # tuple[Interrupt, ...], empty if none occurred
+result.value       # 你的输出——dict、Pydantic 模型或 dataclass
+result.interrupts  # tuple[Interrupt, ...]，如果没有则为空
 ```
 
-With any stream mode other than the default `"values"`, `invoke(..., stream_mode="updates", version="v2")` returns `list[StreamPart]` instead of `list[tuple]`.
+使用 `"values"` 以外的任何流模式时，`invoke(..., stream_mode="updates", version="v2")` 返回 `list[StreamPart]` 而非 `list[tuple]`。
 
 <Warning>
-Dict-style access on `GraphOutput` (`result["key"]`, `"key" in result`, `result["__interrupt__"]`) still works for backwards compatibility but is **deprecated** and will be removed in a future version. Migrate to `result.value` and `result.interrupts`.
+`GraphOutput` 上的字典式访问（`result["key"]`、`"key" in result`、`result["__interrupt__"]`）为了向后兼容仍然有效，但**已弃用**，将在未来版本中移除。请迁移到 `result.value` 和 `result.interrupts`。
 </Warning>
 
-This separates state from interrupt metadata. With v1, interrupts are embedded in the returned dict under `__interrupt__`:
+这将状态与中断元数据分离。使用 v1 时，中断嵌入在 `__interrupt__` 下的返回字典中：
 
 <CodeGroup>
-```python v2 (new)
+```python v2（新版）
 config = {"configurable": {"thread_id": "thread-1"}}
 result = graph.invoke(inputs, config=config, version="v2")
 
@@ -1045,7 +1044,7 @@ if result.interrupts:
     print(result.interrupts[0].value)
     graph.invoke(Command(resume=True), config=config, version="v2")
 ```
-```python v1 (current default)
+```python v1（当前默认）
 config = {"configurable": {"thread_id": "thread-1"}}
 result = graph.invoke(inputs, config=config)
 
@@ -1055,9 +1054,9 @@ if "__interrupt__" in result:
 ```
 </CodeGroup>
 
-#### Pydantic and dataclass state coercion
+#### Pydantic 和 dataclass 状态强制转换
 
-When your graph state is a Pydantic model or dataclass, v2 `values` mode automatically coerces output to the correct type:
+当你的图状态是 Pydantic 模型或 dataclass 时，v2 的 `values` 模式会自动将输出强制转换为正确的类型：
 
 ```python
 from pydantic import BaseModel
@@ -1068,7 +1067,7 @@ class MyState(BaseModel):
     value: str
     items: Annotated[list[str], operator.add]
 
-# With version="v2", chunk["data"] is a MyState instance
+# 使用 version="v2" 时，chunk["data"] 是一个 MyState 实例
 for chunk in graph.stream(
     {"value": "x", "items": []}, stream_mode="values", version="v2"
 ):
@@ -1076,15 +1075,15 @@ for chunk in graph.stream(
 ```
 
 <a id="async"></a>
-### Async with Python < 3.11
+### Python < 3.11 的异步
 
-In Python versions < 3.11, [asyncio tasks](https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task) do not support the `context` parameter.
-This limits LangGraph ability to automatically propagate context, and affects LangGraph's streaming mechanisms in two key ways:
+在 Python < 3.11 版本中，[asyncio 任务](https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task)不支持 `context` 参数。
+这限制了 LangGraph 自动传播上下文的能力，并在两个关键方面影响了 LangGraph 的流式机制：
 
-1. You **must** explicitly pass [`RunnableConfig`](https://python.langchain.com/docs/concepts/runnables/#runnableconfig) into async LLM calls (e.g., `ainvoke()`), as callbacks are not automatically propagated.
-2. You **cannot** use [`get_stream_writer`](https://reference.langchain.com/python/langgraph/config/get_stream_writer) in async nodes or tools—you must pass a `writer` argument directly.
+1. 你**必须**显式将 [`RunnableConfig`](https://python.langchain.com/docs/concepts/runnables/#runnableconfig) 传递给异步 LLM 调用（例如 `ainvoke()`），因为回调不会自动传播。
+2. 你**不能**在异步节点或工具中使用 [`get_stream_writer`](https://reference.langchain.com/python/langgraph/config/get_stream_writer)——你必须直接传递 `writer` 参数。
 
-<Accordion title="Extended example: async LLM call with manual config">
+<Accordion title="扩展示例：带手动 config 的异步 LLM 调用">
   ```python
   from typing import TypedDict
   from langgraph.graph import START, StateGraph
@@ -1096,11 +1095,11 @@ This limits LangGraph ability to automatically propagate context, and affects La
       topic: str
       joke: str
 
-  # Accept config as an argument in the async node function
+  # 在异步节点函数中接受 config 作为参数
   async def call_model(state, config):
       topic = state["topic"]
-      print("Generating joke...")
-      # Pass config to model.ainvoke() to ensure proper context propagation
+      print("正在生成笑话...")
+      # 将 config 传递给 model.ainvoke() 以确保正确的上下文传播
       joke_response = await model.ainvoke(  # [!code highlight]
           [{"role": "user", "content": f"Write a joke about {topic}"}],
           config,
@@ -1114,7 +1113,7 @@ This limits LangGraph ability to automatically propagate context, and affects La
       .compile()
   )
 
-  # Set stream_mode="messages" to stream LLM tokens
+  # 设置 stream_mode="messages" 以流式输出 LLM Token
   async for chunk in graph.astream(
       {"topic": "ice cream"},
       stream_mode="messages",  # [!code highlight]
@@ -1127,7 +1126,7 @@ This limits LangGraph ability to automatically propagate context, and affects La
   ```
 </Accordion>
 
-<Accordion title="Extended example: async custom streaming with stream writer">
+<Accordion title="扩展示例：带流写入器的异步自定义流式输出">
   ```python
   from typing import TypedDict
   from langgraph.types import StreamWriter
@@ -1136,8 +1135,8 @@ This limits LangGraph ability to automatically propagate context, and affects La
         topic: str
         joke: str
 
-  # Add writer as an argument in the function signature of the async node or tool
-  # LangGraph will automatically pass the stream writer to the function
+  # 在异步节点或工具的函数签名中添加 writer 作为参数
+  # LangGraph 会自动将流写入器传递给函数
   async def generate_joke(state: State, writer: StreamWriter):  # [!code highlight]
         writer({"custom_key": "Streaming custom data while generating a joke"})
         return {"joke": f"This is a joke about {state['topic']}"}
@@ -1149,7 +1148,7 @@ This limits LangGraph ability to automatically propagate context, and affects La
         .compile()
   )
 
-  # Set stream_mode="custom" to receive the custom data in the stream  # [!code highlight]
+  # 设置 stream_mode="custom" 以在流中接收自定义数据  # [!code highlight]
   async for chunk in graph.astream(
         {"topic": "ice cream"},
         stream_mode="custom",
@@ -1164,9 +1163,9 @@ This limits LangGraph ability to automatically propagate context, and affects La
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/streaming.mdx) 或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/streaming.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

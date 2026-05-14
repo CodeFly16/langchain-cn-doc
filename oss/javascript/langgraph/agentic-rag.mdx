@@ -9,12 +9,12 @@ import AgenticRagAssembleGraphPy from '/snippets/code-samples/agentic-rag-assemb
 
 在本教程中，我们将使用 LangGraph 构建一个[检索](/oss/javascript/langchain/retrieval)智能体。
 
-LangChain 提供了内置的[智能体](/oss/javascript/langchain/agents)实现，使用 [LangGraph](/oss/javascript/langgraph/overview) 原语实现。如果需要更深层的自定义，可以直接在 LangGraph 中实现智能体。本指南演示了检索智能体的示例实现。[检索](/oss/javascript/langchain/retrieval)智能体在你希望 LLM 决定是否从向量存储检索上下文或直接回复用户时非常有用。
+LangChain 提供了内置的[智能体](/oss/javascript/langchain/agents)实现，使用 [LangGraph](/oss/javascript/langgraph/overview) 原语实现。如果需要更深层次的自定义，可以直接在 LangGraph 中实现智能体。本指南演示了一个检索智能体的示例实现。[检索](/oss/javascript/langchain/retrieval)智能体在你希望大语言模型(LLM)决定是从向量存储中检索上下文还是直接回复用户时非常有用。
 
 在本教程结束时，我们将完成以下工作：
 
-1. 获取和预处理将用于检索的文档。
-2. 为语义搜索索引这些文档，并为智能体创建检索工具。
+1. 获取和预处理用于检索的文档。
+2. 为语义搜索索引这些文档并为智能体创建检索工具。
 3. 构建一个能够决定何时使用检索工具的智能 RAG 系统。
 
 ![混合 RAG](/images/langgraph-hybrid-rag-tutorial.png)
@@ -53,14 +53,14 @@ bun add @langchain/langgraph @langchain/openai @langchain/community @langchain/t
 
 
 <Tip>
-  注册 LangSmith 以快速发现问题并提升 LangGraph 项目的性能。[LangSmith](https://docs.smith.langchain.com) 让你使用追踪数据来调试、测试和监控使用 LangGraph 构建的 LLM 应用。
+  注册 LangSmith 以快速发现问题并提高 LangGraph 项目的性能。[LangSmith](https://docs.smith.langchain.com) 让你使用追踪数据来调试、测试和监控使用 LangGraph 构建的大语言模型(LLM)应用。
 </Tip>
 
 ## 1. 预处理文档
 
 
 
-1. 获取用于 RAG 系统的文档。我们将使用 [Lilian Weng 优秀博客](https://lilianweng.github.io/)中最近的三个页面。我们首先使用 `CheerioWebBaseLoader` 获取页面内容：
+1. 获取用于 RAG 系统的文档。我们将使用 [Lilian Weng 的优秀博客](https://lilianweng.github.io/)中最近的三个页面。我们首先使用 `CheerioWebBaseLoader` 获取页面内容：
   ```typescript
   import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
 
@@ -74,7 +74,7 @@ bun add @langchain/langgraph @langchain/openai @langchain/community @langchain/t
     urls.map((url) => new CheerioWebBaseLoader(url).load()),
   );
   ```
-2. 将获取的文档分割成更小的块，以便索引到向量存储中：
+2. 将获取的文档分割成较小的块以索引到向量存储中：
   ```typescript
   import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
@@ -128,7 +128,7 @@ bun add @langchain/langgraph @langchain/openai @langchain/community @langchain/t
 
 
 
-1. 构建 `generateQueryOrRespond` 节点。它将调用 LLM 根据当前图状态（消息列表）生成响应。给定输入消息，它将决定使用检索工具进行检索，还是直接回复用户。注意我们通过 `.bindTools` 让聊天模型访问之前创建的 `tools`：
+1. 构建 `generateQueryOrRespond` 节点。它将调用大语言模型(LLM)根据当前图状态（消息列表）生成响应。根据输入消息，它将决定使用检索工具进行检索，还是直接回复用户。注意我们通过 `.bindTools` 让聊天模型访问之前创建的 `tools`：
   ```typescript
   import { ChatOpenAI } from "@langchain/openai";
   import { GraphNode } from "@langchain/langgraph";
@@ -160,7 +160,7 @@ bun add @langchain/langgraph @langchain/openai @langchain/community @langchain/t
     tool_calls: []
   }
   ```
-3. 提出一个需要语义搜索的问题：
+3. 提一个需要语义搜索的问题：
   ```typescript
   const input = {
     messages: [
@@ -186,11 +186,11 @@ bun add @langchain/langgraph @langchain/openai @langchain/community @langchain/t
   ```
 
 
-## 4. 评分文档
+## 4. 评估文档
 
 
 
-1. 添加一个节点——`gradeDocuments`——来确定检索到的文档是否与问题相关。我们将使用带有 Zod 结构化输出的模型进行文档评分。我们还将添加一个[条件边](/oss/javascript/langgraph/graph-api#conditional-edges)——`checkRelevance`——检查评分结果并返回要进入的节点名称（`generate` 或 `rewrite`）：
+1. 添加一个节点——`gradeDocuments`——来判断检索到的文档是否与问题相关。我们将使用带有 Zod 结构化输出的模型进行文档评分。我们还将添加一个[条件边](/oss/javascript/langgraph/graph-api#conditional-edges)——`checkRelevance`——检查评分结果并返回下一个要前往的节点名称（`generate` 或 `rewrite`）：
   ```typescript
   import * as z from "zod";
   import { ChatPromptTemplate } from "@langchain/core/prompts";
@@ -286,7 +286,7 @@ bun add @langchain/langgraph @langchain/openai @langchain/community @langchain/t
 
 
 
-1. 构建 `rewrite` 节点。检索工具可能返回不相关的文档，这表明需要改进原始用户问题。为此，我们将调用 `rewrite` 节点：
+1. 构建 `rewrite` 节点。检索工具可能会返回不相关的文档，这表明需要改进原始用户问题。为此，我们将调用 `rewrite` 节点：
   ```typescript
   import { ChatPromptTemplate } from "@langchain/core/prompts";
   import { ChatOpenAI } from "@langchain/openai";
@@ -315,7 +315,7 @@ bun add @langchain/langgraph @langchain/openai @langchain/community @langchain/t
     };
   }
   ```
-2. 试一下：
+2. 试试看：
   ```typescript
   import { HumanMessage, AIMessage, ToolMessage } from "@langchain/core/messages";
 
@@ -350,7 +350,7 @@ bun add @langchain/langgraph @langchain/openai @langchain/community @langchain/t
 
 
 
-1. 构建 `generate` 节点：如果我们通过了评分检查，可以根据原始问题和检索到的上下文生成最终答案：
+1. 构建 `generate` 节点：如果通过了评分检查，我们可以根据原始问题和检索到的上下文生成最终答案：
   ```typescript
   import { ChatPromptTemplate } from "@langchain/core/prompts";
   import { ChatOpenAI } from "@langchain/openai";
@@ -386,7 +386,7 @@ bun add @langchain/langgraph @langchain/openai @langchain/community @langchain/t
     };
   }
   ```
-2. 试一下：
+2. 试试看：
   ```typescript
   import { HumanMessage, AIMessage, ToolMessage } from "@langchain/core/messages";
 
@@ -428,11 +428,11 @@ bun add @langchain/langgraph @langchain/openai @langchain/community @langchain/t
 
 * 从 `generateQueryOrRespond` 开始，确定是否需要调用检索工具
 * 使用条件边路由到下一步：
-  * 如果 `generateQueryOrRespond` 返回了 `tool_calls`，调用检索工具获取上下文
+  * 如果 `generateQueryOrRespond` 返回了 `tool_calls`，调用检索工具检索上下文
   * 否则，直接回复用户
-* 评估检索到的文档内容与问题的相关性（`gradeDocuments`），并路由到下一步：
+* 评估检索到的文档内容与问题的相关性（`gradeDocuments`）并路由到下一步：
   * 如果不相关，使用 `rewrite` 重写问题，然后再次调用 `generateQueryOrRespond`
-  * 如果相关，进入 `generate` 并使用带有检索文档上下文的 [`ToolMessage`](https://reference.langchain.com/javascript/langchain-core/messages/ToolMessage) 生成最终回复
+  * 如果相关，继续到 `generate`，使用包含检索文档上下文的 [`ToolMessage`](https://reference.langchain.com/javascript/langchain-core/messages/ToolMessage) 生成最终响应
 
 ```typescript
 import { StateGraph, START, END, ConditionalEdgeRouter } from "@langchain/langgraph";
@@ -466,7 +466,7 @@ const builder = new StateGraph(GraphState)
   // 文档评分后的边
   .addConditionalEdges(
     "gradeDocuments",
-    // 根据评分决策路由
+    // 基于评分决策路由
     (state) => {
       // gradeDocuments 函数返回 "generate" 或 "rewrite"
       const lastMessage = state.messages.at(-1);
@@ -483,7 +483,7 @@ const graph = builder.compile();
 
 ## 8. 运行智能 RAG
 
-现在让我们通过运行图来测试完整的系统：
+现在让我们用一个问题测试完整的图：
 
 
 
@@ -499,7 +499,7 @@ const inputs = {
 for await (const output of await graph.stream(inputs)) {
   for (const [key, value] of Object.entries(output)) {
     const lastMsg = output[key].messages[output[key].messages.length - 1];
-    console.log(`Output from node: '${key}'`);
+    console.log(`节点输出: '${key}'`);
     console.log({
       type: lastMsg._getType(),
       content: lastMsg.content,
@@ -513,7 +513,7 @@ for await (const output of await graph.stream(inputs)) {
 **输出：**
 
 ```
-Output from node: 'generateQueryOrRespond'
+节点输出: 'generateQueryOrRespond'
 {
   type: 'ai',
   content: '',
@@ -528,7 +528,7 @@ Output from node: 'generateQueryOrRespond'
 }
 ---
 
-Output from node: 'retrieve'
+节点输出: 'retrieve'
 {
   type: 'tool',
   content: '(Note: Some work defines reward tampering as a distinct category...\n' +
@@ -538,7 +538,7 @@ Output from node: 'retrieve'
 }
 ---
 
-Output from node: 'generate'
+节点输出: 'generate'
 {
   type: 'ai',
   content: 'Lilian Weng categorizes reward hacking into two types: environment or goal misspecification, and reward tampering. She considers reward hacking as a broad concept that includes both of these categories. Reward hacking occurs when an agent exploits flaws or ambiguities in the reward function to achieve high rewards without performing the intended behaviors.',
@@ -551,9 +551,9 @@ Output from node: 'generate'
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/agentic-rag.mdx) 或 [提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/agentic-rag.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

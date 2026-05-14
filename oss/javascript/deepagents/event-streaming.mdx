@@ -3,19 +3,19 @@ title: 事件流
 description: 从深度智能体流式输出子智能体、消息、工具调用和最终结果。
 ---
 
-深度智能体构建在 LangGraph 的 [事件流](/oss/javascript/langgraph/streaming/event-streaming) 模型之上，并添加了一流的 `subagents` 投影。当你需要面向应用程序的流时使用它 用于协调者智能体、委派的子智能体、嵌套消息、工具调用和最终状态。
+深度智能体基于 LangGraph 的[事件流](/oss/javascript/langgraph/streaming/event-streaming)模型构建，并添加了一流的 `subagents` 投影。当你需要面向应用的协调器智能体、委托子智能体、嵌套消息、工具调用和最终状态的流时，请使用它。
 
 <Tip>
-Check out the [streaming cookbook](https://github.com/langchain-ai/streaming-cookbook) for runnable examples and links to detailed reference documentation.
+查看[流式输出示例集](https://github.com/langchain-ai/streaming-cookbook)，获取可运行的示例和详细参考文档链接。
 </Tip>
 
 <Note>
-For information about lower-level Pregel stream modes, refer to the [Deep Agents streaming](/oss/javascript/deepagents/streaming) docs.
+有关底层 Pregel 流模式的信息，请参阅[深度智能体流式输出](/oss/javascript/deepagents/streaming)文档。
 </Note>
 
-## 流式子智能体
+## 流式输出子智能体
 
-Deep Agents add a subagent projection on top of LangGraph streaming. Use `run.subagents` when you want one stream handle per delegated `task` call. The projection discovers subagent tasks first, then opens message, tool-call, and value streams when you access them on a subagent handle.
+深度智能体在 LangGraph 流式输出之上添加了子智能体投影。当你需要为每个委托的 `task` 调用获取一个流句柄时，请使用 `run.subagents`。投影首先发现子智能体任务，然后在你访问子智能体句柄上的属性时打开消息、工具调用和值流。
 
 
 
@@ -38,29 +38,29 @@ for await (const subagent of run.subagents) {
 
 ## 子智能体流字段
 
-Each subagent stream exposes the same kinds of projections as the parent run, such as messages, tool calls, nested subagents, and final output. For the general parent-run streaming model, see [LangChain Event Streaming](/oss/javascript/langchain/event-streaming).
+每个子智能体流都暴露与父级运行相同类型的投影，例如消息、工具调用、嵌套子智能体和最终输出。有关通用的父级运行流模型，请参阅 [LangChain 事件流](/oss/javascript/langchain/event-streaming)。
 
 
 
-TypeScript uses camelCase projection names such as `toolCalls` and `taskInput`.
+TypeScript 使用驼峰命名法的投影名称，例如 `toolCalls` 和 `taskInput`。
 
 
-| Field | 描述 |
+| 字段 | 描述 |
 | ----- | ----------- |
-| `name` | Subagent name. |
-| `messages` | Messages emitted by the subagent. |
-| `subagents` | Nested subagent invocations. |
-| `output` | Final subagent state, or completion signal for the delegated task. |
+| `name` | 子智能体名称。 |
+| `messages` | 子智能体发出的消息。 |
+| `subagents` | 嵌套子智能体调用。 |
+| `output` | 最终子智能体状态，或委托任务的完成信号。 |
 
-| `taskInput` | Promise for the prompt passed to the task tool. |
-| `callId` | Tool-call ID for the delegated task. |
-| `namespace` | Namespace path for the subagent run. |
-| `toolCalls` | Tool calls scoped to the subagent. |
+| `taskInput` | 传递给 task 工具的提示的 Promise。 |
+| `callId` | 委托任务的工具调用 ID。 |
+| `namespace` | 子智能体运行的命名空间路径。 |
+| `toolCalls` | 限定在子智能体范围内的工具调用。 |
 
 
 ## 跟踪子智能体生命周期
 
-Use `run.subagents` when you only need to show which subagents started and finished. You do not need to subscribe to message or value streams unless you access those projections on an individual subagent.
+当你只需要显示哪些子智能体已启动和完成时，请使用 `run.subagents`。除非你访问单个子智能体上的那些投影，否则不需要订阅消息或值流。
 
 
 
@@ -97,9 +97,9 @@ console.log({ running, completed, failed });
 ```
 
 
-## 流式消息和工具
+## 流式输出消息和工具
 
-Deep Agents can emit messages and tool calls from the coordinator agent and from delegated subagents. Use `run.messages` or `run.tool_calls` for coordinator streams, then access the same projections on each subagent.
+深度智能体可以从协调器智能体和委托的子智能体发出消息和工具调用。使用 `run.messages` 或 `run.tool_calls` 获取协调器流，然后在每个子智能体上访问相同的投影。
 
 
 
@@ -125,11 +125,11 @@ for await (const subagent of run.subagents) {
 
 ## 并发消费
 
-Coordinator and subagent output often interleave. Consume projections concurrently when you need live UI updates.
+协调器和子智能体的输出经常交错出现。当你需要实时 UI 更新时，请并发消费投影。
 
 
 
-Use concurrent consumers in JavaScript:
+在 JavaScript 中使用并发消费者：
 
 ```typescript
 const run = await agent.streamEvents(input, { version: "v3" });
@@ -155,16 +155,16 @@ await Promise.all([
 
 ## 相关资源
 
-- [Streaming cookbook](https://github.com/langchain-ai/streaming-cookbook) shows runnable Event Streaming examples.
-- [LangChain Event Streaming](/oss/javascript/langchain/event-streaming) covers general agent message and tool-call streaming concepts.
-- [Subagent frontend streaming](/oss/javascript/deepagents/frontend/subagent-streaming) shows UI patterns that separate coordinator messages from subagent cards.
-- [LangGraph Event Streaming](/oss/javascript/langgraph/streaming/event-streaming) covers the underlying graph streaming model.
+- [流式输出示例集](https://github.com/langchain-ai/streaming-cookbook)展示了可运行的事件流示例。
+- [LangChain 事件流](/oss/javascript/langchain/event-streaming)涵盖通用智能体消息和工具调用流概念。
+- [子智能体前端流式输出](/oss/javascript/deepagents/frontend/subagent-streaming)展示将协调器消息与子智能体卡片分离的 UI 模式。
+- [LangGraph 事件流](/oss/javascript/langgraph/streaming/event-streaming)涵盖底层图流模型。
 
 ---
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时解答。
 </Callout>
 <Callout icon="edit">
     [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/event-streaming.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。

@@ -4,16 +4,16 @@ description: 打包深度智能体在选择模型时应用的按提供商和按�
 ---
 
 <Note>
-    Harness and provider profiles are Python-only and require `deepagents>=0.5.4`. They are public beta APIs and may be updated in future releases.
+    框架配置文件和提供商配置文件仅限 Python，需要 `deepagents>=0.5.4`。它们是公开测试版 API，可能在未来版本中更新。
 </Note>
 
-**框架配置** let you package configuration that Deep Agents applies whenever a given provider or specific model is selected: system-prompt tweaks, tool description overrides, excluded tools or middleware, extra middleware, and general-purpose subagent edits. They are the main way to tune how the harness behaves for a particular model without changing your `create_deep_agent` call site. Use `HarnessProfile` when building profiles in Python; use `HarnessProfileConfig` when [loading or saving YAML/JSON files](#load-profiles-from-config-files). Deep Agents ships built-in harness profiles for OpenAI and Anthropic (Claude) models.
+**框架配置文件**让你打包深度智能体在选择给定提供商或特定模型时应用的配置：系统提示调整、工具描述覆盖、排除的工具或中间件、额外的中间件，以及通用子智能体编辑。它们是在不更改 `create_deep_agent` 调用处的情况下调优框架对特定模型行为的主要方式。在 Python 中构建配置文件时使用 `HarnessProfile`；在[加载或保存 YAML/JSON 文件](#load-profiles-from-config-files)时使用 `HarnessProfileConfig`。深度智能体为 OpenAI 和 Anthropic（Claude）模型内置了框架配置文件。
 
-**Provider profiles** are a narrower companion API for *model-construction* kwargs, which don't affect the harness. Most callers don't need them; reach for one when you want `init_chat_model` defaults, credential checks, or runtime-derived kwargs as defaults with your provider choice (for example, when packaging a provider integration).
+**提供商配置文件**是一个更窄的配套 API，用于*模型构建* kwargs，不影响框架。大多数调用者不需要它们；当你需要 `init_chat_model` 的默认值、凭据检查或运行时派生的 kwargs 作为提供商选择的默认值时使用（例如，打包提供商集成时）。
 
-## 框架配置
+## 框架配置文件
 
-A `HarnessProfile` describes prompt-assembly, tool-visibility, middleware, and default-subagent adjustments that `create_deep_agent` applies after the chat model has been constructed:
+`HarnessProfile` 描述了在聊天模型构建完成后 `create_deep_agent` 应用的提示组装、工具可见性、中间件和默认子智能体调整：
 
 ```python
 from deepagents import (
@@ -34,90 +34,90 @@ register_harness_profile(
 ```
 
 <ResponseField name="base_system_prompt" type="string">
-    Replace the base Deep Agents system prompt (`CUSTOM` in [Prompt assembly](/oss/javascript/deepagents/customization#prompt-assembly)).
+    替换基础深度智能体系统提示（[提示组装](/oss/javascript/deepagents/customization#prompt-assembly)中的 `CUSTOM`）。
 </ResponseField>
 
 <ResponseField name="system_prompt_suffix" type="string">
-    Append text to the assembled base prompt (`SUFFIX` in [Prompt assembly](/oss/javascript/deepagents/customization#prompt-assembly)); applied to the main agent, declarative subagents, and the auto-added general-purpose subagent.
+    追加文本到已组装的基础提示（[提示组装](/oss/javascript/deepagents/customization#prompt-assembly)中的 `SUFFIX`）；应用于主智能体、声明式子智能体和自动添加的通用子智能体。
 </ResponseField>
 
 <ResponseField name="tool_description_overrides" type="Mapping[str, str]">
-    Override individual tool descriptions, keyed by tool name.
+    按工具名称键控覆盖各个工具描述。
 </ResponseField>
 
 <ResponseField name="excluded_tools" type="frozenset[str]">
-    Remove specific harness-level tools from the tool set. Matched by tool name (string), applied as a post-injection filter so it can drop both user-supplied tools and tools added by harness middleware. See [Running without the default filesystem tools](/oss/javascript/deepagents/harness#virtual-filesystem-access) for a worked example.
+    从工具集中移除特定的框架级工具。按工具名称（字符串）匹配，作为后注入过滤器应用，因此它可以同时移除用户提供的工具和框架中间件添加的工具。参阅[不使用默认文件系统工具运行](/oss/javascript/deepagents/harness#virtual-filesystem-access)获取实际示例。
 </ResponseField>
 
 <ResponseField name="excluded_middleware" type="frozenset[type[AgentMiddleware] | str]">
-    Strip specific middleware classes from the stack. Accepts middleware classes or string names.
+    从栈中移除特定中间件类。接受中间件类或字符串名称。
 </ResponseField>
 
 <ResponseField name="extra_middleware" type="Sequence[AgentMiddleware] | Callable[[], Sequence[AgentMiddleware]]">
-    Append middleware to every stack this profile applies to.
+    向此配置文件应用的每个栈追加中间件。
 </ResponseField>
 
 <ResponseField name="general_purpose_subagent" type="GeneralPurposeSubagentProfile">
-    Disable, rename, or re-prompt the general-purpose subagent. When this field's `system_prompt` is set alongside `base_system_prompt`, the general-purpose-specific subagent prompt wins—see [General-purpose subagent prompt](/oss/javascript/deepagents/customization#general-purpose-subagent-prompt).
+    禁用、重命名或重新提示通用子智能体。当此字段的 `system_prompt` 与 `base_system_prompt` 一起设置时，通用子智能体特定的提示优先——参阅[通用子智能体提示](/oss/javascript/deepagents/customization#general-purpose-subagent-prompt)。
 </ResponseField>
 
 <Note>
-    Caller-supplied `system_prompt=` always sits at the front of the assembled prompt, and `system_prompt_suffix` always sits at the end—regardless of which model is selected. The same overlay rules apply to subagents: each subagent re-runs profile resolution against its own model. See [Prompt assembly](/oss/javascript/deepagents/customization#prompt-assembly)了解完整的per-case breakdown (main agent, subagents, and the general-purpose subagent).
+    调用者提供的 `system_prompt=` 始终位于已组装提示的前端，`system_prompt_suffix` 始终位于末尾——无论选择了哪个模型。相同的叠加规则适用于子智能体：每个子智能体针对其自身模型重新运行配置文件解析。参阅[提示组装](/oss/javascript/deepagents/customization#prompt-assembly)获取完整的逐情况分析（主智能体、子智能体和通用子智能体）。
 </Note>
 
 <Warning>
-    To run an agent without the `task` tool, see [Running without subagents](/oss/javascript/deepagents/subagents#running-without-subagents) — set `general_purpose_subagent=GeneralPurposeSubagentProfile(enabled=False)` and pass no synchronous subagents via `subagents=`. `SubAgentMiddleware` (and the `task` tool) is only attached when at least one synchronous subagent exists, so this configuration leaves it out cleanly. Async subagents are unaffected.
+    要不使用 `task` 工具运行智能体，请参阅[不使用子智能体运行](/oss/javascript/deepagents/subagents#running-without-subagents)——设置 `general_purpose_subagent=GeneralPurposeSubagentProfile(enabled=False)` 且不通过 `subagents=` 传入同步子智能体。`SubAgentMiddleware`（和 `task` 工具）仅在至少存在一个同步子智能体时才附加，因此此配置会干净地将其排除。异步子智能体不受影响。
 
-    Listing `FilesystemMiddleware`, `SubAgentMiddleware`, or the internal permission middleware in `excluded_middleware` raises a `ValueError` — they're required scaffolding. To hide their tools from the model without removing the middleware, use `excluded_tools` instead — see [Running without the default filesystem tools](/oss/javascript/deepagents/harness#virtual-filesystem-access).
+    在 `excluded_middleware` 中列出 `FilesystemMiddleware`、`SubAgentMiddleware` 或内部权限中间件会引发 `ValueError`——它们是必需的脚手架。要在不移除中间件的情况下对模型隐藏其工具，请使用 `excluded_tools`——参阅[不使用默认文件系统工具运行](/oss/javascript/deepagents/harness#virtual-filesystem-access)。
 </Warning>
 
-Entries in `excluded_middleware` accept two forms:
+`excluded_middleware` 中的条目接受两种形式：
 
-- A middleware *class* (matched by exact type), or a plain string that matches `AgentMiddleware.name`. Use plain strings for built-ins and public aliases such as `"SummarizationMiddleware"`.
-- An `module:Class` import ref (for example, `"my_pkg.middleware:TelemetryMiddleware"`) to target an exact middleware class from a config file. Import refs resolve lazily, so use them only for trusted local configuration — loading one imports Python code.
+- 中间件*类*（按精确类型匹配），或匹配 `AgentMiddleware.name` 的纯字符串。对内置和公共别名如 `"SummarizationMiddleware"` 使用纯字符串。
+- `module:Class` 导入引用（例如 `"my_pkg.middleware:TelemetryMiddleware"`），用于从配置文件中精确定位中间件类。导入引用惰性解析，因此仅用于受信任的本地配置——加载一个会导入 Python 代码。
 
 <Accordion
-    title="Lookup order for preconfigured model instances"
+    title="预配置模型实例的查找顺序"
 >
-    When you pass a preconfigured chat model instance instead of a `provider:model` string, the harness synthesizes the canonical `provider:identifier` key from the instance and looks it up in this order:
+    当你传入预配置的聊天模型实例而非 `provider:model` 字符串时，框架从实例合成规范的 `provider:identifier` 键并按以下顺序查找：
 
-    1. Exact `provider:identifier` match
-    2. Identifier-only (only when the identifier already contains `:`)
-    3. Provider-only fallback
+    1. 精确的 `provider:identifier` 匹配
+    2. 仅标识符（仅当标识符已包含 `:` 时）
+    3. 仅提供商回退
 </Accordion>
 
 
-## Registration keys
+## 注册键
 
-Both profile types use the same key format:
+两种配置文件类型使用相同的键格式：
 
-- **Provider-level** — a bare provider name like `"openai"` applies to every model from that provider.
-- **Model-level** — a fully qualified `provider:model` key like `"openai:gpt-5.4"` applies only to that specific model.
+- **提供商级别** — 类似 `"openai"` 的纯提供商名称适用于该提供商的每个模型。
+- **模型级别** — 类似 `"openai:gpt-5.4"` 的完全限定 `provider:model` 键仅适用于该特定模型。
 
-When both a provider-level and a model-level profile exist, they are merged at resolution time. Unset model-level fields inherit from the provider-level profile; explicit model-level values override them.
+当提供商级别和模型级别的配置文件都存在时，它们在解析时合并。未设置的模型级别字段从提供商级别配置文件继承；显式的模型级别值覆盖它们。
 
-Re-registering under an existing key merges the new profile on top of the prior one—it does not replace it. See [Merge semantics](#merge-semantics) for the per-field rules.
+在现有键下重新注册会将新配置文件合并到先前的配置文件之上——而不是替换它。参阅[合并语义](#merge-semantics)了解逐字段规则。
 
 <Note>
-    There is no wildcard key that matches every provider. To apply the same overrides everywhere—say, dropping `TodoListMiddleware` regardless of which model is selected—register the profile under each provider key you use. Profiles are intended for adjustments that depend on the model being selected. Global adjustments that should apply regardless of model should be made on the `create_deep_agent` call site.
+    没有匹配所有提供商的通配符键。要将相同的覆盖应用到所有地方——比如无论选择哪个模型都移除 `TodoListMiddleware`——请在你使用的每个提供商键下注册配置文件。配置文件用于依赖所选模型的调整。应该无论模型如何都适用的全局调整应在 `create_deep_agent` 调用处进行。
 </Note>
 
-## Merge semantics
+## 合并语义
 
-| Field | Merge behavior |
+| 字段 | 合并行为 |
 | --- | --- |
-| `base_system_prompt`, `system_prompt_suffix` | New value wins when set; otherwise inherits |
-| `tool_description_overrides` | Mappings merge per key; new value wins on a shared key |
-| `excluded_tools`, `excluded_middleware` | Set union |
-| `extra_middleware` | Merged by concrete class: new instance replaces existing at its position, novel classes append |
-| `general_purpose_subagent` | Merged field-wise (unset fields inherit) |
-| `init_kwargs` (provider) | Dicts merge key-wise; new value wins on a shared key |
-| `pre_init` (provider) | Callables chain: existing runs first, then the new one |
-| `init_kwargs_factory` (provider) | Factories chain with their outputs merged every `resolve_model` call |
+| `base_system_prompt`、`system_prompt_suffix` | 设置时新值优先；否则继承 |
+| `tool_description_overrides` | 映射按键合并；共享键上新值优先 |
+| `excluded_tools`、`excluded_middleware` | 集合并集 |
+| `extra_middleware` | 按具体类合并：新实例替换其位置上的现有实例，新类追加 |
+| `general_purpose_subagent` | 按字段合并（未设置的字段继承） |
+| `init_kwargs`（提供商） | 字典按键合并；共享键上新值优先 |
+| `pre_init`（提供商） | 可调用链：先运行现有的，然后运行新的 |
+| `init_kwargs_factory`（提供商） | 工厂链，每次 `resolve_model` 调用时合并其输出 |
 
-## Provider profiles
+## 提供商配置文件
 
-A `ProviderProfile` declares how Deep Agents should construct a chat model for a given provider or specific model spec. It applies only when you provide a `provider:model` string when creating the deep agent, not when you pass a preconfigured model with [`init_chat_model`](https://reference.langchain.com/javascript/langchain/chat_models/universal/initChatModel):
+`ProviderProfile` 声明深度智能体应如何为给定提供商或特定模型规格构建聊天模型。它仅在你创建深度智能体时提供 `provider:model` 字符串时应用，当你使用 [`init_chat_model`](https://reference.langchain.com/javascript/langchain/chat_models/universal/initChatModel) 传入预配置模型时不应用：
 
 ```python
 from deepagents import ProviderProfile, register_provider_profile
@@ -129,22 +129,22 @@ register_provider_profile(
 ```
 
 <ResponseField name="init_kwargs" type="Mapping[str, Any]">
-    Static initialization arguments forwarded to `init_chat_model`.
+    转发给 `init_chat_model` 的静态初始化参数。
 </ResponseField>
 
 <ResponseField name="pre_init" type="Callable[[str], None]">
-    Side effects to run before construction (for example, credential validation).
+    在构建前运行的副作用（例如凭据验证）。
 </ResponseField>
 
 <ResponseField name="init_kwargs_factory" type="Callable[[], dict[str, Any]]">
-    Kwargs derived from runtime state (for example, headers pulled from environment variables).
+    从运行时状态派生的 kwargs（例如从环境变量中拉取的标头）。
 </ResponseField>
 
-## Load profiles from config files
+## 从配置文件加载配置
 
-For YAML/JSON-backed workflows, use `HarnessProfileConfig`. It mirrors the declarative subset of `HarnessProfile` (prompt text, tool-description overrides, excluded tools and middleware, general-purpose subagent edits) and owns `to_dict` / `from_dict`. Runtime-only state — middleware instances, factories, and class-form `excluded_middleware` entries — stays on `HarnessProfile`.
+对于 YAML/JSON 支持的工作流，请使用 `HarnessProfileConfig`。它镜像了 `HarnessProfile` 的声明式子集（提示文本、工具描述覆盖、排除的工具和中间件、通用子智能体编辑）并拥有 `to_dict` / `from_dict`。运行时专用状态——中间件实例、工厂和类形式的 `excluded_middleware` 条目——保留在 `HarnessProfile` 上。
 
-`register_harness_profile` accepts either type, so config-backed callers don't need a manual conversion step:
+`register_harness_profile` 接受任一类型，因此配置支持的调用者不需要手动转换步骤：
 
 ```yaml
 # openai.yaml
@@ -171,16 +171,16 @@ with open("openai.yaml") as f:
     )
 ```
 
-To go the other direction, `HarnessProfileConfig.from_harness_profile(...)` exports a runtime profile back to the declarative shape when it only uses serializable features:
+反向操作时，`HarnessProfileConfig.from_harness_profile(...)` 在运行时配置文件仅使用可序列化功能时将其导出回声明式形状：
 
-- Class-form `excluded_middleware` entries serialize as a public alias (when the class exposes one via `serialized_name: ClassVar[str]`) or as a `module:Class` import ref.
-- Non-empty `extra_middleware` and middleware classes declared in `__main__` or inside a function scope cannot be serialized — export raises `ValueError`.
+- 类形式的 `excluded_middleware` 条目序列化为公共别名（当类通过 `serialized_name: ClassVar[str]` 暴露时）或 `module:Class` 导入引用。
+- 非空的 `extra_middleware` 和在 `__main__` 中或函数范围内声明的中间件类无法序列化——导出会引发 `ValueError`。
 
-## Ship a profile as a plugin
+## 将配置文件作为插件发布
 
-Distributable profiles can register themselves via `importlib.metadata` entry points instead of requiring callers to run `register_*_profile` by hand. Load order is **built-ins first, then entry-point plugins, then any direct `register_*_profile` calls in user code**; all three paths funnel through the same additive registration, so later registrations layer on top of earlier ones under the same key.
+可分发的配置文件可以通过 `importlib.metadata` 入口点注册自己，而不是要求调用者手动运行 `register_*_profile`。加载顺序是**内置优先，然后入口点插件，最后用户代码中的任何直接 `register_*_profile` 调用**；所有三种路径都汇聚到相同的累加注册，因此后续注册在相同键下叠加在先前的之上。
 
-Declare an entry point in the distribution's own `pyproject.toml` under the appropriate group:
+在发行版自身的 `pyproject.toml` 中在适当的组下声明入口点：
 
 ```toml
 [project.entry-points."deepagents.harness_profiles"]
@@ -190,7 +190,7 @@ my_provider = "my_pkg.profiles:register_harness"
 my_provider = "my_pkg.profiles:register_provider"
 ```
 
-Each target resolves to a zero-arg callable that performs the registrations when `deepagents.profiles` is imported:
+每个目标解析为一个零参数可调用，在 `deepagents.profiles` 被导入时执行注册：
 
 ```python
 from deepagents import (
@@ -217,15 +217,15 @@ def register_provider() -> None:
 
 ## 相关资源
 
-- [Harness](/oss/javascript/deepagents/harness) — overview of harness capabilities
-- [Models](/oss/javascript/deepagents/models) — configure model providers and parameters
-- [Customization](/oss/javascript/deepagents/customization) — full `create_deep_agent` configuration surface
+- [框架](/oss/javascript/deepagents/harness) — 框架能力概述
+- [模型](/oss/javascript/deepagents/models) — 配置模型提供商和参数
+- [自定义](/oss/javascript/deepagents/customization) — 完整的 `create_deep_agent` 配置接口
 
 ---
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时解答。
 </Callout>
 <Callout icon="edit">
     [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/profiles.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。

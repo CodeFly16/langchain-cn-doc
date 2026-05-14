@@ -4,7 +4,7 @@ sidebarTitle: LangChain vs. LangGraph vs. 深度智能体
 description: 理解 LangChain、LangGraph 和深度智能体之间的区别，以及何时使用各自
 ---
 
-LangChain 维护多个开源包来帮助你构建智能体。每个包在智能体开发栈中服务于不同的目的。理解[智能体框架](#agent-frameworks-like-langchain)、[智能体运行时](#agent-runtimes-like-langgraph)和[智能体 Harness](#agent-harnesses-like-the-deep-agents-sdk)之间的区别有助于你选择合适的工具。
+LangChain 维护多个开源包来帮助你构建智能体。每个包在智能体开发栈中服务于不同的目的。理解[智能体框架](#agent-frameworks-like-langchain)、[智能体运行时](#agent-runtimes-like-langgraph)和[智能体 Harness](#agent-harnesses-like-the-deep-agents-sdk) 之间的区别，有助于你为需求选择正确的工具。
 
 <table className="products-page">
   <thead>
@@ -17,14 +17,14 @@ LangChain 维护多个开源包来帮助你构建智能体。每个包在智能�
   </thead>
   <tbody>
     <tr>
-      <td>核心价值</td>
-      <td class="tdlist"><ul><li>抽象</li><li>集成</li></ul></td>
-      <td class="tdlist"><ul><li>持久执行</li><li>流式输出</li><li>人机协作</li><li>持久化</li></ul></td>
-      <td class="tdlist"><ul><li>预定义工具</li><li>提示词</li><li>子智能体</li></ul></td>
+      <td>价值</td>
+      <td class="tdlist"><ul><li>抽象层</li><li>集成</li></ul></td>
+      <td class="tdlist"><ul><li>持久化执行</li><li>流式输出</li><li>人机协作</li><li>持久化</li></ul></td>
+      <td class="tdlist"><ul><li>预定义工具</li><li>提示</li><li>子智能体</li></ul></td>
     </tr>
     <tr>
-      <td>何时使用</td>
-      <td class="tdlist"><ul><li>快速上手</li><li>标准化团队构建方式</li></ul></td>
+      <td>适用场景</td>
+      <td class="tdlist"><ul><li>快速入门</li><li>标准化团队构建方式</li></ul></td>
       <td class="tdlist"><ul><li>底层控制</li><li>长时间运行的有状态工作流和智能体</li></ul></td>
       <td class="tdlist"><ul><li>更自主的智能体</li><li>面对复杂、非确定性任务的智能体</li></ul></td>
     </tr>
@@ -32,20 +32,20 @@ LangChain 维护多个开源包来帮助你构建智能体。每个包在智能�
       <td>选项</td>
       <td class="tdlist"><ul><li>LangChain</li><li>Vercel AI SDK</li><li>CrewAI</li><li>OpenAI Agents SDK</li><li>Google ADK</li><li>LlamaIndex</li></ul></td>
       <td class="tdlist"><ul><li>LangGraph</li><li>Temporal</li><li>Inngest</li></ul></td>
-      <td class="tdlist"><ul><li>深度智能体 SDK</li><li>Claude Agent SDK</li><li>Manus</li></ul></td>
+      <td class="tdlist"><ul><li>Deep Agents SDK</li><li>Claude Agent SDK</li><li>Manus</li></ul></td>
     </tr>
   </tbody>
 </table>
 
 ## 智能体框架（如 LangChain）
 
-智能体框架提供抽象，使使用大语言模型(LLM)构建更容易上手。
+智能体框架提供抽象层，使构建 LLM 应用更容易入门。
 
 [LangChain](/oss/python/langchain/overview) 是一个智能体框架，提供结构化内容块、智能体循环和中间件等抽象。
 
-LangChain 的抽象设计为易于上手，同时仍为高级用例提供所需的灵活性。
+LangChain 的抽象设计为易于入门，同时仍为高级用例提供所需的灵活性。
 
-虽然 LangChain 构建在 [LangGraph](/oss/python/langgraph/overview) 之上，但你不需要了解 LangGraph 就能使用 LangChain。
+虽然 LangChain 构建在 [LangGraph](/oss/python/langgraph/overview) 之上，但你不需要了解 LangGraph 就可以使用 LangChain。
 
 其他智能体框架的例子包括 [Vercel AI SDK](https://ai-sdk.dev/docs/introduction)、[CrewAI](https://www.crewai.com/)、[OpenAI Agents SDK](https://openai.github.io/openai-agents-python/)、[Google ADK](https://google.github.io/adk-docs/)、[LlamaIndex](https://www.llamaindex.ai/) 等。
 
@@ -53,69 +53,73 @@ LangChain 的抽象设计为易于上手，同时仍为高级用例提供所需�
 
 在以下情况下使用 LangChain：
 
-- 你想快速构建智能体和自主应用。
+- 你希望快速构建智能体和自主应用。
 - 你需要模型、工具和智能体循环的标准抽象。
-- 你想要一个易于使用但仍提供灵活性的框架。
-- 你正在构建不需要复杂编排的简单智能体应用。
+- 你需要一个易于使用但仍提供灵活性的框架。
+- 你正在构建没有复杂编排需求的简单智能体应用。
 
 ## 智能体运行时（如 LangGraph）
 
-智能体运行时提供在生产中运行智能体的工具。支持的工具可能包括：
+智能体运行时提供在生产环境中运行智能体的工具。
+支持的工具可能包括：
 
-- **持久执行**：智能体在故障中持久存在，可以长时间运行，从中断处恢复。
+- **持久化执行**：智能体可在故障后持续运行并长时间运行，从中断处恢复。
 - **流式输出**：支持流式工作流和响应。
-- **人机协作**：通过检查和修改智能体状态来纳入人工监督。
+- **人机协作**：通过检查和修改智能体状态纳入人工监督。
 - **持久化**：线程级和跨线程的状态管理持久化。
-- **底层控制**：直接控制智能体编排，无需高层抽象。
+- **底层控制**：无需高级抽象直接控制智能体编排。
 
 [LangGraph](/oss/python/langgraph/overview) 是一个底层编排框架和运行时，用于构建、管理和部署长时间运行的有状态智能体。
 
-智能体框架通常更高层，运行在智能体运行时之上。例如，LangChain 1.0 构建在 LangGraph 之上。
+智能体框架通常是更高层的，运行在智能体运行时之上。
+例如，LangChain 1.0 构建在 LangGraph 之上。
 
-其他智能体运行时的例子包括 [Temporal](https://temporal.io/)、[Inngest](https://www.inngest.com/) 和其他持久执行引擎。
+其他智能体运行时的例子包括 [Temporal](https://temporal.io/)、[Inngest](https://www.inngest.com/) 和其他持久化执行引擎。
 
 ### 何时使用 LangGraph
 
 在以下情况下使用 LangGraph：
 
-- 你需要对智能体编排的细粒度、底层控制。
-- 你需要长时间运行的有状态智能体的持久执行。
+- 你需要对智能体编排进行细粒度的底层控制。
+- 你需要长时间运行的有状态智能体的持久化执行。
 - 你正在构建结合确定性和智能体步骤的复杂工作流。
 - 你需要用于智能体部署的生产就绪基础设施。
 
-## 智能体 Harness（如深度智能体 SDK）
+## 智能体 Harness（如 Deep Agents SDK）
 
-智能体 Harness 是具有明确观点的、开箱即用的框架，内置了用于构建复杂、长时间运行智能体的工具和能力。支持的工具可能包括：
+智能体 Harness 是具有内置工具和功能的有主见的、即开即用的框架，用于构建复杂的长时间运行智能体。
+支持的工具可能包括：
 
-- **规划能力**：使用待办列表跟踪多个任务。
-- **任务委派**：委派工作并使用子智能体保持上下文清洁。
-- **文件系统**：在不同的可插拔存储后端上读写文件。
+- **规划能力**：使用待办事项列表跟踪多个任务。
+- **任务委派**：委派工作并使用子智能体保持上下文整洁。
+- **文件系统**：在不同可插拔存储后端上读写文件。
 - **Token 管理**：对话历史摘要和大型工具结果驱逐。
 
-[深度智能体 SDK](/oss/python/deepagents/overview) 构建在 LangGraph 之上，添加了规划能力、用于上下文管理的文件系统、派生子智能体的能力等。深度智能体专为需要规划和分解的复杂多步骤任务设计。
+[Deep Agents SDK](/oss/python/deepagents/overview) 构建在 LangGraph 之上，增加了规划能力、用于上下文管理的文件系统、生成子智能体的能力等。
+深度智能体专为需要规划和分解的复杂多步骤任务而设计。
 
-示例任务包括处理搜索结果、脚本和其他存储在状态中的工件。
+示例任务包括处理搜索结果、脚本和状态中的其他工件。
 
 其他智能体 Harness 的例子包括 [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview)、[Manus](https://manus.im/) 和其他编程 CLI。
 
-### 何时使用深度智能体 SDK
+### 何时使用 Deep Agents SDK
 
-在以下情况下使用[深度智能体 SDK](/oss/python/deepagents/overview)：
+在以下情况下使用 [Deep Agents SDK](/oss/python/deepagents/overview)：
 
-- 你正在构建长时间运行的智能体。
+- 你正在构建需要长时间运行的智能体。
 - 你正在构建需要处理复杂多步骤任务的智能体。
-- 你想使用预定义工具，如文件系统操作、bash 执行和自动上下文工程。
-- 你想使用预定义的提示词和子智能体。
+- 你希望使用预定义工具，如文件系统操作、bash 执行和自动上下文工程。
+- 你希望使用预定义的提示和子智能体。
 
 ## 功能对比
 
-虽然你可以使用 LangChain、LangGraph 和深度智能体完成类似的任务，但集成的层级不同：
+虽然你可以使用 LangChain、LangGraph 和深度智能体完成类似任务，但它们的集成层级不同：
 
-| 功能 | LangChain | LangGraph | 深度智能体 |
+| 功能 | LangChain | LangGraph   | 深度智能体 |
 | ------- | --------- | ----------- | ----------- |
 | 短期记忆 | [短期记忆](/oss/python/langchain/short-term-memory) | [短期记忆](/oss/python/langgraph/add-memory#add-short-term-memory) | [`StateBackend`](/oss/python/deepagents/backends#statebackend) |
 | 长期记忆 | [长期记忆](/oss/python/langchain/long-term-memory) | [长期记忆](/oss/python/langgraph/add-memory#add-long-term-memory) | [长期记忆](/oss/python/deepagents/memory) |
-| 技能 | [多智能体技能](/oss/python/langchain/multi-agent/skills) | - | [技能](/oss/python/deepagents/skills) |
+| 技能  | [多智能体技能](/oss/python/langchain/multi-agent/skills) | - | [技能](/oss/python/deepagents/skills) |
 | 子智能体 | [多智能体子智能体](/oss/python/langchain/multi-agent/subagents) | [子图](/oss/python/langgraph/use-subgraphs) | [子智能体](/oss/python/deepagents/subagents) |
 | 人机协作 | [人机协作中间件](/oss/python/langchain/human-in-the-loop) | [中断](/oss/python/langgraph/interrupts) | [`interrupt_on` 参数](/oss/python/deepagents/harness#human-in-the-loop) |
 | 流式输出 | [智能体流式输出](/oss/python/langchain/streaming/overview) | [流式输出](/oss/python/langgraph/streaming) | [流式输出](/oss/python/deepagents/streaming/overview) |
@@ -130,9 +134,9 @@ LangChain 的抽象设计为易于上手，同时仍为高级用例提供所需�
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/concepts/products.mdx) 或[提交 Issue](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/concepts/products.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

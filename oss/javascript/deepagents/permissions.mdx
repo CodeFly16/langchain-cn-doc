@@ -22,46 +22,46 @@ import PermissionsCompositeBackendJs from '/snippets/code-samples/permissions-co
 import PermissionsCompositeBackendInvalidPy from '/snippets/code-samples/permissions-composite-backend-invalid-py.mdx';
 import PermissionsCompositeBackendInvalidJs from '/snippets/code-samples/permissions-composite-backend-invalid-js.mdx';
 
-Control which files and directories an agent can read or write to using declarative permission rules. Pass a list of rules to `permissions=` and the agent's built-in filesystem tools respect them.
+使用声明式权限规则控制智能体可以读写哪些文件和目录。将规则列表传入 `permissions=`，智能体的内置文件系统工具就会遵守这些规则。
 
 
 
 <Note>
-    Permissions require `deepagents>=1.9.1`.
+    权限需要 `deepagents>=1.9.1`。
 </Note>
 
 
-Permissions only apply to the built-in filesystem tools (`ls`, `read_file`, `glob`, `grep`, `write_file`, `edit_file`). Custom tools and MCP tools that access the filesystem are not covered. Permissions also do not apply to [sandbox backends](/oss/javascript/deepagents/sandboxes), which support arbitrary command execution via the `execute` tool.
+权限仅适用于内置文件系统工具（`ls`、`read_file`、`glob`、`grep`、`write_file`、`edit_file`）。自定义工具和访问文件系统的 MCP 工具不受覆盖。权限也不适用于[沙箱后端](/oss/javascript/deepagents/sandboxes)，因为沙箱通过 `execute` 工具支持任意命令执行。
 
 <Tip>
-Use `permissions` when you need **path-based allow/deny rules** on the built-in filesystem tools. Use [backend policy hooks](/oss/javascript/deepagents/backends#add-policy-hooks) when you need custom validation logic (rate limiting, audit logging, content inspection) or need to control custom tools.
+当你需要对内置文件系统工具的**基于路径的允许/拒绝规则**时，请使用 `permissions`。当你需要自定义验证逻辑（速率限制、审计日志、内容检查）或需要控制自定义工具时，请使用[后端策略钩子](/oss/javascript/deepagents/backends#add-policy-hooks)。
 </Tip>
 
-## Basic usage
+## 基本用法
 
 
 
-Pass a list of `FilesystemPermission` rules to `createDeepAgent`. Rules are evaluated in declaration order. The first matching rule wins. If no rule matches, the operation is allowed.
+将 `FilesystemPermission` 规则列表传入 `createDeepAgent`。规则按声明顺序评估。第一条匹配的规则生效。如果没有规则匹配，则允许操作。
 
 <PermissionsBasicJs />
 
 
 
-## Rule structure
+## 规则结构
 
 
 
-Each `FilesystemPermission` has three fields:
+每个 `FilesystemPermission` 有三个字段：
 
-| Field | Type | 描述 |
+| 字段 | 类型 | 描述 |
 |-------|------|-------------|
-| `operations` | `("read" \| "write")[]` | Operations this rule applies to. `"read"` covers `ls`, `read_file`, `glob`, `grep`. `"write"` covers `write_file`, `edit_file`. |
-| `paths` | `string[]` | Glob patterns for matching file paths (e.g., `["/workspace/**"]`). Supports `**` for recursive matching and `{a,b}` for alternation. |
-| `mode` | `"allow" \| "deny"` | Whether to allow or deny matching operations. Defaults to `"allow"`. |
+| `operations` | `("read" \| "write")[]` | 此规则适用的操作。`"read"` 覆盖 `ls`、`read_file`、`glob`、`grep`。`"write"` 覆盖 `write_file`、`edit_file`。 |
+| `paths` | `string[]` | 用于匹配文件路径的 glob 模式（例如 `["/workspace/**"]`）。支持 `**` 递归匹配和 `{a,b}` 交替。 |
+| `mode` | `"allow" \| "deny"` | 是允许还是拒绝匹配的操作。默认为 `"allow"`。 |
 
-Rules use first-match-wins evaluation: the first rule whose `operations` and `paths` match the current call determines the outcome. If no rule matches, the call is **allowed** (permissive default).
+规则使用先匹配优先评估：第一条 `operations` 和 `paths` 匹配当前调用的规则决定结果。如果没有规则匹配，调用将被**允许**（宽容默认值）。
 
-Paths must be absolute (start with `/`) and cannot contain `..` or `~`. Invalid paths throw at agent construction time.
+路径必须是绝对路径（以 `/` 开头），不能包含 `..` 或 `~`。无效路径会在智能体构建时抛出异常。
 
 
 
@@ -69,57 +69,57 @@ Paths must be absolute (start with `/`) and cannot contain `..` or `~`. Invalid 
 
 
 
-### Isolate to a workspace directory
+### 隔离到工作区目录
 
-Allow reads and writes only under `/workspace/` and deny everything else:
+仅允许在 `/workspace/` 下进行读写，拒绝其他所有操作：
 
 <PermissionsIsolateWorkspaceJs />
 
-### Protect specific files
+### 保护特定文件
 
 <PermissionsProtectFilesJs />
 
-### Read-only memory
+### 只读记忆
 
-Allow the agent to read memory files but prevent it from modifying them. 这在以下情况很有用 for organization-wide policies or shared knowledge bases that should only be updated by application code. See [read-only vs writable memory](/oss/javascript/deepagents/memory#read-only-vs-writable-memory)了解更多context.
+允许智能体读取记忆文件但阻止其修改。这对于组织范围的策略或共享知识库很有用，这些内容只应由应用代码更新。更多上下文请参阅[只读与可写记忆](/oss/javascript/deepagents/memory#read-only-vs-writable-memory)。
 
 <PermissionsReadOnlyMemoryJs />
 
-### Deny all access
+### 拒绝所有访问
 
-Block all reads and writes. This is a restrictive baseline you can layer more specific allow rules on top of:
+阻止所有读写。这是一个限制性基线，你可以在其之上叠加更具体的允许规则：
 
 <PermissionsDenyAllJs />
 
-### Rule ordering
+### 规则排序
 
-Because of first-match-wins, rule order matters. Place more specific rules before broader ones:
+由于先匹配优先，规则顺序很重要。将更具体的规则放在更宽泛的规则之前：
 
 <PermissionsRuleOrderingJs />
 
 
 
-## Subagent permissions
+## 子智能体权限
 
 
 
-[Subagents](/oss/javascript/deepagents/subagents) inherit the parent agent's permissions by default. To give a subagent different permissions, set the `permissions` field in its spec. This **replaces** the parent's rules entirely.
+[子智能体](/oss/javascript/deepagents/subagents)默认继承父智能体的权限。要给子智能体不同的权限，请在其规格中设置 `permissions` 字段。这将**完全替换**父级的规则。
 
 <PermissionsSubagentJs />
 
-To explicitly grant a subagent unrestricted access, set `permissions: []`. An empty array overrides the parent rules with no restrictions. Omitting `permissions` inherits from the parent.
+要显式授予子智能体不受限制的访问，请设置 `permissions: []`。空数组会用无限制覆盖父级规则。省略 `permissions` 则从父级继承。
 
 
 
-## Composite backends
+## 复合后端
 
 
 
-When using a `CompositeBackend` with a sandbox default, every permission path must be scoped under a known route prefix. Sandboxes support arbitrary command execution, so path-based restrictions alone cannot prevent filesystem access through shell commands. Scoping permissions to route-specific [backends](/oss/javascript/deepagents/backends) avoids this conflict.
+当使用带沙箱默认后端的 `CompositeBackend` 时，每个权限路径必须限定在已知的路由前缀下。沙箱支持任意命令执行，因此仅基于路径的限制无法阻止通过 shell 命令的文件系统访问。将权限限定到特定路由的[后端](/oss/javascript/deepagents/backends)可以避免这种冲突。
 
 <PermissionsCompositeBackendJs />
 
-Permissions that include paths outside any route throw at construction time:
+包含任何路由之外路径的权限会在构建时抛出异常：
 
 <PermissionsCompositeBackendInvalidJs />
 
@@ -127,7 +127,7 @@ Permissions that include paths outside any route throw at construction time:
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时解答。
 </Callout>
 <Callout icon="edit">
     [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/permissions.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。

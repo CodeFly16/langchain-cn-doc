@@ -9,17 +9,17 @@ title: 快速入门
 <Tip>
     **正在使用 AI 编码助手？**
 
-    - 安装 [LangChain 文档 MCP 服务器](/use-these-docs)，让你的智能体访问最新的 LangChain 文档和示例。
-    - 安装 [LangChain Skills](https://github.com/langchain-ai/langchain-skills) 以提升智能体在 LangChain 生态系统任务上的表现。
+    - 安装 [LangChain Docs MCP 服务器](/use-these-docs)，让你的智能体可以访问最新的 LangChain 文档和示例。
+    - 安装 [LangChain Skills](https://github.com/langchain-ai/langchain-skills) 来提高你的智能体在 LangChain 生态系统任务上的表现。
 </Tip>
 
-- 如果你偏好将智能体定义为节点和边组成的图，请[使用图 API](#use-the-graph-api)。
-- 如果你偏好将智能体定义为单个函数，请[使用函数式 API](#use-the-functional-api)。
+- [使用图 API](#use-the-graph-api)，如果你更喜欢将智能体定义为节点和边的图。
+- [使用函数式 API](#use-the-functional-api)，如果你更喜欢将智能体定义为单个函数。
 
 有关概念信息，请参阅[图 API 概述](/oss/javascript/langgraph/graph-api)和[函数式 API 概述](/oss/javascript/langgraph/functional-api)。
 
 <Info>
-对于此示例，你需要设置一个 [Claude (Anthropic)](https://www.anthropic.com/) 账户并获取 API 密钥。然后，在终端中设置 `ANTHROPIC_API_KEY` 环境变量。
+在此示例中，你需要设置一个 [Claude (Anthropic)](https://www.anthropic.com/) 账户并获取 API 密钥。然后在终端中设置 `ANTHROPIC_API_KEY` 环境变量。
 </Info>
 
 <Tabs>
@@ -27,7 +27,7 @@ title: 快速入门
 
 ## 1. 定义工具和模型
 
-在此示例中，我们将使用 Claude Sonnet 4.5 模型并定义加法、乘法和除法工具。
+在此示例中，我们将使用 Claude Sonnet 4.5 模型，并定义加法、乘法和除法工具。
 
 
 
@@ -69,7 +69,7 @@ const divide = tool(({ a, b }) => a / b, {
   }),
 });
 
-// 为 LLM 增强工具
+// 用工具增强大语言模型(LLM)
 const toolsByName = {
   [add.name]: add,
   [multiply.name]: multiply,
@@ -82,14 +82,14 @@ const modelWithTools = model.bindTools(tools);
 
 ## 2. 定义状态
 
-图的状态用于存储消息和 LLM 调用次数。
+图的状态用于存储消息和大语言模型(LLM)调用次数。
 
 
 
 <Tip>
     LangGraph 中的状态在智能体执行过程中持续存在。
 
-    `MessagesValue` 提供了内置的归约器用于追加消息。`llmCalls` 字段使用 `ReducedValue` 配合 `(x, y) => x + y` 来累计计数。
+    `MessagesValue` 提供了用于追加消息的内置归约器。`llmCalls` 字段使用带有 `(x, y) => x + y` 的 `ReducedValue` 来累积计数。
 </Tip>
 
 
@@ -120,7 +120,7 @@ const MessagesState = new StateSchema({
 
 ## 3. 定义模型节点
 
-模型节点用于调用 LLM 并决定是否调用工具。
+模型节点用于调用大语言模型(LLM)并决定是否调用工具。
 
 
 
@@ -172,7 +172,7 @@ const toolNode: GraphNode<typeof MessagesState> = async (state) => {
 
 ## 5. 定义结束逻辑
 
-条件边函数用于根据 LLM 是否进行了工具调用来路由到工具节点或结束。
+条件边函数用于根据大语言模型(LLM)是否进行了工具调用来路由到工具节点或结束。
 
 
 
@@ -180,12 +180,12 @@ const toolNode: GraphNode<typeof MessagesState> = async (state) => {
 const shouldContinue: ConditionalEdgeRouter<typeof MessagesState, "toolNode"> = (state) => {
   const lastMessage = state.messages.at(-1);
 
-  // 在访问 tool_calls 之前检查是否为 AIMessage
+  // 检查是否是 AIMessage 后再访问 tool_calls
   if (!lastMessage || !AIMessage.isInstance(lastMessage)) {
     return END;
   }
 
-  // 如果 LLM 进行了工具调用，则执行操作
+  // 如果大语言模型(LLM)进行了工具调用，则执行操作
   if (lastMessage.tool_calls?.length) {
     return "toolNode";
   }
@@ -198,7 +198,7 @@ const shouldContinue: ConditionalEdgeRouter<typeof MessagesState, "toolNode"> = 
 
 ## 6. 构建和编译智能体
 
-使用 [`StateGraph`](https://reference.langchain.com/javascript/langchain-langgraph/index/StateGraph) 类构建智能体，使用 [`compile`](https://reference.langchain.com/javascript/classes/_langchain_langgraph.index.StateGraph.html#compile) 方法编译。
+智能体使用 [`StateGraph`](https://reference.langchain.com/javascript/langchain-langgraph/index/StateGraph) 类构建，并使用 [`compile`](https://reference.langchain.com/javascript/classes/_langchain_langgraph.index.StateGraph.html#compile) 方法编译。
 
 
 
@@ -224,10 +224,10 @@ for (const message of result.messages) {
 
 
 <Tip>
-使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-quickstart) 追踪和调试你的智能体。按照[追踪快速入门](/langsmith/trace-with-langgraph)进行设置。准备好投入生产时，请参阅[部署](/langsmith/deployment)了解托管选项。
+使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-quickstart) 追踪和调试你的智能体。按照[追踪快速入门](/langsmith/trace-with-langgraph)开始设置。准备好投入生产时，请参阅[部署](/langsmith/deployment)了解托管选项。
 </Tip>
 
-恭喜！你已经使用 LangGraph 图 API 构建了你的第一个智能体。
+恭喜！你已经使用 LangGraph 图 API 构建了第一个智能体。
 
 <Accordion title="完整代码示例">
 
@@ -272,7 +272,7 @@ const divide = tool(({ a, b }) => a / b, {
   }),
 });
 
-// 为 LLM 增强工具
+// 用工具增强大语言模型(LLM)
 const toolsByName = {
   [add.name]: add,
   [multiply.name]: multiply,
@@ -347,12 +347,12 @@ import { ConditionalEdgeRouter, END } from "@langchain/langgraph";
 const shouldContinue: ConditionalEdgeRouter<typeof MessagesState, "toolNode"> = (state) => {
   const lastMessage = state.messages.at(-1);
 
-  // 在访问 tool_calls 之前检查是否为 AIMessage
+  // 检查是否是 AIMessage 后再访问 tool_calls
   if (!lastMessage || !AIMessage.isInstance(lastMessage)) {
     return END;
   }
 
-  // 如果 LLM 进行了工具调用，则执行操作
+  // 如果大语言模型(LLM)进行了工具调用，则执行操作
   if (lastMessage.tool_calls?.length) {
     return "toolNode";
   }
@@ -391,7 +391,7 @@ for (const message of result.messages) {
 
 ## 1. 定义工具和模型
 
-在此示例中，我们将使用 Claude Sonnet 4.5 模型并定义加法、乘法和除法工具。
+在此示例中，我们将使用 Claude Sonnet 4.5 模型，并定义加法、乘法和除法工具。
 
 
 
@@ -433,7 +433,7 @@ const divide = tool(({ a, b }) => a / b, {
   }),
 });
 
-// 为 LLM 增强工具
+// 用工具增强大语言模型(LLM)
 const toolsByName = {
   [add.name]: add,
   [multiply.name]: multiply,
@@ -447,7 +447,7 @@ const modelWithTools = model.bindTools(tools);
 
 ## 2. 定义模型节点
 
-模型节点用于调用 LLM 并决定是否调用工具。
+模型节点用于调用大语言模型(LLM)并决定是否调用工具。
 
 
 
@@ -521,10 +521,10 @@ for (const message of result) {
 
 
 <Tip>
-使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-quickstart) 追踪和调试你的智能体。按照[追踪快速入门](/langsmith/trace-with-langgraph)进行设置。准备好投入生产时，请参阅[部署](/langsmith/deployment)了解托管选项。
+使用 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-quickstart) 追踪和调试你的智能体。按照[追踪快速入门](/langsmith/trace-with-langgraph)开始设置。准备好投入生产时，请参阅[部署](/langsmith/deployment)了解托管选项。
 </Tip>
 
-恭喜！你已经使用 LangGraph 函数式 API 构建了你的第一个智能体。
+恭喜！你已经使用 LangGraph 函数式 API 构建了第一个智能体。
 
 <Accordion title="完整代码示例" icon="code">
 
@@ -580,7 +580,7 @@ const divide = tool(({ a, b }) => a / b, {
   }),
 });
 
-// 为 LLM 增强工具
+// 用工具增强大语言模型(LLM)
 const toolsByName = {
   [add.name]: add,
   [multiply.name]: multiply,
@@ -645,9 +645,9 @@ for (const message of result) {
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/quickstart.mdx) 或 [提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/quickstart.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

@@ -15,32 +15,32 @@ import DeepResearchRunStreamJs from '/snippets/code-samples/deep-research-run-st
 
 ## 概述
 
-本指南 demonstrates how to build a multi-step web research agent from scratch using [Deep Agents](/oss/javascript/deepagents). 智能体将研究问题分解为集中的任务, 将它们委派给专门的子智能体, 并将发现综合成一份全面的报告。
+本指南演示如何使用[深度智能体](/oss/javascript/deepagents)从零构建一个多步骤网络研究智能体。该智能体将研究问题分解为聚焦的任务，委派给专门的子智能体，并将研究发现合成为综合报告。
 
 你构建的智能体将：
 
-1. 使用待办列表规划研究
-1. 将集中的研究任务委派给具有隔离上下文的子智能体
-1. 评估搜索结果并规划后续步骤 as you gather information
-1. 将带有适当引用的发现综合成最终报告
+1. 使用待办事项列表规划研究
+1. 将聚焦的研究任务委托给具有隔离上下文的子智能体
+1. 在收集信息时评估搜索结果并规划下一步
+1. 将研究发现连同正确的引用合成为最终报告
 
-The spawned sub-agents will conduct web searches with Tavily, fetching full webpage content for analysis.
+生成的子智能体将使用 Tavily 进行网络搜索，获取完整的网页内容进行分析。
 
 ### 关键概念
 
 本教程涵盖：
 
-- [Subagents](/oss/javascript/deepagents/subagents) for parallel, context-isolated research
-- Custom [tools](/oss/javascript/langchain/tools) 用于网络搜索
-- Multi-step planning with the [built-in planning tool](/oss/javascript/deepagents/harness#planning-capabilities)
+- 用于并行、上下文隔离研究的[子智能体](/oss/javascript/deepagents/subagents)
+- 用于网络搜索的自定义[工具](/oss/javascript/langchain/tools)
+- 使用[内置规划工具](/oss/javascript/deepagents/harness#planning-capabilities)进行多步骤规划
 
 ## 前置条件
 
-API 密钥：
+以下 API 密钥：
 
-- Anthropic (Claude) or Google (Gemini)
-- [Tavily](https://www.tavily.com/) 用于网络搜索 (可选 - 免费层级 sufficient)
-- [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-deepagents-deep-research) 用于跟踪（可选）
+- Anthropic (Claude) 或 Google (Gemini)
+- [Tavily](https://www.tavily.com/) 用于网络搜索（可选 - 免费层级即可满足）
+- [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-deepagents-deep-research) 用于追踪（可选）
 
 ## 设置
 
@@ -55,7 +55,7 @@ cd deep-research-agent
 ```
 
 </Step>
-<Step title="Install dependencies">
+<Step title="安装依赖">
 
 <Tabs>
 <Tab title="Claude">
@@ -78,14 +78,14 @@ npm install deepagents @langchain/google-genai @langchain/core
 ```bash
 export ANTHROPIC_API_KEY="your_anthropic_api_key"
 export TAVILY_API_KEY="your_tavily_api_key"
-export LANGSMITH_API_KEY="your_langsmith_api_key"   # Optional
+export LANGSMITH_API_KEY="your_langsmith_api_key"   # 可选
 ```
 </Tab>
 <Tab title="Gemini">
 ```bash
 export GOOGLE_API_KEY="your_google_api_key"
 export TAVILY_API_KEY="your_tavily_api_key"
-export LANGSMITH_API_KEY="your_langsmith_api_key"   # Optional
+export LANGSMITH_API_KEY="your_langsmith_api_key"   # 可选
 ```
 </Tab>
 </Tabs>
@@ -98,13 +98,13 @@ export LANGSMITH_API_KEY="your_langsmith_api_key"   # Optional
 
 
 
-Create `agent.ts` in your project directory:
+在项目目录中创建 `agent.ts`：
 
 
 <Steps>
-<Step title="Add tools">
+<Step title="添加工具">
 
-Add the custom search tool. The `tavily_search` tool uses Tavily for URL discovery, then fetches full webpage content so the agent can analyze complete sources instead of summaries.
+添加自定义搜索工具。`tavily_search` 工具使用 Tavily 进行 URL 发现，然后获取完整的网页内容以便智能体分析完整来源而非摘要。
 
 
 
@@ -112,11 +112,11 @@ Add the custom search tool. The `tavily_search` tool uses Tavily for URL discove
 
 
 </Step>
-<Step title="Add prompts">
+<Step title="添加提示">
 
 
 
-Add the orchestrator workflow and sub-agent prompt templates to `agent.ts`:
+将编排器工作流和子智能体提示模板添加到 `agent.ts`：
 
 
 
@@ -191,7 +191,7 @@ Simply list items with details - no introduction needed:
 const RESEARCHER_INSTRUCTIONS = `You are a research assistant conducting research on the user's input topic. For context, today's date is {date}.
 
 Your job is to use tools to gather information about the user's input topic.
-你可以使用 the tavily_search tool to find resources that can help answer the research question.
+You can use the tavily_search tool to find resources that can help answer the research question.
 You can call it in series or in parallel, your research is conducted in a tool-calling loop.
 
 You have access to the tavily_search tool for conducting web searches.
@@ -275,11 +275,11 @@ Your role is to coordinate research by delegating tasks from your TODO list to s
 
 
 </Step>
-<Step title="Create the agent">
+<Step title="创建智能体">
 
 
 
-Add the model initialization and agent creation to `agent.ts`:
+将模型初始化和智能体创建添加到 `agent.ts`：
 
 <DeepResearchAgentClaudeJs />
 
@@ -289,15 +289,15 @@ Add the model initialization and agent creation to `agent.ts`:
 
 ## 运行智能体
 
-You can run the agent synchronously, meaning it will wait了解完整的result and then print it, or you can stream updates as they come in.
+你可以同步运行智能体，即等待完整结果后打印，或者在更新到来时流式输出。
 
 
 
-Add the code from the respective tab at the bottom of `agent.ts`:
+将相应标签页的代码添加到 `agent.ts` 底部：
 
 
 <Tabs>
-<Tab title="Run synchronously" value="sync">
+<Tab title="同步运行" value="sync">
 
 
 
@@ -305,7 +305,7 @@ Add the code from the respective tab at the bottom of `agent.ts`:
 
 
 </Tab>
-<Tab title="Stream updates" value="stream">
+<Tab title="流式更新" value="stream">
 
 
 
@@ -315,7 +315,7 @@ Add the code from the respective tab at the bottom of `agent.ts`:
 </Tab>
 </Tabs>
 
-Run the agent from the project root:
+从项目根目录运行智能体：
 
 
 
@@ -324,29 +324,29 @@ npx tsx agent.ts
 ```
 
 
-If you set the `LANGSMITH_API_KEY` environment variable before running, you can view the agent's traces in [LangSmith](/langsmith/home) to debug and monitor multi-step behavior.
+如果你在运行前设置了 `LANGSMITH_API_KEY` 环境变量，可以在 [LangSmith](/langsmith/home) 中查看智能体的追踪记录，以调试和监控多步骤行为。
 
 ## 完整代码
 
-View the complete [Deep Research example](https://github.com/langchain-ai/deepagents/tree/main/examples/deep_research) 在 GitHub 上.
+在 GitHub 上查看完整的[深度研究示例](https://github.com/langchain-ai/deepagents/tree/main/examples/deep_research)。
 
 ## 后续步骤
 
-Now that you've built the agent, customize it by changing the prompt constants in your agent file to adjust the workflow, delegation strategy, or researcher behavior.
-你也可以 tune the delegation limits to allow了解更多parallel sub-agents or delegation rounds.
+现在你已经构建了智能体，可以通过更改智能体文件中的提示常量来自定义它，以调整工作流、委派策略或研究者行为。
+你还可以调整委派限制以允许更多的并行子智能体或委派轮次。
 
-For more information on the concepts in this tutorial, check out the following resources:
+有关本教程中概念的更多信息，请查看以下资源：
 
-- [Subagents](/oss/javascript/deepagents/subagents): Learn how to configure subagents with different tools and prompts
-- [Customization](/oss/javascript/deepagents/customization): Customize models, tools, system prompts, and planning behavior
-- [LangSmith](/langsmith/home): Trace research runs and debug multi-step behavior
-- [Deep Research Course](https://academy.langchain.com/courses/deep-research-with-langgraph): Full course on deep research with LangGraph
+- [子智能体](/oss/javascript/deepagents/subagents)：了解如何使用不同工具和提示配置子智能体
+- [自定义](/oss/javascript/deepagents/customization)：自定义模型、工具、系统提示和规划行为
+- [LangSmith](/langsmith/home)：追踪研究运行并调试多步骤行为
+- [深度研究课程](https://academy.langchain.com/courses/deep-research-with-langgraph)：关于使用 LangGraph 进行深度研究的完整课程
 
 ---
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时解答。
 </Callout>
 <Callout icon="edit">
     [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/deep-research.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。

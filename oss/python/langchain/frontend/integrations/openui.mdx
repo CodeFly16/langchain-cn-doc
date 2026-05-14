@@ -3,9 +3,9 @@ title: OpenUI
 description: 使用 OpenUI 组件库和 openui-lang 生成完整的交互式仪表板和报告
 ---
 
-[OpenUI](https://github.com/openuidev) is a generative UI library that lets a language model produce complete, interactive UIs in a declarative format called **openui-lang**. Instead of returning a chat message, the agent returns a component tree with cards, charts, tables, tabs, and forms that the `Renderer` turns into a real React UI.
+[OpenUI](https://github.com/openuidev) 是一个生成式 UI 库，让语言模型以名为 **openui-lang** 的声明式格式生成完整的交互式 UI。智能体不再返回聊天消息，而是返回一个包含卡片、图表、表格、标签页和表单的组件树，由 `Renderer` 将其转换为真实的 React UI。
 
-This integration is well-suited for data-rich outputs like reports, dashboards, and data explorers, where the model is both the data analyst and the UI designer.
+此集成非常适合数据丰富的输出，如报告、仪表板和数据浏览器，其中模型既是数据分析师又是 UI 设计师。
 
 import { ExampleEmbed } from "/snippets/example-embed.jsx"
 
@@ -13,10 +13,10 @@ import { ExampleEmbed } from "/snippets/example-embed.jsx"
 
 ## 工作原理
 
-1. **Generate the system prompt:** call `openuiLibrary.prompt()` once at startup; it produces a complete openui-lang reference that the model uses to write valid component trees
-2. **Inject on first message:** send the system prompt as the opening system message when a new conversation starts
-3. **Model writes openui-lang:** the model responds with a program like `root = Stack([header, kpis, chart])` instead of prose
-4. **Render with `Renderer`:** pass the text to OpenUI's `Renderer` and the component library; it parses and renders the tree
+1. **生成系统提示词：**在启动时调用一次 `openuiLibrary.prompt()`；它会生成一个完整的 openui-lang 参考文档，模型使用它来编写有效的组件树
+2. **在首条消息中注入：**当新对话开始时，将系统提示词作为开头的系统消息发送
+3. **模型编写 openui-lang：**模型以如 `root = Stack([header, kpis, chart])` 的程序形式响应，而非散文
+4. **使用 `Renderer` 渲染：**将文本传递给 OpenUI 的 `Renderer` 和组件库；它解析并渲染组件树
 
 ```mermaid
 %%{
@@ -33,9 +33,9 @@ graph LR
   STREAM["useStream()"]
   RENDERER["Renderer"]
 
-  PROMPT --"system message"--> AGENT
-  AGENT --"openui-lang text"--> STREAM
-  STREAM --"ai message content"--> RENDERER
+  PROMPT --"系统消息"--> AGENT
+  AGENT --"openui-lang 文本"--> STREAM
+  STREAM --"AI 消息内容"--> RENDERER
 ```
 
 ## 安装
@@ -45,12 +45,12 @@ npm install @langchain/react @openuidev/react-ui @openuidev/react-headless @open
 ```
 
 <Tip>
-OpenUI requires React 19+ and [`zustand`](https://www.npmjs.com/package/zustand). The frontend code is React-only; the LangGraph agent backend can be written in TypeScript or Python.
+OpenUI 需要 React 19+ 和 [`zustand`](https://www.npmjs.com/package/zustand)。前端代码仅支持 React；LangGraph 智能体后端可以用 TypeScript 或 Python 编写。
 </Tip>
 
 ## 导入组件样式
 
-Import OpenUI's bundled styles in your CSS entry point or directly in your root component:
+在你的 CSS 入口点或直接在根组件中导入 OpenUI 的打包样式：
 
 ```css
 @import "@openuidev/react-ui/components.css";
@@ -59,41 +59,41 @@ Import OpenUI's bundled styles in your CSS entry point or directly in your root 
 
 ## 生成系统提示词
 
-OpenUI ships a `openuiLibrary.prompt()` function that generates the complete openui-lang reference, with all component signatures, syntax rules, streaming tips, and examples. Call it once at module load time:
+OpenUI 提供了一个 `openuiLibrary.prompt()` 函数，用于生成完整的 openui-lang 参考文档，包含所有组件签名、语法规则、流式输出技巧和示例。在模块加载时调用一次：
 
 ```ts
 import { openuiLibrary, openuiPromptOptions } from "@openuidev/react-ui/genui-lib";
 
-// Generate the full openui-lang system prompt. Call this once at startup,
-// not inside a component, to avoid recomputing it on every render.
+// 生成完整的 openui-lang 系统提示词。在启动时调用一次，
+// 不要在组件内部调用，以避免每次渲染都重新计算。
 const SYSTEM_PROMPT = openuiLibrary.prompt({
   ...openuiPromptOptions,
   preamble:
-    "You are a report generator. When asked for a report, produce a detailed, " +
-    "data-rich report using openui-lang: executive summary, KPI cards, charts, " +
-    "tables, and multiple sections. Your ENTIRE response must be raw openui-lang " +
-    "— no code fences, no markdown, no prose.",
+    "你是一个报告生成器。当被要求生成报告时，使用 openui-lang 生成详细的、" +
+    "数据丰富的报告：执行摘要、KPI 卡片、图表、" +
+    "表格和多个部分。你的整个响应必须是原始 openui-lang " +
+    "——没有代码围栏、没有 markdown、没有散文。",
 });
 ```
 
-The `preamble` overrides the default persona. Add `additionalRules` to inject task-specific constraints:
+`preamble` 覆盖默认角色。添加 `additionalRules` 注入任务特定的约束：
 
 ```ts
 const SYSTEM_PROMPT = openuiLibrary.prompt({
   ...openuiPromptOptions,
-  preamble: "You are a report generator...",
+  preamble: "你是一个报告生成器...",
   additionalRules: [
     ...(openuiPromptOptions.additionalRules ?? []),
-    "Always end the report with 3–4 follow-up query buttons using " +
-    "Button({ type: 'continue_conversation' }, 'secondary') inside a " +
-    "Card([CardHeader('Explore Further'), Buttons([...])], 'sunk').",
+    "始终在报告末尾使用 " +
+    "Button({ type: 'continue_conversation' }, 'secondary') 在 " +
+    "Card([CardHeader('深入探索'), Buttons([...])], 'sunk') 中添加 3-4 个后续查询按钮。",
   ],
 });
 ```
 
 ## 通过 useStream 注入系统提示词
 
-Send the system prompt as the first message of every new thread. Check `stream.messages.length === 0` to detect a fresh thread and prepend a `system` message:
+在每个新线程的第一条消息中发送系统提示词。检查 `stream.messages.length === 0` 来检测新线程并前置一条 `system` 消息：
 
 ```tsx
 import { useCallback } from "react";
@@ -111,8 +111,8 @@ export function App() {
 
   const handleSubmit = useCallback(
     (text: string) => {
-      // Inject the system prompt only on the first message of a new thread.
-      // Subsequent messages already have it in their persisted history.
+      // 仅在新线程的第一条消息时注入系统提示词。
+      // 后续消息在其持久化历史中已有系统提示词。
       const isNewThread = stream.messages.length === 0;
       stream.submit({
         messages: [
@@ -132,7 +132,7 @@ export function App() {
 
 ## 使用 Renderer 渲染
 
-Pass the AI message's text content directly to `Renderer` along with `openuiLibrary`:
+将 AI 消息的文本内容与 `openuiLibrary` 一起直接传递给 `Renderer`：
 
 ```tsx
 import { Renderer } from "@openuidev/react-lang";
@@ -157,50 +157,50 @@ function MessageList({ messages, isLoading }) {
         />
       );
     }
-    // ... human message bubble
+    // ... 用户消息气泡
   });
 }
 ```
 
-Pass `isStreaming={true}` during the active stream so the Renderer handles unresolved references gracefully as definitions arrive.
+在活动流期间传递 `isStreaming={true}`，使 Renderer 在定义到达时优雅地处理未解析的引用。
 
 ## openui-lang 格式
 
-The model writes a program rather than a JSON spec. Every statement is an assignment; `root` is the entry point. The official prompt teaches the model this format, including hoisting — writing `root` first so the UI shell appears immediately:
+模型编写的是程序而非 JSON 规范。每条语句都是赋值；`root` 是入口点。官方提示词教会模型此格式，包括提升（hoisting）——先写 `root` 使 UI 外壳立即出现：
 
 ```
 root = Stack([header, execSummary, kpis, marketSection])
 
-header    = CardHeader("State of AI in 2025", "Comprehensive Analysis")
-execSummary = MarkDownRenderer("## Executive Summary\n\nThe AI market reached...")
+header    = CardHeader("2025 年 AI 发展现状", "综合分析")
+execSummary = MarkDownRenderer("## 执行摘要\n\nAI 市场已达...")
 
-kpi1 = Card([CardHeader("$826B", "Global Market"), TextContent("42% YoY", "small")], "sunk")
-kpi2 = Card([CardHeader("78%",   "Adoption"),       TextContent("Fortune 500",  "small")], "sunk")
+kpi1 = Card([CardHeader("$826B", "全球市场"), TextContent("同比增长 42%", "small")], "sunk")
+kpi2 = Card([CardHeader("78%",   "采用率"),       TextContent("财富 500 强",  "small")], "sunk")
 kpis = Stack([kpi1, kpi2], "row", "m", "stretch", "start", true)
 
-col1 = Col("Segment", "string")
-col2 = Col("Revenue ($B)", "number")
-tbl  = Table([col1, col2], [["Generative AI", 286], ["ML Infra", 198]])
-s1   = Series("Revenue", [286, 198, 147])
-ch1  = BarChart(["Gen AI", "ML Infra", "Vision"], [s1])
-marketSection = Card([CardHeader("Market Breakdown"), tbl, ch1])
+col1 = Col("细分领域", "string")
+col2 = Col("收入 ($B)", "number")
+tbl  = Table([col1, col2], [["生成式 AI", 286], ["ML 基础设施", 198]])
+s1   = Series("收入", [286, 198, 147])
+ch1  = BarChart(["生成式 AI", "ML 基础设施", "视觉"], [s1])
+marketSection = Card([CardHeader("市场分析"), tbl, ch1])
 ```
 
-With hoisting enabled (recommended), the `root` line is written first so the page structure appears immediately and each section fills in as the model defines it.
+启用提升（推荐），`root` 行先写出，使页面结构立即出现，每个部分随着模型的定义逐步填充。
 
 ## 渐进式渲染工具
 
-Wiring `useStream` to `Renderer` directly causes results in re-rendering on every streaming token and produces hundreds of no-op re-parses per response. This causes chart components to crash when their data hasn't arrived yet. The utilities below solve these problems:
+将 `useStream` 直接连接到 `Renderer` 会导致每个流式 Token 都触发重新渲染，产生数百次无操作的重新解析。这会导致图表组件在数据尚未到达时崩溃。以下工具解决了这些问题：
 
-| Problem | Solution |
+| 问题 | 解决方案 |
 | --- | --- |
-| **Partial string literals** | `truncateAtOpenString` / `closeOrTruncateOpenString` — drop or close incomplete strings before parsing |
-| **Mid-token churn** | `useStableText` — gate Renderer updates on complete statement boundaries (`name = Expr(…)`) rather than every token |
-| **Chart null-data crashes** | `chartDataRefsResolved` — verify a chart's `Series` and label arrays are defined before including it in the snapshot |
-| **No `root` yet / fallback** | `buildProgressiveRoot` — synthesise a `root = Stack([…])` from top-level variables when the model hasn't written one |
-| **Snake_case identifiers** | `sanitizeIdentifiers` — the parser only accepts camelCase; convert any `snake_case` names the model emits |
+| **不完整的字符串字面量** | `truncateAtOpenString` / `closeOrTruncateOpenString` —— 在解析前删除或关闭不完整的字符串 |
+| **Token 中间的抖动** | `useStableText` —— 在完整语句边界（`name = Expr(…)`）而非每个 Token 上更新 Renderer |
+| **图表空数据崩溃** | `chartDataRefsResolved` —— 在包含图表之前验证其 `Series` 和标签数组已定义 |
+| **尚无 `root` / 回退** | `buildProgressiveRoot` —— 当模型尚未写出 root 时，从顶层变量合成 `root = Stack([…])` |
+| **Snake_case 标识符** | `sanitizeIdentifiers` —— 解析器只接受 camelCase；转换模型发出的 `snake_case` 名称 |
 
-Copy the full block into your project and pass `stable` to `<Renderer>`:
+将完整代码块复制到你的项目中，并将 `stable` 传递给 `<Renderer>`：
 
 ```tsx expandable
 import {
@@ -217,7 +217,7 @@ import {
 } from "@openuidev/react-lang";
 import { openuiLibrary } from "@openuidev/react-ui/genui-lib";
 
-/** Strip any markdown code fence the model may have emitted. */
+/** 去除模型可能发出的 markdown 代码围栏。 */
 function stripCodeFence(text: string): string {
   return text
     .replace(/^```[a-z]*\r?\n?/i, "")
@@ -226,8 +226,8 @@ function stripCodeFence(text: string): string {
 }
 
 /**
- * The openui-lang parser only accepts camelCase identifiers.
- * Convert any snake_case variable names the model emits; string content is untouched.
+ * openui-lang 解析器只接受 camelCase 标识符。
+ * 转换模型发出的 snake_case 变量名；字符串内容不受影响。
  */
 function sanitizeIdentifiers(text: string): string {
   const toCamel = (s: string) =>
@@ -261,9 +261,9 @@ function sanitizeIdentifiers(text: string): string {
 }
 
 /**
- * Walk the text tracking open strings. If the text ends mid-string, truncate to
- * the last safe newline — this prevents a partial string literal from consuming
- * any `root = Stack(…)` line we synthesise later.
+ * 遍历文本，跟踪打开的字符串。如果文本在字符串中间结束，截断到
+ * 最后一个安全的换行符——这可以防止部分字符串字面量吞噬
+ * 我们稍后合成的任何 `root = Stack(…)` 行。
  */
 function truncateAtOpenString(text: string): string {
   let inStr = false;
@@ -278,9 +278,9 @@ function truncateAtOpenString(text: string): string {
 }
 
 /**
- * Like truncateAtOpenString, but synthesises a closing `")` when the partial
- * line is a TextContent statement. This lets text render token-by-token while
- * all other partial-string lines are still truncated.
+ * 类似 truncateAtOpenString，但当部分行是 TextContent 语句时
+ * 合成一个闭合的 `")`。这让文本可以逐 Token 渲染，
+ * 而其他所有部分字符串行仍会被截断。
  */
 function closeOrTruncateOpenString(text: string): string {
   let inStr = false;
@@ -302,7 +302,7 @@ function closeOrTruncateOpenString(text: string): string {
   return safeText;
 }
 
-/** Count lines that form a complete assignment ending with `)` or `]`. */
+/** 计算以 `)` 或 `]` 结尾的完整赋值行数。 */
 function countCompleteStatements(text: string): number {
   let count = 0;
   for (const line of text.split("\n")) {
@@ -328,9 +328,9 @@ const OPENUI_KEYWORDS = new Set([
 ]);
 
 /**
- * Chart components (recharts) crash with `.map() on null` when their labels or
- * series props are unresolved. Before committing a stable snapshot, verify that
- * every chart in the text has all its data variables already defined.
+ * 图表组件（recharts）在标签或 series props 未解析时会因
+ * `.map() on null` 而崩溃。在提交稳定快照前，验证
+ * 文本中的每个图表的数据变量是否已定义。
  */
 function chartDataRefsResolved(text: string): boolean {
   const lines = text.split("\n");
@@ -354,9 +354,9 @@ function chartDataRefsResolved(text: string): boolean {
 }
 
 /**
- * If the model hasn't written a `root = Stack(…)` yet, synthesise one from the
- * top-level variables (those defined but not referenced inside any other expression).
- * This enables progressive rendering even when the model writes root last.
+ * 如果模型尚未写出 `root = Stack(…)`，从顶层变量
+ * （已定义但未在其他表达式中引用的变量）合成一个。
+ * 这使得即使模型最后才写 root 也能渐进式渲染。
  */
 function buildProgressiveRoot(text: string): string {
   if (!text) return text;
@@ -385,19 +385,19 @@ function buildProgressiveRoot(text: string): string {
 }
 
 /**
- * Gate Renderer updates to moments when at least one new *complete* statement
- * has arrived. This eliminates hundreds of no-op re-parses during streaming.
+ * 将 Renderer 更新控制在至少一条新的*完整*语句到达时。
+ * 这消除了流式输出期间数百次无操作的重新解析。
  *
- * Special case: TextContent lines update token-by-token (via closeOrTruncate)
- * so text renders progressively without waiting for the full line to complete.
+ * 特殊情况：TextContent 行逐 Token 更新（通过 closeOrTruncate），
+ * 使文本可以渐进式渲染而不必等待完整行完成。
  */
 function useStableText(raw: string, isStreaming: boolean): string {
   const [stable, setStable] = useState<string>("");
   const lastCount = useRef(0);
 
   useEffect(() => {
-    const safe = truncateAtOpenString(raw);         // strict — for counting only
-    const enhanced = closeOrTruncateOpenString(raw); // display — closes partial TextContent
+    const safe = truncateAtOpenString(raw);         // 严格模式——仅用于计数
+    const enhanced = closeOrTruncateOpenString(raw); // 显示模式——关闭部分 TextContent
 
     if (!isStreaming) { setStable(enhanced); return; }
 
@@ -487,34 +487,34 @@ export function MessageList({ messages, isLoading, onSubmit }) {
 
 ## 后续查询
 
-OpenUI's `Button` component supports a `continue_conversation` action type. When the user clicks a follow-up button, `Renderer` fires `onAction` and the `AIMessageView` above submits the button's label as the next user message, exactly the same code path as typing in the input.
+OpenUI 的 `Button` 组件支持 `continue_conversation` 操作类型。当用户点击后续按钮时，`Renderer` 触发 `onAction`，上面的 `AIMessageView` 将按钮标签作为下一条用户消息提交，与在输入框中输入完全相同的代码路径。
 
-Add an "Explore Further" section to every report via `additionalRules` in the system prompt:
+通过系统提示词中的 `additionalRules` 为每个报告添加"深入探索"部分：
 
 ```
-followUp1 = Button("Compare AI leaders 2024 vs 2025", { type: "continue_conversation" }, "secondary")
-followUp2 = Button("Global AI investment breakdown",  { type: "continue_conversation" }, "secondary")
+followUp1 = Button("比较 2024 与 2025 年 AI 领军者", { type: "continue_conversation" }, "secondary")
+followUp2 = Button("全球 AI 投资细分",  { type: "continue_conversation" }, "secondary")
 followUpBtns = Buttons([followUp1, followUp2], "row")
-followUpCard  = Card([CardHeader("Explore Further"), followUpBtns], "sunk")
+followUpCard  = Card([CardHeader("深入探索"), followUpBtns], "sunk")
 root = Stack([..., followUpCard])
 ```
 
 ## 最佳实践
 
-- **Generate the system prompt at module load:** not inside a React component; the prompt is several kilobytes and should be computed once
-- **Inject the system prompt only on fresh threads:** check `stream.messages.length === 0` and skip injection on subsequent turns to avoid duplicating the prompt in the thread history
-- **Use hoisting order:** write `root = Stack([...])` first; the UI shell appears immediately and sections fill in progressively as the model defines each one
-- **Gate on complete statements:** avoid re-rendering the Renderer on every token; update only when a full statement (`name = ComponentCall(...)`) has arrived
-- **Verify chart data before rendering:** chart components need their `Series` and label arrays defined before they're included in the stable snapshot
-- **Keep camelCase variable names:** the openui-lang parser only accepts camelCase identifiers; reinforce this in the system prompt's `additionalRules`
+- **在模块加载时生成系统提示词：**不要在 React 组件内部生成；提示词有几千字节，应只计算一次
+- **仅在新线程中注入系统提示词：**检查 `stream.messages.length === 0`，在后续轮次中跳过注入，避免在线程历史中重复提示词
+- **使用提升顺序：**先写 `root = Stack([...])`；UI 外壳立即出现，各部分随着模型定义每个部分而逐步填充
+- **在完整语句上更新：**避免在每个 Token 上重新渲染 Renderer；仅在完整语句（`name = ComponentCall(...)`）到达时更新
+- **渲染前验证图表数据：**图表组件需要其 `Series` 和标签数组在包含到稳定快照之前已定义
+- **保持 camelCase 变量名：**openui-lang 解析器只接受 camelCase 标识符；在系统提示词的 `additionalRules` 中强化这一点
 
 ---
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时回答。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/frontend/integrations/openui.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/frontend/integrations/openui.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

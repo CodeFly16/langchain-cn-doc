@@ -1,33 +1,33 @@
 ---
-title: Use subagents in the CLI
+title: 在 CLI 中使用子智能体
 sidebarTitle: 子智能体
-description: Define custom Deep Agents CLI subagents as AGENTS.md files with YAML frontmatter. Covers project and user paths, 可选 model overrides, and examples.
+description: 以 AGENTS.md 文件和 YAML frontmatter 定义自定义深度智能体 CLI 子智能体。涵盖项目和用户路径、可选的模型覆盖及示例。
 ---
 
-Define custom synchronous [subagents](/oss/javascript/deepagents/subagents) as markdown files so the CLI agent can delegate specialized tasks to them.
+将自定义同步[子智能体](/oss/javascript/deepagents/subagents)定义为 markdown 文件，以便 CLI 智能体可以将专门的任务委派给它们。
 
 <Note>
-    Async subagents are not available in the Deep Agents CLI at this time.
+    异步子智能体目前在深度智能体 CLI 中不可用。
 </Note>
 
-Each subagent lives in its own folder with an `AGENTS.md` file:
+每个子智能体都有自己的文件夹和一个 `AGENTS.md` 文件：
 
 ```text
-.deepagents/agents/{subagent-name}/AGENTS.md   # Project-level
-~/.deepagents/{agent}/agents/{subagent-name}/AGENTS.md  # User-level
+.deepagents/agents/{subagent-name}/AGENTS.md   # 项目级
+~/.deepagents/{agent}/agents/{subagent-name}/AGENTS.md  # 用户级
 ```
 
-Project subagents override user subagents with the same name (see [precedence rules](/oss/javascript/deepagents/data-locations#subagents)).
+同名时项目级子智能体会覆盖用户级子智能体（参见[优先级规则](/oss/javascript/deepagents/data-locations#subagents)）。
 
-The frontmatter requires `name` and `description` (same as the [`SubAgent` dictionary spec](/oss/javascript/deepagents/subagents#subagent-dictionary-based)). The markdown body becomes the subagent's `system_prompt`. In addition to the base spec, `AGENTS.md` files support an 可选 `model` frontmatter field that overrides the main agent's model for this subagent. Uses the `provider:model-name` format (e.g., `anthropic:claude-opus-4-7`, `openai:gpt-5.5`). Omit to inherit the main agent's model.
+frontmatter 需要 `name` 和 `description`（与 [`SubAgent` 字典规范](/oss/javascript/deepagents/subagents#subagent-dictionary-based)相同）。markdown 正文将成为子智能体的 `system_prompt`。除了基本规范外，`AGENTS.md` 文件还支持可选的 `model` frontmatter 字段，用于覆盖该子智能体使用的主智能体模型。使用 `provider:model-name` 格式（例如 `anthropic:claude-opus-4-7`、`openai:gpt-5.5`）。省略则继承主智能体的模型。
 
 <Note>
-    Other `SubAgent` fields (`tools`, `middleware`, `interrupt_on`, `skills`) are currently not configurable via `AGENTS.md` frontmatter—custom subagents defined this way inherit the main agent's tools. Use the SDK directly for full control.
+    其他 `SubAgent` 字段（`tools`、`middleware`、`interrupt_on`、`skills`）目前无法通过 `AGENTS.md` frontmatter 配置——以这种方式定义的自定义子智能体会继承主智能体的工具。如需完全控制，请直接使用 SDK。
 </Note>
 
-## File format
+## 文件格式
 
-Subagent `AGENTS.md` files use YAML frontmatter followed by a markdown body:
+子智能体 `AGENTS.md` 文件使用 YAML frontmatter 加 markdown 正文：
 
 ```markdown
 ---
@@ -43,9 +43,9 @@ You are a research assistant with access to web search.
 2. Summarize findings clearly
 ```
 
-## Example: cost-efficient subagents
+## 示例：高性价比子智能体
 
-Use a cheaper, faster model for simple delegation tasks while keeping the main agent on a more capable model:
+对简单的委派任务使用更便宜、更快速的模型，同时让主智能体保持使用更强大的模型：
 
 ```markdown
 ---
@@ -57,15 +57,15 @@ model: anthropic:claude-haiku-4-5-20251001
 You are a general-purpose assistant. Complete the task efficiently and return a concise summary.
 ```
 
-This overrides the built-in general-purpose subagent, routing all delegated tasks to a cheaper model. See [Override the general-purpose subagent](/oss/javascript/deepagents/subagents#override-the-general-purpose-subagent) for more.
+这将覆盖内置的通用子智能体，将所有委派的任务路由到更便宜的模型。详见[覆盖通用子智能体](/oss/javascript/deepagents/subagents#override-the-general-purpose-subagent)。
 
 ---
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+    [通过 MCP 连接这些文档](/use-these-docs)到 Claude、VSCode 等以获取实时解答。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/cli/subagents.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/cli/subagents.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

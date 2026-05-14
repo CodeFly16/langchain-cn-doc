@@ -6,117 +6,116 @@ description: 了解如何使用子智能体委派工作并保持上下文整洁
 import SubagentBasicPy from '/snippets/subagent-basic-py.mdx';
 import SubagentBasicJs from '/snippets/subagent-basic-js.mdx';
 
-深度智能体可以创建子智能体来委派工作。 你可以在 `subagents` 参数配置哪些工具需要审批。 子智能体对于以下场景很有用 [上下文隔离](https://www.dbreunig.com/2025/06/26/how-to-fix-your-context.html#context-quarantine) (保持主智能体的上下文整洁) 以及提供专门的指令。
+深度智能体可以创建子智能体来委派工作。您可以在 `subagents` 参数中指定自定义子智能体。子智能体适用于[上下文隔离](https://www.dbreunig.com/2025/06/26/how-to-fix-your-context.html#context-quarantine)（保持主智能体的上下文整洁）和提供专业化指令。
 
-本页面 covers **synchronous** subagents, where the supervisor blocks until the subagent finishes. For long-running tasks, parallel workstreams, or cases where you need mid-flight steering and cancellation, see [Async subagents](/oss/javascript/deepagents/async-subagents).
+本页涵盖**同步**子智能体，即主管阻塞直到子智能体完成。对于长时间运行的任务、并行工作流，或需要中途控制和取消的场景，请参见[异步子智能体](/oss/javascript/deepagents/async-subagents)。
 
 ```mermaid
 graph TB
-    Main[Main Agent] --> |task tool| Sub[Subagent]
+    Main[主智能体] --> |task tool| Sub[子智能体]
 
-    Sub --> Research[Research]
-    Sub --> Code[Code]
-    Sub --> General[General]
+    Sub --> Research[研究]
+    Sub --> Code[编码]
+    Sub --> General[通用]
 
-    Research --> |isolated work| Result[Final Result]
-    Code --> |isolated work| Result
-    General --> |isolated work| Result
+    Research --> |隔离工作| Result[最终结果]
+    Code --> |隔离工作| Result
+    General --> |隔离工作| Result
 
     Result --> Main
 ```
 
-## Why use subagents?
+## 为什么使用子智能体？
 
-Subagents solve the **context bloat problem**. When agents use tools with large outputs (web search, file reads, database queries), the context window fills up quickly with intermediate results. Subagents isolate this detailed work—the main agent receives only the final result, not the dozens of tool calls that produced it.
+子智能体解决**上下文膨胀问题**。当智能体使用产生大量输出的工具（网络搜索、文件读取、数据库查询）时，上下文窗口会快速被中间结果填满。子智能体隔离这些详细工作——主智能体只接收最终结果，而不是产生它的数十个工具调用。
 
-**When to use subagents:**
-- ✅ Multi-step tasks that would clutter the main agent's context
-- ✅ Specialized domains that need custom instructions or tools
-- ✅ Tasks requiring different model capabilities
-- ✅ When you want to keep the main agent focused on high-level coordination
+**何时使用子智能体：**
+- 多步骤任务会使主智能体的上下文变得混乱
+- 需要自定义指令或工具的专业领域
+- 需要不同模型能力的任务
+- 当您希望让主智能体专注于高层协调时
 
-**When NOT to use subagents:**
-- ❌ Simple, single-step tasks
-- ❌ When you need to maintain intermediate context
-- ❌ When the overhead outweighs benefits
+**何时不使用子智能体：**
+- 简单的单步骤任务
+- 当您需要保持中间上下文时
+- 当开销超过收益时
 
 ## 配置
 
-`subagents` should be a list of dictionaries or [`CompiledSubAgent`](https://reference.langchain.com/javascript/deepagents/middleware/CompiledSubAgent) objects. There are two types:
+`subagents` 应是字典列表或 [`CompiledSubAgent`](https://reference.langchain.com/javascript/deepagents/middleware/CompiledSubAgent) 对象列表。有两种类型：
 
-### Default subagent
+### 默认子智能体
 
-Deep Agents automatically adds a synchronous `general-purpose` subagent unless you already provide a synchronous subagent with that name.
+深度智能体自动添加一个同步 `general-purpose` 子智能体，除非您已提供同名的同步子智能体。
 
-- To replace it, pass your own subagent named `general-purpose`.
-- To rename or re-prompt the auto-added version, set `general_purpose_subagent=GeneralPurposeSubagentProfile(...)` on the active [harness profile](/oss/javascript/deepagents/profiles#harness-profiles).
-- To disable it, see [Running without subagents](#running-without-subagents) below.
+- 要替换它，传入您自己名为 `general-purpose` 的子智能体。
+- 要重命名或重新提示自动添加的版本，在活动的[harness 配置文件](/oss/javascript/deepagents/profiles#harness-profiles)上设置 `general_purpose_subagent=GeneralPurposeSubagentProfile(...)`。
+- 要禁用它，请参见下方[不使用子智能体运行](#running-without-subagents)。
 
-### Running without subagents
+### 不使用子智能体运行
 
-To run an agent without the `task` tool, do two things:
+要运行没有 `task` 工具的智能体，需要做两件事：
 
-1. Set `general_purpose_subagent=GeneralPurposeSubagentProfile(enabled=False)` on the active [harness profile](/oss/javascript/deepagents/profiles#harness-profiles).
-2. Pass no synchronous subagents via `subagents=` on `create_deep_agent`.
+1. 在活动的 [harness 配置文件](/oss/javascript/deepagents/profiles#harness-profiles)上设置 `general_purpose_subagent=GeneralPurposeSubagentProfile(enabled=False)`。
+2. 不通过 `create_deep_agent` 的 `subagents=` 传入同步子智能体。
 
-Deep Agents only attaches `SubAgentMiddleware` (and the `task` tool) when at least one synchronous subagent exists. With neither the default nor a caller-provided one, the agent runs without delegation.
+仅当至少存在一个同步子智能体时，深度智能体才附加 `SubAgentMiddleware`（和 `task` 工具）。既没有默认的也没有调用者提供的时，智能体在没有委派的情况下运行。
 
-Async subagents are unaffected—they flow through their own middleware and tools, described in [Async subagents](/oss/javascript/deepagents/async-subagents).
+异步子智能体不受影响——它们通过自己的中间件和工具流转，详见[异步子智能体](/oss/javascript/deepagents/async-subagents)。
 
 <Tip>
-    Don't reach for `excluded_middleware` here—`SubAgentMiddleware` is required scaffolding and listing it raises `ValueError`. The `general_purpose_subagent.enabled = False` knob is the supported path.
+    不要在这里使用 `excluded_middleware`——`SubAgentMiddleware` 是必需的脚手架，列出它会引发 `ValueError`。`general_purpose_subagent.enabled = False` 开关是支持的路径。
 </Tip>
 
-### SubAgent (Dictionary-based)
+### SubAgent（基于字典）
 
-For most use cases, define subagents as dictionaries matching the [`SubAgent`](https://reference.langchain.com/javascript/deepagents/middleware/SubAgent) spec with the following fields:
+对于大多数使用场景，将子智能体定义为匹配 [`SubAgent`](https://reference.langchain.com/javascript/deepagents/middleware/SubAgent) 规范的字典，包含以下字段：
 
 
 
-| Field | Type | 描述 |
+| 字段 | 类型 | 描述 |
 |-------|------|-------------|
-| `name` | `str` | 必需. Unique identifier for the subagent. The main agent uses this name when calling the `task()` tool. The subagent name becomes metadata for `AIMessage`s and for streaming, which helps to differentiate between agents. |
-| `description` | `str` | 必需. 描述 of what this subagent does. Be specific and action-oriented. The main agent uses this to decide when to delegate. |
-| `system_prompt` | `str` | 必需. Instructions for the subagent. Custom subagents must define their own. Include tool usage guidance and output format requirements.<br></br>Does not inherit from main agent. |
-| `tools` | `list[Callable]` | Optional. Tools the subagent can use. Keep this minimal and include only what's needed.<br></br>Inherits from main agent by default. When specified, overrides the inherited tools entirely. |
-| `model` | `str` \| `BaseChatModel` | Optional. Overrides the main agent's model. Omit to use the main agent's model.<br></br>Inherits from main agent by default. You can pass either a model identifier string like `'openai:gpt-5.4'` (using the `'provider:model'` format) or a LangChain chat model object (`await initChatModel("gpt-5.4")` or `new ChatOpenAI({ model: "gpt-5.4" })`). |
-| `middleware` | `list[Middleware]` | Optional. Additional middleware for custom behavior, logging, or rate limiting.<br></br>Does not inherit from main agent. |
-| `interrupt_on` | `dict[str, bool]` | Optional. Configure [human-in-the-loop](/oss/javascript/deepagents/human-in-the-loop) for specific tools. Subagent value overrides main agent. Requires checkpointer.<br></br>Inherits from main agent by default. Subagent value overrides the default. |
-| `skills` | `list[str]` | Optional. [Skills](/oss/javascript/deepagents/skills) source paths. When specified, the subagent will load skills from these directories (e.g., `["/skills/research/", "/skills/web-search/"]`). This allows subagents to have different skill sets than the main agent.<br></br>Does not inherit from main agent. Only the general-purpose subagent inherits the main agent's skills. When a subagent has skills, it runs its own independent [`SkillsMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createSkillsMiddleware) instance. Skill state is fully isolated—a subagent's loaded skills are not visible to the parent, and vice versa. |
-| `responseFormat` | `ResponseFormat` | Optional. [Structured output](/oss/javascript/langchain/structured-output) schema for the subagent. When set, the parent receives the subagent's result as JSON instead of free-form text. Accepts Zod schemas, JSON schema objects, `toolStrategy(...)`, or `providerStrategy(...)`. See [Structured output](#structured-output). |
-
+| `name` | `str` | 必需。子智能体的唯一标识符。主智能体在调用 `task()` 工具时使用此名称。子智能体名称成为 `AIMessage` 和流式输出的元数据，有助于区分不同智能体。 |
+| `description` | `str` | 必需。此子智能体做什么的描述。要具体且面向操作。主智能体使用它来决定何时委派。 |
+| `system_prompt` | `str` | 必需。子智能体的指令。自定义子智能体必须定义自己的。包括工具使用指导和输出格式要求。<br></br>不从主智能体继承。 |
+| `tools` | `list[Callable]` | 可选。子智能体可以使用的工具。保持最小且仅包含所需的。<br></br>默认从主智能体继承。指定时完全覆盖继承的工具。 |
+| `model` | `str` \| `BaseChatModel` | 可选。覆盖主智能体的模型。省略则使用主智能体的模型。<br></br>默认从主智能体继承。您可以传入模型标识符字符串如 `'openai:gpt-5.4'`（使用 `'provider:model'` 格式）或 LangChain 聊天模型对象（`await initChatModel("gpt-5.4")` 或 `new ChatOpenAI({ model: "gpt-5.4" })`）。 |
+| `middleware` | `list[Middleware]` | 可选。用于自定义行为、日志记录或速率限制的额外中间件。<br></br>不从主智能体继承。 |
+| `interrupt_on` | `dict[str, bool]` | 可选。为特定工具配置[人机协作](/oss/javascript/deepagents/human-in-the-loop)。子智能体值覆盖主智能体。需要检查点器。<br></br>默认从主智能体继承。子智能体值覆盖默认值。 |
+| `skills` | `list[str]` | 可选。[技能](/oss/javascript/deepagents/skills)源路径。指定时，子智能体将从这些目录加载技能（例如 `["/skills/research/", "/skills/web-search/"]`）。这允许子智能体拥有与主智能体不同的技能集。<br></br>不从主智能体继承。只有通用子智能体继承主智能体的技能。当子智能体拥有技能时，它运行自己独立的 [`SkillsMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createSkillsMiddleware) 实例。技能状态完全隔离——子智能体加载的技能对父级不可见，反之亦然。 |
+| `responseFormat` | `ResponseFormat` | 可选。子智能体的[结构化输出](/oss/javascript/langchain/structured-output)模式。设置后，父级接收子智能体的结果为 JSON 而非自由格式文本。接受 Zod 模式、JSON 模式对象、`toolStrategy(...)` 或 `providerStrategy(...)`。参见[结构化输出](#structured-output)。 |
 
 
 
 <Tip>
-    **CLI users:** 你也可以 define subagents as `AGENTS.md` files on disk instead of in code. The `name`, `description`, and `model` fields map to YAML frontmatter, and the markdown body becomes the `system_prompt`. See [Use subagents in the CLI](/oss/javascript/deepagents/cli/subagents) for the file format.
+    **CLI 用户：** 您也可以在磁盘上将子智能体定义为 `AGENTS.md` 文件而非代码。`name`、`description` 和 `model` 字段映射到 YAML frontmatter，markdown 正文成为 `system_prompt`。参见[在 CLI 中使用子智能体](/oss/javascript/deepagents/cli/subagents)了解文件格式。
 
-    **Deploy users:** Define subagents as directories under `subagents/` with their own `deepagents.toml` and `AGENTS.md`. The bundler auto-discovers them. See [Deploy subagents](/oss/javascript/deepagents/deploy#subagents)了解完整的configuration reference.
+    **部署用户：** 在 `subagents/` 下定义子智能体为目录，包含自己的 `deepagents.toml` 和 `AGENTS.md`。打包器自动发现它们。参见[部署子智能体](/oss/javascript/deepagents/deploy#subagents)了解完整的配置参考。
 </Tip>
 
 ### CompiledSubAgent
 
-For complex workflows, use a prebuilt LangGraph graph as a [`CompiledSubAgent`](https://reference.langchain.com/javascript/deepagents/middleware/CompiledSubAgent):
+对于复杂的工作流，使用预构建的 LangGraph 图作为 [`CompiledSubAgent`](https://reference.langchain.com/javascript/deepagents/middleware/CompiledSubAgent)：
 
-| Field | Type | 描述 |
+| 字段 | 类型 | 描述 |
 |-------|------|-------------|
-| `name` | `str` | 必需. Unique identifier for the subagent. The subagent name becomes metadata for `AIMessage`s and for streaming, which helps to differentiate between agents. |
-| `description` | `str` | 必需. What this subagent does. |
-| `runnable` | `Runnable` | 必需. A compiled LangGraph graph (must call `.compile()` first). |
+| `name` | `str` | 必需。子智能体的唯一标识符。子智能体名称成为 `AIMessage` 和流式输出的元数据，有助于区分不同智能体。 |
+| `description` | `str` | 必需。此子智能体做什么。 |
+| `runnable` | `Runnable` | 必需。编译后的 LangGraph 图（必须先调用 `.compile()`）。 |
 
-## Using SubAgent
+## 使用 SubAgent
 
 
 
 <SubagentBasicJs />
 
 
-## Using CompiledSubAgent
+## 使用 CompiledSubAgent
 
-For more complex use cases, you can provide your custom subagents with [`CompiledSubAgent`](https://reference.langchain.com/javascript/deepagents/middleware/CompiledSubAgent).
-You can create a custom subagent using LangChain's [`create_agent`](https://reference.langchain.com/javascript/langchain/index/createAgent) or by making a custom LangGraph graph using the [graph API](/oss/javascript/langgraph/graph-api).
+对于更复杂的使用场景，您可以使用 [`CompiledSubAgent`](https://reference.langchain.com/javascript/deepagents/middleware/CompiledSubAgent) 提供自定义子智能体。
+您可以使用 LangChain 的 [`create_agent`](https://reference.langchain.com/javascript/langchain/index/createAgent) 或通过[图 API](/oss/javascript/langgraph/graph-api) 创建自定义 LangGraph 图来创建自定义子智能体。
 
-If you're creating a custom LangGraph graph, make sure that the graph has a [state key called `"messages"`](/oss/javascript/langgraph/quickstart#2-define-state):
+如果您创建自定义 LangGraph 图，请确保图具有[名为 `"messages"` 的状态键](/oss/javascript/langgraph/quickstart#2-define-state)：
 
 
 
@@ -124,14 +123,14 @@ If you're creating a custom LangGraph graph, make sure that the graph has a [sta
 import { createDeepAgent, CompiledSubAgent } from "deepagents";
 import { createAgent } from "langchain";
 
-// Create a custom agent graph
+// 创建自定义智能体图
 const customGraph = createAgent({
   model: yourModel,
   tools: specializedTools,
   prompt: "You are a specialized agent for data analysis...",
 });
 
-// Use it as a custom subagent
+// 将其用作自定义子智能体
 const customSubagent: CompiledSubAgent = {
   name: "data-analyzer",
   description: "Specialized agent for complex data analysis tasks",
@@ -149,12 +148,12 @@ const agent = createDeepAgent({
 ```
 
 
-## Streaming
+## 流式输出
 
-When streaming tracing information agents' names are available as `lc_agent_name` in metadata.
-When reviewing tracing information, you can use this metadata to differentiate which agent the data came from.
+流式传输追踪信息时，智能体名称可在元数据的 `lc_agent_name` 中获取。
+审查追踪信息时，您可以使用此元数据来区分数据来自哪个智能体。
 
-以下 example creates a deep agent with the name `main-agent` and a subagent with the name `research-agent`:
+以下示例创建了一个名为 `main-agent` 的深度智能体和一个名为 `research-agent` 的子智能体：
 
 ```python
 import os
@@ -183,7 +182,7 @@ research_subagent = {
     "description": "Used to research more in depth questions",
     "system_prompt": "You are a great researcher",
     "tools": [internet_search],
-    "model": "google_genai:gemini-3.1-pro-preview",  # Optional override, defaults to main agent model
+    "model": "google_genai:gemini-3.1-pro-preview",  # 可选覆盖，默认使用主智能体模型
 }
 subagents = [research_subagent]
 
@@ -194,22 +193,22 @@ agent = create_deep_agent(
 )
 ```
 
-As you prompt your deep agent, all agent runs executed by a subagent or deep agent will have the agent name in their metadata.
-In this case the subagent with the name `"research-agent"`, will have `{'lc_agent_name': 'research-agent'}` in any associated agent run metadata:
+当您提示深度智能体时，由子智能体或深度智能体执行的所有智能体运行都会在其元数据中包含智能体名称。
+在此例中，名为 `"research-agent"` 的子智能体将在任何关联的智能体运行元数据中包含 `{'lc_agent_name': 'research-agent'}`：
 
-![LangSmith Example trace showing the metadata](/oss/images/deepagents/deepagents-langsmith.png)
+![LangSmith 示例追踪显示元数据](/oss/images/deepagents/deepagents-langsmith.png)
 
 ## 结构化输出
 
-Subagents support [structured output](/oss/javascript/langchain/structured-output), so the parent agent receives predictable, parseable JSON instead of free-form text.
+子智能体支持[结构化输出](/oss/javascript/langchain/structured-output)，因此父智能体接收的是可预测、可解析的 JSON，而非自由格式文本。
 
 
 
 <Note>
-    Structured output for subagents requires `deepagents>=1.8.4`.
+    子智能体的结构化输出需要 `deepagents>=1.8.4`。
 </Note>
 
-Pass `responseFormat` on the subagent config. When the subagent finishes, its structured response is JSON-serialized and returned as the `ToolMessage` content to the parent agent. The schema accepts anything supported by `createAgent`: Zod schemas, JSON schema objects, `toolStrategy(...)`, or `providerStrategy(...)`.
+在子智能体配置上传入 `responseFormat`。当子智能体完成时，其结构化响应被 JSON 序列化并作为 `ToolMessage` 内容返回给父智能体。模式接受 `createAgent` 支持的任何内容：Zod 模式、JSON 模式对象、`toolStrategy(...)` 或 `providerStrategy(...)`。
 
 ```typescript
 import { z } from "zod";
@@ -238,34 +237,34 @@ const result = await agent.invoke({
   messages: [{ role: "user", content: "Research recent advances in quantum computing" }],
 });
 
-// The parent's ToolMessage contains JSON-serialized structured data:
+// 父级的 ToolMessage 包含 JSON 序列化的结构化数据：
 // '{"summary": "...", "confidence": 0.87, "sources": ["https://..."]}'
 ```
 
 
-Without `response_format`, the parent receives the subagent's last message text as-is. With it, the parent always gets valid JSON matching the schema, which is useful when the parent needs to process the result programmatically or pass it to downstream tools.
+不使用 `response_format` 时，父级接收子智能体的最后消息文本原样。使用后，父级始终获得匹配模式的有效 JSON，当父级需要程序化处理结果或将其传递给下游工具时很有用。
 
-For full details on schema types and strategies (tool calling vs. provider-native), see [Structured output](/oss/javascript/langchain/structured-output).
+有关模式类型和策略（工具调用 vs 提供商原生）的完整详细信息，请参见[结构化输出](/oss/javascript/langchain/structured-output)。
 
-## The general-purpose subagent
+## 通用子智能体
 
-In addition to any user-defined subagents, every deep agent has access to a `general-purpose` subagent at all times. This subagent:
+除了任何用户定义的子智能体外，每个深度智能体始终可以访问一个 `general-purpose` 子智能体。此子智能体：
 
-- Has the same system prompt as the main agent
-- Has access to all the same tools
-- Uses the same model (unless overridden)
-- Inherits skills from the main agent (when skills are configured)
+- 与主智能体具有相同的系统提示
+- 可访问所有相同的工具
+- 使用相同的模型（除非被覆盖）
+- 当配置了技能时继承主智能体的技能
 
-### Override the general-purpose subagent
+### 覆盖通用子智能体
 
 
 
-Include a subagent with `name: "general-purpose"` in your `subagents` list to replace the default. Use this to configure a different model, tools, or system prompt for the general-purpose subagent:
+在 `subagents` 列表中包含名为 `"general-purpose"` 的子智能体以替换默认值。使用此方法为通用子智能体配置不同的模型、工具或系统提示：
 
 ```typescript
 import { createDeepAgent } from "deepagents";
 
-// Main agent uses Gemini; general-purpose subagent uses GPT
+// 主智能体使用 Gemini；通用子智能体使用 GPT
 const agent = await createDeepAgent({
   model: "google_genai:gemini-3.1-pro-preview",
   tools: [internetSearch],
@@ -275,34 +274,34 @@ const agent = await createDeepAgent({
       description: "General-purpose agent for research and multi-step tasks",
       systemPrompt: "You are a general-purpose assistant.",
       tools: [internetSearch],
-      model: "openai:gpt-5.4",  // Different model for delegated tasks
+      model: "openai:gpt-5.4",  // 委派任务使用不同模型
     },
   ],
 });
 ```
 
 
-When you provide a subagent with the general-purpose name, the default general-purpose subagent is not added. Your spec fully replaces it.
+当您提供具有通用名称的子智能体时，默认的通用子智能体不会被添加。您的规范完全替换它。
 
-To remove the built-in general-purpose subagent entirely instead of replacing it, set the active harness profile's general-purpose subagent `enabled` flag to `False`.
+要完全移除内置的通用子智能体而非替换它，请将活动 harness 配置文件的通用子智能体 `enabled` 标志设置为 `False`。
 
-### 何时使用 it
+### 何时使用它
 
-The general-purpose subagent is ideal for context isolation without specialized behavior. The main agent can delegate a complex multi-step task to this subagent and get a concise result back without bloat from intermediate tool calls.
+通用子智能体适用于无需专业行为的上下文隔离。主智能体可以将复杂的多步骤任务委派给此子智能体，并获得简洁的结果返回，而不会有来自中间工具调用的膨胀。
 
-<Card title="Example">
-    Instead of the main agent making 10 web searches and filling its context with results, it delegates to the general-purpose subagent: `task(name="general-purpose", task="Research quantum computing trends")`. The subagent performs all the searches internally and returns only a summary.
+<Card title="示例">
+    主智能体不会自己进行 10 次网络搜索并用结果填满上下文，而是委派给通用子智能体：`task(name="general-purpose", task="Research quantum computing trends")`。子智能体在内部执行所有搜索并只返回摘要。
 </Card>
 
-### 技能 inheritance
+### 技能继承
 
-When configuring [skills](/oss/javascript/deepagents/skills) with `create_deep_agent`:
+使用 `create_deep_agent` 配置[技能](/oss/javascript/deepagents/skills)时：
 
-- **General-purpose subagent**: Automatically inherits skills from the main agent
-- **Custom subagents**: Do NOT inherit skills by default—use the `skills` parameter to give them their own skills
+- **通用子智能体**：自动继承主智能体的技能
+- **自定义子智能体**：默认**不**继承技能——使用 `skills` 参数赋予它们自己的技能
 
 <Note>
-    Only subagents configured with skills get a `SkillsMiddleware` instance—custom subagents without a `skills` parameter do not. When present, skill state is fully isolated in both directions: the parent's skills are not visible to the child, and the child's skills are not propagated back to the parent.
+    只有配置了技能的子智能体才会获得 `SkillsMiddleware` 实例——没有 `skills` 参数的自定义子智能体不会。存在时，技能状态双向完全隔离：父级的技能对子级不可见，子级的技能不会传播回父级。
 </Note>
 
 
@@ -310,36 +309,36 @@ When configuring [skills](/oss/javascript/deepagents/skills) with `create_deep_a
 ```typescript
 import { createDeepAgent, SubAgent } from "deepagents";
 
-// Research subagent with its own skills
+// 拥有自己技能的研究子智能体
 const researchSubagent: SubAgent = {
   name: "researcher",
   description: "Research assistant with specialized skills",
   systemPrompt: "You are a researcher.",
   tools: [webSearch],
-  skills: ["/skills/research/", "/skills/web-search/"],  // Subagent-specific skills
+  skills: ["/skills/research/", "/skills/web-search/"],  // 子智能体特定的技能
 };
 
 const agent = createDeepAgent({
   model: "google_genai:gemini-3.1-pro-preview",
-  skills: ["/skills/main/"],  // Main agent and GP subagent get these
-  subagents: [researchSubagent],  // Gets only /skills/research/ and /skills/web-search/
+  skills: ["/skills/main/"],  // 主智能体和通用子智能体获得这些
+  subagents: [researchSubagent],  // 仅获得 /skills/research/ 和 /skills/web-search/
 });
 ```
 
 
 ## 最佳实践
 
-### Write clear descriptions
+### 编写清晰的描述
 
-The main agent uses descriptions to decide which subagent to call. Be specific:
+主智能体使用描述来决定调用哪个子智能体。要具体：
 
-✅ **Good:** `"Analyzes financial data and generates investment insights with confidence scores"`
+**好：** `"Analyzes financial data and generates investment insights with confidence scores"`
 
-❌ **Bad:** `"Does finance stuff"`
+**差：** `"Does finance stuff"`
 
-### Keep system prompts detailed
+### 保持系统提示详细
 
-Include specific guidance on how to use tools and format outputs:
+包括关于如何使用工具和格式化输出的具体指导：
 
 
 
@@ -365,30 +364,30 @@ const researchSubagent = {
 ```
 
 
-### Minimize tool sets
+### 最小化工具集
 
-Only give subagents the tools they need. This improves focus and security:
+只给子智能体它们需要的工具。这提高了专注度和安全性：
 
 
 
 ```typescript
-// ✅ Good: Focused tool set
+// 好：专注的工具集
 const emailAgent = {
   name: "email-sender",
-  tools: [sendEmail, validateEmail],  // Only email-related
+  tools: [sendEmail, validateEmail],  // 仅与邮件相关
 };
 
-// ❌ Bad: Too many tools
+// 差：工具太多
 const emailAgentBad = {
   name: "email-sender",
-  tools: [sendEmail, webSearch, databaseQuery, fileUpload],  // Unfocused
+  tools: [sendEmail, webSearch, databaseQuery, fileUpload],  // 不聚焦
 };
 ```
 
 
-### Choose models by task
+### 按任务选择模型
 
-Different models excel at different tasks:
+不同的模型擅长不同的任务：
 
 
 
@@ -399,22 +398,22 @@ const subagents = [
     description: "Reviews legal documents and contracts",
     systemPrompt: "You are an expert legal reviewer...",
     tools: [readDocument, analyzeContract],
-    model: "google_genai:gemini-3.1-pro-preview",  // Large context for long documents
+    model: "google_genai:gemini-3.1-pro-preview",  // 大上下文适合长文档
   },
   {
     name: "financial-analyst",
     description: "Analyzes financial data and market trends",
     systemPrompt: "You are an expert financial analyst...",
     tools: [getStockPrice, analyzeFundamentals],
-    model: "gpt-5.4",  // Better for numerical analysis
+    model: "gpt-5.4",  // 更适合数值分析
   },
 ];
 ```
 
 
-### Return concise results
+### 返回简洁结果
 
-Instruct subagents to return summaries, not raw data:
+指示子智能体返回摘要而非原始数据：
 
 
 
@@ -435,11 +434,11 @@ const dataAnalyst = {
 ```
 
 
-## Common patterns
+## 常见模式
 
-### Multiple specialized subagents
+### 多个专业子智能体
 
-Create specialized subagents for different domains:
+为不同领域创建专业子智能体：
 
 
 
@@ -475,20 +474,20 @@ const agent = createDeepAgent({
 ```
 
 
-**Workflow:**
-1. Main agent creates high-level plan
-2. Delegates data collection to data-collector
-3. Passes results to data-analyzer
-4. Sends insights to report-writer
-5. Compiles final output
+**工作流：**
+1. 主智能体创建高层计划
+2. 将数据收集委派给 data-collector
+3. 将结果传递给 data-analyzer
+4. 将洞察发送给 report-writer
+5. 编译最终输出
 
-Each subagent works with clean context focused only on its task.
+每个子智能体使用干净的上下文，仅专注于其任务。
 
 ## 上下文管理
 
-When you invoke a parent agent with [runtime context](/oss/javascript/langchain/runtime), that context automatically propagates to all subagents. Each subagent run receives the same runtime context you passed on the parent `invoke` / `ainvoke` call.
+当您使用[运行时上下文](/oss/javascript/langchain/runtime)调用父智能体时，该上下文会自动传播到所有子智能体。每次子智能体运行都会收到您在父级 `invoke` / `ainvoke` 调用中传入的相同运行时上下文。
 
-这意味着 tools running inside any subagent can access the same context values you provided to the parent:
+这意味着在任何子智能体内运行的工具可以访问您提供给父级的相同上下文值：
 
 
 
@@ -528,7 +527,7 @@ const agent = createDeepAgent({
   contextSchema,
 });
 
-// Context flows to the researcher subagent and its tools automatically
+// 上下文自动流向研究子智能体及其工具
 const result = await agent.invoke(
   { messages: [new HumanMessage("Look up my recent activity")] },
   { context: { userId: "user-123", sessionId: "abc" } },
@@ -536,9 +535,9 @@ const result = await agent.invoke(
 ```
 
 
-### Per-subagent context
+### 每子智能体的上下文
 
-All subagents receive the same parent context. To pass configuration that is specific to a particular subagent, use **namespaced keys** (prefix keys with the subagent name, for example `researcher:max_depth`) in a flat `context` mapping, **or** model those settings as separate fields on your context type:
+所有子智能体接收相同的父上下文。要传递特定于某个子智能体的配置，使用**命名空间键**（为键加上子智能体名称前缀，例如 `researcher:max_depth`）在扁平的 `context` 映射中，**或者**将这些设置建模为上下文类型的独立字段：
 
 
 
@@ -549,17 +548,17 @@ import { z } from "zod";
 
 const contextSchema = z.object({
   userId: z.string(),
-  researcherMaxDepth: z.number().可选(),
-  factCheckerStrictMode: z.boolean().可选(),
+  researcherMaxDepth: z.number().optional(),
+  factCheckerStrictMode: z.boolean().optional(),
 });
 
 const result = await agent.invoke(
   { messages: [new HumanMessage("Research this and verify the claims")] },
   {
     context: {
-      userId: "user-123",                        // shared by all agents
-      "researcher:maxDepth": 3,                  // only for researcher
-      "fact-checker:strictMode": true,           // only for fact-checker
+      userId: "user-123",                        // 所有智能体共享
+      "researcher:maxDepth": 3,                  // 仅用于研究员
+      "fact-checker:strictMode": true,           // 仅用于事实核查员
     },
   },
 );
@@ -581,9 +580,9 @@ const verifyClaim = tool(
 ```
 
 
-### Identifying which subagent called a tool
+### 识别哪个子智能体调用了工具
 
-When the same tool is shared between the parent and multiple subagents, you can use the `lc_agent_name` metadata (the same value used in [streaming](#streaming)) to determine which agent initiated the call:
+当同一工具在父级和多个子智能体之间共享时，您可以使用 `lc_agent_name` 元数据（与[流式输出](#streaming)中使用的相同值）来确定哪个智能体发起了调用：
 
 
 
@@ -608,7 +607,7 @@ const sharedLookup = tool(
 ```
 
 
-You can combine both patterns—read agent-specific settings from `runtime.context` and read `lc_agent_name` from `runtime.config` metadata when branching tool behavior.
+您可以组合两种模式——从 `runtime.context` 读取智能体特定的设置，从 `runtime.config` 元数据读取 `lc_agent_name` 来分支工具行为。
 
 
 
@@ -634,26 +633,26 @@ const flexibleSearch = tool(
 
 ## 故障排除
 
-### Subagent not being called
+### 子智能体未被调用
 
-**Problem**: Main agent tries to do work itself instead of delegating.
+**问题**：主智能体试图自己做工作而不是委派。
 
-**Solutions**:
+**解决方案**：
 
-1. **Make descriptions more specific:**
+1. **使描述更具体：**
 
 
 
    ```typescript
-   // ✅ Good
+   // 好
    { name: "research-specialist", description: "Conducts in-depth research on specific topics using web search. Use when you need detailed information that requires multiple searches." }
 
-   // ❌ Bad
+   // 差
    { name: "helper", description: "helps with stuff" }
    ```
 
 
-2. **Instruct main agent to delegate:**
+2. **指示主智能体进行委派：**
 
 
 
@@ -668,13 +667,13 @@ const flexibleSearch = tool(
    ```
 
 
-### Context still getting bloated
+### 上下文仍然膨胀
 
-**Problem**: Context fills up despite using subagents.
+**问题**：尽管使用了子智能体，上下文仍然填满。
 
-**Solutions**:
+**解决方案**：
 
-1. **Instruct subagent to return concise results:**
+1. **指示子智能体返回简洁结果：**
 
 
 
@@ -687,7 +686,7 @@ const flexibleSearch = tool(
    ```
 
 
-2. **Use filesystem for large data:**
+2. **对大数据使用文件系统：**
 
 
 
@@ -701,11 +700,11 @@ const flexibleSearch = tool(
    ```
 
 
-### Wrong subagent being selected
+### 选择了错误的子智能体
 
-**Problem**: Main agent calls inappropriate subagent for the task.
+**问题**：主智能体为任务调用了不适当的子智能体。
 
-**Solution**: Differentiate subagents clearly in descriptions:
+**解决方案**：在描述中清晰区分子智能体：
 
 
 
@@ -728,9 +727,9 @@ const subagents = [
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+    [通过 MCP 连接这些文档](/use-these-docs)到 Claude、VSCode 等以获取实时解答。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/subagents.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/subagents.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

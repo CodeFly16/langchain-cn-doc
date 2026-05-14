@@ -3,25 +3,25 @@ title: AI Elements
 description: 基于 shadcn/ui 的可组合 AI 聊天界面组件，配合 useStream 使用
 ---
 
-[AI Elements](https://elements.ai-sdk.dev/) is a composable, shadcn/ui-based component library purpose-built for AI chat interfaces. Components like `Conversation`, `Message`, `Tool`, `Reasoning`, and `PromptInput` are designed to drop directly into any React project and wire to `stream.messages` with minimal glue code.
+[AI Elements](https://elements.ai-sdk.dev/) 是一个基于 shadcn/ui 的可组合组件库，专为 AI 聊天界面构建。`Conversation`、`Message`、`Tool`、`Reasoning` 和 `PromptInput` 等组件设计为可直接嵌入任何 React 项目，并通过极少的胶水代码连接到 `stream.messages`。
 
 import { ExampleEmbed } from "/snippets/example-embed.jsx"
 
 <ExampleEmbed example="ai-elements" minHeight={700} />
 
 <Tip>
-  Clone and run the [full AI Elements example](https://github.com/langchain-ai/langgraphjs/tree/main/examples/ai-elements) to see tool call rendering, reasoning display, streaming messages, and more in a working project.
+  克隆并运行[完整的 AI Elements 示例](https://github.com/langchain-ai/langgraphjs/tree/main/examples/ai-elements)，查看工具调用渲染、推理显示、流式消息等功能的工作项目。
 </Tip>
 
 ## 工作原理
 
-1. **Install components as source files:** AI Elements ships via a CLI that adds components directly to your project (shadcn/ui registry style)
-2. **Map messages to components:** iterate `stream.messages`, render `HumanMessage` instances as user bubbles and `AIMessage` instances as assistant responses
-3. **Compose richer UIs:** wrap tool calls in `<Tool>`, reasoning in `<Reasoning>`, and everything in `<Conversation>` for scroll management
+1. **以源文件形式安装组件：**AI Elements 通过 CLI 将组件直接添加到你的项目中（shadcn/ui 注册表风格）
+2. **将消息映射到组件：**遍历 `stream.messages`，将 `HumanMessage` 实例渲染为用户气泡，将 `AIMessage` 实例渲染为助手回复
+3. **组合更丰富的 UI：**用 `<Tool>` 包裹工具调用，用 `<Reasoning>` 包裹推理内容，用 `<Conversation>` 包裹全部内容以管理滚动
 
 ## 安装
 
-Install AI Elements components via the CLI. They're added as editable source files into your project:
+通过 CLI 安装 AI Elements 组件。它们作为可编辑的源文件添加到你的项目中：
 
 ```bash
 npm install @langchain/react @ai-elements/react
@@ -30,7 +30,7 @@ npx ai-elements@latest add conversation message prompt-input tool reasoning sugg
 
 ## 连接 useStream
 
-Render AI Elements components directly from `stream.messages`. Each LangChain `BaseMessage` maps to a component:
+直接从 `stream.messages` 渲染 AI Elements 组件。每个 LangChain `BaseMessage` 映射到一个组件：
 
 ```tsx
 import { useStream } from "@langchain/react";
@@ -87,13 +87,13 @@ export function Chat() {
             if (AIMessage.isInstance(msg)) {
               return (
                 <div key={i}>
-                  {/* Reasoning block (shows when model emits thinking tokens) */}
+                  {/* 推理块（当模型发出思考 Token 时显示） */}
                   <Reasoning>
                     <ReasoningTrigger />
                     <ReasoningContent>{getReasoningText(msg)}</ReasoningContent>
                   </Reasoning>
 
-                  {/* Inline tool calls with input/output display */}
+                  {/* 内联工具调用，带有输入/输出显示 */}
                   {getToolCalls(msg).map((tc) => (
                     <Tool key={tc.id} defaultOpen>
                       <ToolHeader type={`tool-${tc.name}`} state={tc.state} />
@@ -106,7 +106,7 @@ export function Chat() {
                     </Tool>
                   ))}
 
-                  {/* Streamed text response */}
+                  {/* 流式文本回复 */}
                   <Message from="assistant">
                     <MessageContent>
                       <MessageResponse>{getTextContent(msg)}</MessageResponse>
@@ -126,7 +126,7 @@ export function Chat() {
         }
       >
         <PromptInputBody>
-          <PromptInputTextarea placeholder="Ask me something..." />
+          <PromptInputTextarea placeholder="问我些什么..." />
         </PromptInputBody>
         <PromptInputFooter>
           <PromptInputSubmit
@@ -141,18 +141,18 @@ export function Chat() {
 
 ## 最佳实践
 
-- **Edit source files freely:** components ship in your project, not as an external package dependency, so you can change anything without forking
-- **Use `MessageResponse` for streaming:** it handles streamed partial tokens correctly; avoid rendering raw `msg.content` directly during streaming
-- **Wrap in `Conversation`:** the `Conversation` component manages scroll behaviour so new messages auto-scroll into view
-- **Gate on `isInstance`:** use `HumanMessage.isInstance(msg)` and `AIMessage.isInstance(msg)` rather than checking `msg.getType()` for proper TypeScript narrowing
+- **自由编辑源文件：**组件存在于你的项目中，而非作为外部包依赖，因此你可以随意修改而无需 fork
+- **使用 `MessageResponse` 进行流式输出：**它能正确处理流式部分 Token；避免在流式输出期间直接渲染原始 `msg.content`
+- **用 `Conversation` 包裹：**`Conversation` 组件管理滚动行为，使新消息自动滚动到视图中
+- **使用 `isInstance` 判断：**使用 `HumanMessage.isInstance(msg)` 和 `AIMessage.isInstance(msg)` 而非检查 `msg.getType()`，以获得正确的 TypeScript 类型缩窄
 
 ---
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时回答。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/frontend/integrations/ai-elements.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/frontend/integrations/ai-elements.mdx)或[提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

@@ -56,14 +56,14 @@ interface Recipe {
 }
 ```
 
-| Field | Type | Description |
+| 字段 | 类型 | 描述 |
 |---|---|---|
-| `title` | `string` | Name of the recipe |
-| `description` | `string` | Short summary of the dish |
-| `servings` | `number` | Number of servings |
-| `ingredients` | `Ingredient[]` | List of ingredients with amounts and units |
-| `steps` | `RecipeStep[]` | Ordered preparation steps |
-| `totalTime` | `string` | Estimated total preparation and cooking time |
+| `title` | `string` | 食谱名称 |
+| `description` | `string` | 菜品简短描述 |
+| `servings` | `number` | 份数 |
+| `ingredients` | `Ingredient[]` | 包含数量和单位的原料列表 |
+| `steps` | `RecipeStep[]` | 有序的准备步骤 |
+| `totalTime` | `string` | 预计总准备和烹饪时间 |
 
 你的 schema 可以是任何形状。无论形状如何，该模式的工作方式都相同。
 
@@ -87,14 +87,14 @@ function extractStructuredOutput<T>(messages: any[]): T | null {
 ```
 
 <Note>
-结构化输出工具调用的 `args` 可能在智能体完成流式传输之前不会被填充。在流式传输期间，`args` 可能只部分填充或未定义。在渲染之前始终检查完整性。
+结构化输出工具调用的 `args` 可能在智能体完成流式输出之前不会被填充。在流式输出期间，`args` 可能只部分填充或未定义。在渲染之前始终检查完整性。
 </Note>
 
 ## 设置 `useStream`
 
 
 
-Import your agent and pass `typeof myAgent` as a type parameter to `useStream` for type-safe access to state values:
+导入你的智能体并将 `typeof myAgent` 作为类型参数传递给 `useStream`，以获得类型安全的状态值访问：
 
 ```ts
 import type { myAgent } from "./agent";
@@ -239,13 +239,13 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
         <h3>{recipe.title}</h3>
         <p className="recipe-description">{recipe.description}</p>
         <div className="recipe-meta">
-          <span>{recipe.servings} servings</span>
+          <span>{recipe.servings} 份</span>
           <span>{recipe.totalTime}</span>
         </div>
       </div>
 
       <div className="recipe-ingredients">
-        <h4>Ingredients</h4>
+        <h4>原料</h4>
         <ul>
           {recipe.ingredients.map((ing, i) => (
             <li key={i}>
@@ -256,10 +256,10 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
       </div>
 
       <div className="recipe-steps">
-        <h4>Instructions</h4>
+        <h4>步骤</h4>
         {recipe.steps.map((step, i) => (
           <div key={i} className="step">
-            <div className="step-number">Step {i + 1}</div>
+            <div className="step-number">步骤 {i + 1}</div>
             <p className="step-instruction">{step.instruction}</p>
             {step.duration && (
               <span className="step-duration">{step.duration}</span>
@@ -274,20 +274,20 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
 
 相同的方法适用于任何领域。将每个字段映射到最能代表它的 UI 元素：
 
-| Data type | Rendering strategy |
+| 数据类型 | 渲染策略 |
 |---|---|
-| Plain text | Paragraphs, headings, list items |
-| Numbers/metrics | Stat cards, progress bars, badges |
-| Arrays | Lists, tables, grids |
-| Nested objects | Nested cards, accordion sections |
-| Markdown | Markdown renderer (e.g. `react-markdown`) |
-| LaTeX/math | KaTeX or MathJax |
-| Dates/times | Formatted timestamps, relative time |
-| URLs | Links, embedded previews |
+| 纯文本 | 段落、标题、列表项 |
+| 数字/指标 | 统计卡片、进度条、徽章 |
+| 数组 | 列表、表格、网格 |
+| 嵌套对象 | 嵌套卡片、手风琴节 |
+| Markdown | Markdown 渲染器（如 `react-markdown`） |
+| LaTeX/数学 | KaTeX 或 MathJax |
+| 日期/时间 | 格式化时间戳、相对时间 |
+| URL | 链接、嵌入式预览 |
 
 ## 处理部分流式数据
 
-在流式传输期间，工具调用参数可能是不完整的 JSON。在你的提取逻辑中对此进行防护：
+在流式输出期间，工具调用参数可能是不完整的 JSON。在你的提取逻辑中对此进行防护：
 
 ```ts
 function extractStructuredOutput<T>(
@@ -321,7 +321,7 @@ const recipe = extractStructuredOutput<Recipe>(stream.messages, [
 ]);
 ```
 
-## 流式传输期间渐进式渲染
+## 流式输出期间渐进式渲染
 
 不要等待完整的结构化输出，而是在字段到达时渲染它们。这在智能体仍在生成时给用户即时反馈：
 
@@ -337,7 +337,7 @@ function ProgressiveRecipeCard({ messages }: { messages: any[] }) {
 
       {partial.ingredients && partial.ingredients.length > 0 && (
         <div className="recipe-ingredients">
-          <h4>Ingredients</h4>
+          <h4>原料</h4>
           <ul>
             {partial.ingredients.map((ing, i) => (
               <li key={i}>
@@ -350,10 +350,10 @@ function ProgressiveRecipeCard({ messages }: { messages: any[] }) {
 
       {partial.steps && partial.steps.length > 0 && (
         <div className="recipe-steps">
-          <h4>Instructions</h4>
+          <h4>步骤</h4>
           {partial.steps.map((step, i) => (
             <div key={i} className="step">
-              <div className="step-number">Step {i + 1}</div>
+              <div className="step-number">步骤 {i + 1}</div>
               <p>{step.instruction}</p>
             </div>
           ))}
@@ -375,7 +375,7 @@ function ProgressiveRecipeCard({ messages }: { messages: any[] }) {
 ```tsx
 {recipe && (
   <button onClick={() => stream.switchThread(null)}>
-    Start over
+    重新开始
   </button>
 )}
 ```
@@ -384,20 +384,20 @@ function ProgressiveRecipeCard({ messages }: { messages: any[] }) {
 
 ## 最佳实践
 
-- **渲染前验证**：始终在渲染前检查必需字段是否存在，因为流式传输可能传递部分数据
+- **渲染前验证**：始终在渲染前检查必需字段是否存在，因为流式输出可能传递部分数据
 - **使用通用提取函数**：用类型和必需字段参数化你的提取逻辑，使其跨不同 schema 工作
 - **渐进式渲染**：在字段到达时显示而不是等待完整对象，让用户看到即时反馈
 - **提供回退表示**：如果字段支持富渲染（LaTeX、Markdown、图表），也在 schema 中包含纯文本等价物作为回退
-- **尽可能保持 schema 扁平**：深层嵌套的 schema 更难渐进式渲染，更可能在部分流式传输期间出错
+- **尽可能保持 schema 扁平**：深层嵌套的 schema 更难渐进式渲染，更可能在部分流式输出期间出错
 - **匹配 UI 与数据**：选择最能代表每种字段类型的渲染策略（数组用表格，嵌套对象用卡片，状态字段用徽章）
 
 ---
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    [连接这些文档](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
+    [将这些文档连接到](/use-these-docs) Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/frontend/structured-output.mdx) 或[提交 Issue](https://github.com/langchain-ai/docs/issues/new/choose).
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/frontend/structured-output.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

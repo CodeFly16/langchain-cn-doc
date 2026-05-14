@@ -3,59 +3,59 @@ title: 框架能力
 sidebarTitle: 概述
 ---
 
-智能体框架是多种不同功能的组合 使构建长时间运行的智能体更加容易：
+智能体框架是多种能力的组合，使构建长时间运行的智能体变得更加容易：
 
 - [规划能力](#planning-capabilities)
 - [虚拟文件系统](#virtual-filesystem-access)
 - [文件系统权限](#filesystem-permissions)
-- [任务委派（子智能体）](#task-delegation-subagents)
+- [任务委托（子智能体）](#task-delegation-subagents)
 - [上下文和 Token 管理](#context-management)
 - [代码执行](#code-execution)
-- [Human-in-the-loop](#human-in-the-loop)
-- [框架配置](#harness-profiles)
+- [人机协作](#human-in-the-loop)
+- [框架配置文件](#harness-profiles)
 
-除了这些功能外，深度智能体还使用 [Skills](#skills) and [Memory](#memory) 来获取额外的上下文和指令。
+除了这些能力之外，深度智能体还使用[技能](#skills)和[记忆](#memory)来提供额外的上下文和指令。
 
-![The Deep Agents open harness: planning, virtual filesystem, permissions, subagents, context management, code execution, human-in-the-loop, skills, and memory](/oss/images/deepagents/production/open-harness.png)
+![深度智能体开放框架：规划、虚拟文件系统、权限、子智能体、上下文管理、代码执行、人机协作、技能和记忆](/oss/images/deepagents/production/open-harness.png)
 
 ## 规划能力
 
-框架提供了一个 `write_todos` 工具，智能体可以使用它来维护结构化的任务列表。
+框架提供了 `write_todos` 工具，智能体可以使用它来维护结构化的任务列表。
 
-**功能：**
-- 跟踪具有状态的多个任务 (`'pending'`, `'in_progress'`, `'completed'`)
+**功能特性：**
+- 跟踪多个任务及其状态（`'pending'`、`'in_progress'`、`'completed'`）
 - 持久化在智能体状态中
 - 帮助智能体组织复杂的多步骤工作
-- 对长时间运行的任务和规划很有用
+- 适用于长时间运行的任务和规划
 
-## 虚拟文件系统 access
+## 虚拟文件系统访问
 
-框架提供了一个 configurable virtual filesystem 可以由不同的可插拔后端支持。
-The backends support the following file system operations:
+框架提供可配置的虚拟文件系统，可以由不同的可插拔后端支持。
+后端支持以下文件系统操作：
 
-| Tool | 描述 |
+| 工具 | 描述 |
 | ---- | ----------- |
-| `ls` | 列出目录中的文件及元数据 （大小、修改时间） |
-| `read_file` | 读取带行号的文件内容, 支持大文件的偏移/限制. Also supports returning multimodal content blocks for non-text files (images, video, audio, and documents). See supported extensions below. |
+| `ls` | 列出目录中的文件及元数据（大小、修改时间） |
+| `read_file` | 读取文件内容（带行号），支持大文件的偏移/限制。还支持返回非文本文件（图片、视频、音频和文档）的多模态内容块。请参阅下方支持的扩展名列表。 |
 | `write_file` | 创建新文件 |
-| `edit_file` | 在文件中执行精确字符串替换 (支持全局替换模式) |
-| `glob` | 查找匹配模式的文件 (e.g., `**/*.py`) |
-| `grep` | 搜索文件内容 支持多种输出模式 (仅文件名、带上下文的内容或计数) |
-| `execute` | 在环境中运行 Shell 命令 (available with [sandbox backends](/oss/javascript/deepagents/sandboxes) only) |
+| `edit_file` | 在文件中执行精确的字符串替换（支持全局替换模式） |
+| `glob` | 查找匹配模式的文件（例如 `**/*.py`） |
+| `grep` | 搜索文件内容，支持多种输出模式（仅文件名、带上下文的内容、或计数） |
+| `execute` | 在环境中运行 shell 命令（仅在[沙箱后端](/oss/javascript/deepagents/sandboxes)中可用） |
 
-<Accordion title="Supported multimodal file extensions">
+<Accordion title="支持的多模态文件扩展名">
 
-| Type | Extensions |
+| 类型 | 扩展名 |
 | ---- | ---------- |
-| [Image](/oss/javascript/langchain/messages#multimodal) | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.heic`, `.heif` |
-| [Video](/oss/javascript/langchain/messages#multimodal) | `.mp4`, `.mpeg`, `.mov`, `.avi`, `.flv`, `.mpg`, `.webm`, `.wmv`, `.3gpp` |
-| [Audio](/oss/javascript/langchain/messages#multimodal) | `.wav`, `.mp3`, `.aiff`, `.aac`, `.ogg`, `.flac` |
-| [File](/oss/javascript/langchain/messages#multimodal) | `.pdf`, `.ppt`, `.pptx` |
+| [图片](/oss/javascript/langchain/messages#multimodal) | `.png`、`.jpg`、`.jpeg`、`.gif`、`.webp`、`.heic`、`.heif` |
+| [视频](/oss/javascript/langchain/messages#multimodal) | `.mp4`、`.mpeg`、`.mov`、`.avi`、`.flv`、`.mpg`、`.webm`、`.wmv`、`.3gpp` |
+| [音频](/oss/javascript/langchain/messages#multimodal) | `.wav`、`.mp3`、`.aiff`、`.aac`、`.ogg`、`.flac` |
+| [文件](/oss/javascript/langchain/messages#multimodal) | `.pdf`、`.ppt`、`.pptx` |
 
 </Accordion>
 
-<Accordion title="Running without the default filesystem tools" icon="ban">
-    To hide the filesystem tools listed above from the model, register a [harness profile](#harness-profiles) with `excluded_tools`:
+<Accordion title="不使用默认文件系统工具运行" icon="ban">
+    要对模型隐藏上述文件系统工具，请注册一个带有 `excluded_tools` 的[框架配置文件](#harness-profiles)：
 
     ```python
     from deepagents import HarnessProfile, register_harness_profile
@@ -70,166 +70,166 @@ The backends support the following file system operations:
     )
     ```
 
-    Removing `FilesystemMiddleware` itself via `excluded_middleware` is intentionally rejected — use `excluded_tools` to hide only the model-visible tool surface and leave the middleware in place. To remove the `task` tool, see [Running without subagents](/oss/javascript/deepagents/subagents#running-without-subagents).
+    通过 `excluded_middleware` 移除 `FilesystemMiddleware` 本身会被故意拒绝——使用 `excluded_tools` 仅隐藏模型可见的工具表面，同时保留中间件不变。要移除 `task` 工具，请参阅[不使用子智能体运行](/oss/javascript/deepagents/subagents#running-without-subagents)。
 </Accordion>
 
-The virtual filesystem is used by several other harness capabilities such as skills, memory, code execution, and context management.
-你也可以 use the file system when building custom tools and middleware for Deep Agents.
+虚拟文件系统被多个其他框架能力使用，如技能、记忆、代码执行和上下文管理。
+你还可以在为深度智能体构建自定义工具和中间件时使用文件系统。
 
-更多信息请参阅 [backends](/oss/javascript/deepagents/backends).
+更多信息请参阅[后端](/oss/javascript/deepagents/backends)。
 
 ## 文件系统权限
 
-The harness supports declarative permission rules that control which files and directories the agent can read or write. Permissions apply to the built-in filesystem tools listed above and are evaluated in declaration order with first-match-wins semantics.
+框架支持声明式权限规则，控制智能体可以读写哪些文件和目录。权限适用于上述列出的内置文件系统工具，并按声明顺序以先匹配优先的语义进行评估。
 
-****工作原理：****
-- Pass a list of rules to `permissions=` when creating the agent
-- Each rule specifies `operations` (`"read"`, `"write"`), `paths` (glob patterns), and `mode` (`"allow"` or `"deny"`)
-- The first matching rule wins. If no rule matches, the operation is allowed.
+**工作原理：**
+- 创建智能体时传入 `permissions=` 规则列表
+- 每条规则指定 `operations`（`"read"`、`"write"`）、`paths`（glob 模式）和 `mode`（`"allow"` 或 `"deny"`）
+- 第一条匹配的规则生效。如果没有规则匹配，则允许操作。
 
-****有用之处：****
-- Restrict agents to specific directories (e.g., `/workspace/`)
-- Protect sensitive files (e.g., `.env`, credentials)
-- Give subagents narrower access than the parent agent
+**实用场景：**
+- 将智能体限制在特定目录（例如 `/workspace/`）
+- 保护敏感文件（例如 `.env`、凭据）
+- 给子智能体比父智能体更窄的访问权限
 
-Permissions do not apply to [sandbox backends](/oss/javascript/deepagents/sandboxes), which support arbitrary command execution via the `execute` tool. For custom validation logic, use [backend policy hooks](/oss/javascript/deepagents/backends#add-policy-hooks).
+权限不适用于[沙箱后端](/oss/javascript/deepagents/sandboxes)，因为沙箱通过 `execute` 工具支持任意命令执行。有关自定义验证逻辑，请使用[后端策略钩子](/oss/javascript/deepagents/backends#add-policy-hooks)。
 
-有关完整的 rule structure, examples, and subagent inheritance, see [Permissions](/oss/javascript/deepagents/permissions).
+完整规则结构、示例和子智能体继承请参阅[权限](/oss/javascript/deepagents/permissions)。
 
-## 任务委派（子智能体）
+## 任务委托（子智能体）
 
-The harness allows the main agent to create ephemeral "subagents" for isolated multi-step tasks.
+框架允许主智能体为隔离的多步骤任务创建临时"子智能体"。
 
-****有用之处：****
-- **Context isolation** - Subagent's work doesn't clutter main agent's context
-- **Parallel execution** - Multiple subagents can run concurrently
-- **Specialization** - Subagents can have different tools/configurations
-- **Token efficiency** - Large subtask context is compressed into a single result
+**实用场景：**
+- **上下文隔离** - 子智能体的工作不会干扰主智能体的上下文
+- **并行执行** - 多个子智能体可以同时运行
+- **专业化** - 子智能体可以有不同的工具/配置
+- **Token 效率** - 大型子任务上下文被压缩为单个结果
 
-****工作原理：****
-- Main agent has a `task` tool
-- When invoked, it creates a fresh agent instance with its own context
-- Subagent executes autonomously until completion
-- Returns a single final report to the main agent
-- Subagents are stateless (can't send multiple messages back)
+**工作原理：**
+- 主智能体有一个 `task` 工具
+- 调用时，创建一个拥有自己上下文的新智能体实例
+- 子智能体自主执行直到完成
+- 向主智能体返回单个最终报告
+- 子智能体是无状态的（不能发送多条消息回去）
 
 **默认子智能体：**
-- "general-purpose" subagent automatically available
-- Has filesystem tools by default
-- Can be customized with additional tools/middleware
+- "general-purpose"子智能体自动可用
+- 默认拥有文件系统工具
+- 可以使用额外的工具/中间件进行自定义
 
 **自定义子智能体：**
-- Define specialized subagents with specific tools
-- Example: code-reviewer, web-researcher, test-runner
-- Configure via `subagents` parameter
+- 定义具有特定工具的专业子智能体
+- 示例：代码审查器、网络研究员、测试运行器
+- 通过 `subagents` 参数配置
 
-<Accordion title="Running without subagents (no `task` tool)" icon="ban">
-    To run an agent without the `task` tool, see [Running without subagents](/oss/javascript/deepagents/subagents#running-without-subagents). Don't try removing `SubAgentMiddleware` via `excluded_middleware`—that's intentionally rejected. Instead, disable the auto-added subagent via the [harness profile](#harness-profiles) and pass no synchronous subagents via `subagents=`. Async subagents are unaffected.
+<Accordion title="不使用子智能体运行（无 `task` 工具）" icon="ban">
+    要不使用 `task` 工具运行智能体，请参阅[不使用子智能体运行](/oss/javascript/deepagents/subagents#running-without-subagents)。不要尝试通过 `excluded_middleware` 移除 `SubAgentMiddleware`——这会被故意拒绝。相反，通过[框架配置文件](#harness-profiles)禁用自动添加的子智能体，并且不要通过 `subagents=` 传入同步子智能体。异步子智能体不受影响。
 </Accordion>
 
 ## 上下文管理
 
-The harness manages context so deep agents can handle long-running tasks within token limits while retaining the information they need.
+框架管理上下文，使深度智能体能够在 Token 限制内处理长时间运行的任务，同时保留所需信息。
 
-****工作原理：****
-- **Input context** — System prompt, memory, skills, and tool prompts shape what the agent knows at startup
-- **Compression** — Built-in offloading and summarization keep context within window limits as tasks progress
-- **Isolation** — Subagents quarantine heavy work and return only results (see [Task delegation](#task-delegation-subagents))
-- **Long-term memory** — Persistent storage across threads via the virtual filesystem
+**工作原理：**
+- **输入上下文** — 系统提示、记忆、技能和工具提示塑造智能体启动时的认知
+- **压缩** — 内置的卸载和摘要功能在任务推进时将上下文保持在窗口限制内
+- **隔离** — 子智能体隔离繁重工作并仅返回结果（参见[任务委托](#task-delegation-subagents)）
+- **长期记忆** — 通过虚拟文件系统实现跨线程的持久化存储
 
-****有用之处：****
-- Enables multi-step tasks that exceed a single context window
-- Keeps the most relevant information in scope without manual trimming
-- Reduces token usage through automatic summarization and offloading
+**实用场景：**
+- 支持超出单个上下文窗口的多步骤任务
+- 在不需要手动裁剪的情况下保留最相关的信息
+- 通过自动摘要和卸载减少 Token 使用量
 
-For configuration details, see [Context engineering](/oss/javascript/deepagents/context-engineering).
+配置详情请参阅[上下文工程](/oss/javascript/deepagents/context-engineering)。
 
 ## 代码执行
 
-Deep Agents supports code execution in two ways:
+深度智能体以两种方式支持代码执行：
 
-- [Sandbox backends](/oss/javascript/deepagents/sandboxes) expose an `execute` tool for shell commands in an isolated environment.
-- [Interpreters](/oss/javascript/deepagents/interpreters) add an `eval` tool that runs JavaScript in a scoped QuickJS runtime.
+- [沙箱后端](/oss/javascript/deepagents/sandboxes)暴露一个 `execute` 工具，用于在隔离环境中运行 shell 命令。
+- [解释器](/oss/javascript/deepagents/interpreters)添加一个 `eval` 工具，在受限的 QuickJS 运行时中运行 JavaScript。
 
-Use sandbox backends when the agent needs to 安装依赖, run tests, call CLIs, or work with an operating-system filesystem. Sandbox backends implement the `SandboxBackendProtocolV2`; when detected, the harness adds the `execute` tool to the agent's available tools.
+当智能体需要安装依赖、运行测试、调用 CLI 或使用操作系统文件系统时，请使用沙箱后端。沙箱后端实现了 `SandboxBackendProtocolV2`；当检测到时，框架会将 `execute` 工具添加到智能体的可用工具中。
 
-Use interpreters when the agent needs a lightweight programmable layer for loops, batching, deterministic data transformations, or programmatic tool calling. Interpreters do not provide shell access, package installs, or filesystem and network access.
+当智能体需要轻量级的可编程层来处理循环、批量操作、确定性数据转换或程序化工具调用时，请使用解释器。解释器不提供 shell 访问、包安装或文件系统和网络访问。
 
-For sandbox setup, providers, and file transfer APIs, see [Sandboxes](/oss/javascript/deepagents/sandboxes). For the QuickJS runtime and programmatic tool calling, see [Interpreters](/oss/javascript/deepagents/interpreters).
+有关沙箱设置、提供商和文件传输 API，请参阅[沙箱](/oss/javascript/deepagents/sandboxes)。有关 QuickJS 运行时和程序化工具调用，请参阅[解释器](/oss/javascript/deepagents/interpreters)。
 
-## Human-in-the-loop
+## 人机协作
 
-The harness can pause agent execution at specified tool calls to allow human approval or modification. This feature is opt-in via the `interrupt_on` 参数配置哪些工具需要审批。
+框架可以在指定的工具调用处暂停智能体执行，以允许人工审批或修改。此功能通过 `interrupt_on` 参数选择性启用。
 
 **配置：**
-- Pass `interrupt_on` to `create_deep_agent` with a mapping of tool names to interrupt configurations
-- Example: `interrupt_on={"edit_file": True}` pauses before every edit
-- You can provide approval messages or modify tool inputs when prompted
+- 将 `interrupt_on` 传入 `create_deep_agent`，包含工具名称到中断配置的映射
+- 示例：`interrupt_on={"edit_file": True}` 在每次编辑前暂停
+- 你可以在提示时提供审批消息或修改工具输入
 
-****有用之处：****
-- Safety gates for destructive operations
-- User verification before expensive API calls
-- Interactive debugging and guidance
+**实用场景：**
+- 破坏性操作的安全门
+- 昂贵 API 调用前的用户验证
+- 交互式调试和指导
 
-## Skills
+## 技能
 
-The harness supports skills that provide specialized workflows and domain knowledge 给你的深度智能体。
+框架支持为深度智能体提供专业工作流和领域知识的技能。
 
-****工作原理：****
-- Skills follow the [Agent Skills standard](https://agentskills.io/)
-- Each skill is a directory containing a `SKILL.md` file with instructions and metadata
-- Skills can include additional scripts, reference docs, templates, and other resources
-- Skills use progressive disclosure—they are only loaded when the agent determines they're useful for the current task
-- Agent reads frontmatter from each `SKILL.md` file at startup, then reviews full skill content when needed
+**工作原理：**
+- 技能遵循 [Agent Skills 标准](https://agentskills.io/)
+- 每个技能是一个包含 `SKILL.md` 文件的目录，其中有指令和元数据
+- 技能可以包含额外的脚本、参考文档、模板和其他资源
+- 技能使用渐进式披露——只在智能体确定它们对当前任务有用时才加载
+- 智能体在启动时读取每个 `SKILL.md` 文件的 frontmatter，然后在需要时查看完整技能内容
 
-****有用之处：****
-- Reduces token usage by only loading relevant skills when needed
-- Bundles capabilities together into larger actions with additional context
-- Provides specialized expertise without cluttering the system prompt
-- Enables modular, reusable agent capabilities
+**实用场景：**
+- 通过仅在需要时加载相关技能来减少 Token 使用量
+- 将能力捆绑在一起形成更大的操作，并带有额外上下文
+- 提供专业知识而不干扰系统提示
+- 支持模块化、可复用的智能体能力
 
-更多信息请参阅 [Skills](/oss/javascript/deepagents/skills).
+更多信息请参阅[技能](/oss/javascript/deepagents/skills)。
 
 ## 记忆
 
-The harness supports persistent memory files that provide extra context to your deep agent across conversations.
-These files often contain general coding style, preferences, conventions, and guidelines that help the agent understand how to work with your codebase and follow your preferences.
+框架支持持久化记忆文件，为你的深度智能体跨对话提供额外上下文。
+这些文件通常包含通用的编码风格、偏好、约定和指南，帮助智能体了解如何使用你的代码库并遵循你的偏好。
 
-****工作原理：****
-- Uses [`AGENTS.md` files](https://agents.md/) to provide persistent context
-- Memory files are always loaded (unlike skills, which use progressive disclosure)
-- Pass one or more file paths to the `memory` parameter when creating your agent
-- Files are stored in the agent's backend (StateBackend, StoreBackend, or FilesystemBackend)
-- The agent can update memory based on your interactions, feedback, and identified patterns
+**工作原理：**
+- 使用 [`AGENTS.md` 文件](https://agents.md/)提供持久化上下文
+- 记忆文件始终被加载（不像技能那样使用渐进式披露）
+- 创建智能体时将一个或多个文件路径传入 `memory` 参数
+- 文件存储在智能体的后端（StateBackend、StoreBackend 或 FilesystemBackend）
+- 智能体可以根据你的交互、反馈和识别的模式来更新记忆
 
-****有用之处：****
-- Provides persistent context that doesn't need to be re-specified each conversation
-- Useful for storing user preferences, project guidelines, or domain knowledge
-- Always available to the agent, ensuring consistent behavior
+**实用场景：**
+- 提供不需要每次对话重新指定的持久化上下文
+- 适用于存储用户偏好、项目指南或领域知识
+- 始终对智能体可用，确保一致的行为
 
-For configuration details and examples, see [Memory](/oss/javascript/deepagents/customization#memory).
+配置详情和示例请参阅[记忆](/oss/javascript/deepagents/customization#memory)。
 
-## 框架配置
+## 框架配置文件
 
-The harness can apply a declarative configuration bundle (a `HarnessProfile`) whenever a given provider or model is selected. Profiles tune runtime behavior after the model is built, without requiring per-agent setup code.
+框架可以在选择给定提供商或模型时应用声明式配置包（`HarnessProfile`）。配置文件在模型构建完成后调整运行时行为，无需每个智能体单独的设置代码。
 
-****工作原理：****
-- Register a profile under a provider name (`"openai"`) or a `provider:model` key (`"openai:gpt-5.4"`)
-- `create_deep_agent` looks up and applies the profile when resolving the model
-- Provider-level and model-level profiles merge at resolution time
+**工作原理：**
+- 在提供商名称（`"openai"`）或 `provider:model` 键（`"openai:gpt-5.4"`）下注册配置文件
+- `create_deep_agent` 在解析模型时查找并应用配置文件
+- 提供商级别和模型级别的配置文件在解析时合并
 
-****有用之处：****
-- Package per-provider or per-model defaults (system-prompt tweaks, tool overrides, middleware) in one place
-- Keep the `create_deep_agent` call site unchanged when switching models
-- Ship reusable profiles as plugins via entry points
+**实用场景：**
+- 将每个提供商或每个模型的默认设置（系统提示调整、工具覆盖、中间件）打包在一个地方
+- 切换模型时保持 `create_deep_agent` 调用处不变
+- 通过入口点将可复用的配置文件作为插件发布
 
-有关完整的 field list, merge semantics, and plugin packaging, see [Profiles](/oss/javascript/deepagents/profiles).
+完整字段列表、合并语义和插件打包请参阅[配置文件](/oss/javascript/deepagents/profiles)。
 
 ---
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    通过 MCP [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，获取实时答案。
+    [连接这些文档](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时解答。
 </Callout>
 <Callout icon="edit">
     [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/deepagents/harness.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。

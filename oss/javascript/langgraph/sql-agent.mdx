@@ -7,17 +7,17 @@ import ChatModelTabsPy from '/snippets/chat-model-tabs.mdx';
 import ChatModelTabsJS from '/snippets/chat-model-tabs-js.mdx';
 
 
-在本教程中，我们将使用 LangGraph 构建一个能够回答 SQL 数据库相关问题的自定义智能体。
+在本教程中，我们将使用 LangGraph 构建一个可以回答关于 SQL 数据库问题的自定义智能体。
 
-LangChain 提供了内置的[智能体](/oss/javascript/langchain/agents)实现，使用 [LangGraph](/oss/javascript/langgraph/overview) 原语实现。如果需要更深层次的自定义，可以直接在 LangGraph 中实现智能体。本指南演示了一个 SQL 智能体的示例实现。如需实践入门，请参阅[使用更高层级的 LangChain 抽象构建 SQL 智能体](/oss/javascript/langchain/sql-agent)。
+LangChain offers built-in [agent](/oss/javascript/langchain/agents) implementations, implemented using [LangGraph](/oss/javascript/langgraph/overview) primitives. If deeper customization is required, agents can be implemented directly in LangGraph. This guide demonstrates an example implementation of a SQL agent. For a practical introduction, see [building a SQL agent using higher-level LangChain abstractions](/oss/javascript/langchain/sql-agent).
 
 <Warning>
-构建 SQL 数据库的问答系统需要执行模型生成的 SQL 查询。这样做存在固有风险。请确保你的数据库连接权限始终尽可能地限制在智能体需要的最小范围内。这将减轻（但不能消除）构建模型驱动系统的风险。
+Building Q&A systems of SQL databases requires executing model-generated SQL queries. There are inherent risks in doing this. Make sure that your database connection permissions are always scoped as narrowly as possible for your agent's needs. This will mitigate, though not eliminate, the risks of building a model-driven system.
 </Warning>
 
-[预构建智能体](/oss/javascript/langchain/sql-agent)让我们能够快速上手，但我们依赖系统提示来约束其行为——例如，我们指示智能体始终从"列出表"工具开始，并始终在执行查询之前运行查询检查工具。
+The [prebuilt agent](/oss/javascript/langchain/sql-agent) lets us get started quickly, but we relied on the system prompt to constrain its behavior—for example, we instructed the agent to always start with the "list tables" tool, and to always run a query-checker tool before executing the query.
 
-我们可以通过在 LangGraph 中自定义智能体来实施更高程度的控制。在这里，我们实现了一个简单的 ReAct 智能体设置，为特定的工具调用设置了专门的节点。我们将使用与预构建智能体相同的[状态]。
+We can enforce a higher degree of control in LangGraph by customizing the agent. Here, we implement a simple ReAct-agent setup, with dedicated nodes for specific tool-calls. We will use the same [state] as the prebuilt agent.
 
 ### 概念
 
@@ -46,28 +46,28 @@ LangChain 提供了内置的[智能体](/oss/javascript/langchain/agents)实现�
 
 
 ### LangSmith
-设置 [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-sql-agent) 来检查你的链或智能体内部发生了什么。然后设置以下环境变量：
+Set up [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=oss-langgraph-sql-agent) to inspect what is happening inside your chain or agent. Then set the following environment variables:
 
     ```shell
     export LANGSMITH_TRACING="true"
     export LANGSMITH_API_KEY="..."
     ```
 
-## 1. 选择 LLM
+## 1. 选择大语言模型(LLM)
 
-选择一个支持[工具调用](/oss/javascript/integrations/providers/overview)的模型：
+Select a model that supports [tool-calling](/oss/javascript/integrations/providers/overview):
 
 
 <ChatModelTabsJS />
 
 
-以下示例中显示的输出使用了 OpenAI。
+The output shown in the examples below used OpenAI.
 
 ## 2. 配置数据库
 
-你将为本教程创建一个 [SQLite 数据库](https://www.sqlitetutorial.net/sqlite-sample-database/)。SQLite 是一个轻量级的数据库，易于设置和使用。我们将加载 `chinook` 数据库，这是一个代表数字媒体商店的示例数据库。
+You will be creating a [SQLite database](https://www.sqlitetutorial.net/sqlite-sample-database/) for this tutorial. SQLite is a lightweight database that is easy to set up and use. We will be loading the `chinook` database, which is a sample database that represents a digital media store.
 
-为了方便起见，我们将数据库（`Chinook.db`）托管在公共 GCS 存储桶中。
+For convenience, we have hosted the database (`Chinook.db`) on a public GCS bucket.
 
 
 ```typescript
@@ -92,7 +92,7 @@ async function resolveDbPath() {
 }
 ```
 
-我们将使用 `@langchain/classic/sql_db` 模块中提供的便捷 SQL 数据库包装器与数据库交互。该包装器提供了一个简单的接口来执行 SQL 查询和获取结果：
+We will use a handy SQL database wrapper available in the `@langchain/classic/sql_db` module to interact with the database. The wrapper provides a simple interface to execute SQL queries and fetch results:
 
 ```typescript
 import { SqlDatabase } from "@langchain/classic/sql_db";
@@ -119,13 +119,13 @@ Sample output: [{"ArtistId":1,"Name":"AC/DC"},{"ArtistId":2,"Name":"Accept"},{"A
 ## 3. 添加数据库交互工具
 
 
-我们将创建与数据库交互的自定义工具：
+We'll create custom tools to interact with the database:
 
 ```typescript
 import { tool } from "langchain";
 import * as z from "zod";
 
-// 列出所有表的工具
+// Tool to list all tables
 const listTablesTool = tool(
   async () => {
     const tableNames = db.allTables.map(t => t.tableName);
@@ -138,7 +138,7 @@ const listTablesTool = tool(
   }
 );
 
-// 获取特定表 schema 的工具
+// Tool to get schema for specific tables
 const getSchemaTool = tool(
   async ({ table_names }) => {
     const tables = table_names.split(",").map(t => t.trim());
@@ -153,7 +153,7 @@ const getSchemaTool = tool(
   }
 );
 
-// 执行 SQL 查询的工具
+// Tool to execute SQL query
 const queryTool = tool(
   async ({ query }) => {
     try {
@@ -189,14 +189,14 @@ sql_db_query: Input to this tool is a detailed and correct SQL query, output is 
 
 ## 4. 定义应用步骤
 
-我们为以下步骤构建专门的节点：
+We construct dedicated nodes for the following steps:
 
-- 列出数据库表
-- 调用"获取 schema"工具
-- 生成查询
-- 检查查询
+- Listing DB tables
+- Calling the "get schema" tool
+- Generating a query
+- Checking the query
 
-将这些步骤放在专门的节点中可以让我们 (1) 在需要时强制工具调用，以及 (2) 自定义与每个步骤关联的提示。
+Putting these steps in dedicated nodes lets us (1) force tool-calls when needed, and (2) customize the prompts associated with each step.
 
 
 ```typescript
@@ -205,16 +205,16 @@ import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { StateSchema, MessagesValue, GraphNode, StateGraph, START, END } from "@langchain/langgraph";
 import { z } from "zod/v4";
 
-// 为 schema 和查询执行创建工具节点
+// Create tool nodes for schema and query execution
 const getSchemaNode = new ToolNode([getSchemaTool]);
 const runQueryNode = new ToolNode([queryTool]);
 
-// 定义状态 schema
+// Define state schema
 const MessagesState = new StateSchema({
   messages: MessagesValue,
 });
 
-// 示例：创建预定的工具调用
+// Example: create a predetermined tool call
 const listTables: GraphNode<typeof MessagesState> = async (state) => {
   const toolCall = {
     name: "sql_db_list_tables",
@@ -233,7 +233,7 @@ const listTables: GraphNode<typeof MessagesState> = async (state) => {
   return { messages: [toolCallMessage, new ToolMessage({ content: toolMessage, tool_call_id: "abc123" }), response] };
 };
 
-// 示例：强制模型创建工具调用
+// Example: force a model to create a tool call
 const callGetSchema: GraphNode<typeof MessagesState> = async (state) => {
   const llmWithTools = model.bindTools([getSchemaTool], {
     tool_choice: "any",
@@ -261,8 +261,8 @@ DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the databa
 
 const generateQuery: GraphNode<typeof MessagesState> = async (state) => {
   const systemMessage = new SystemMessage(generateQuerySystemPrompt);
-  // 这里我们不强制工具调用，以允许模型
-  // 在获得解决方案时自然地响应。
+  // We do not force a tool call here, to allow the model to
+  // respond naturally when it obtains the solution.
   const llmWithTools = model.bindTools([queryTool]);
   const response = await llmWithTools.invoke([systemMessage, ...state.messages]);
 
@@ -290,7 +290,7 @@ You will call the appropriate tool to execute the query after running this check
 const checkQuery: GraphNode<typeof MessagesState> = async (state) => {
   const systemMessage = new SystemMessage(checkQuerySystemPrompt);
 
-  // 生成人工用户消息来检查
+  // Generate an artificial user message to check
   const lastMessage = state.messages[state.messages.length - 1];
   if (!lastMessage.tool_calls || lastMessage.tool_calls.length === 0) {
     throw new Error("No tool calls found in the last message");
@@ -301,7 +301,7 @@ const checkQuery: GraphNode<typeof MessagesState> = async (state) => {
     tool_choice: "any",
   });
   const response = await llmWithTools.invoke([systemMessage, userMessage]);
-  // 保留原始消息 ID
+  // Preserve the original message ID
   response.id = lastMessage.id;
 
   return { messages: [response] };
@@ -311,7 +311,7 @@ const checkQuery: GraphNode<typeof MessagesState> = async (state) => {
 
 ## 5. 实现智能体
 
-现在我们可以使用[图 API](/oss/javascript/langgraph/graph-api) 将这些步骤组装成工作流。我们在查询生成步骤定义了一个[条件边](/oss/javascript/langgraph/graph-api#conditional-edges)，如果生成了查询则路由到查询检查器，如果没有工具调用则结束（即 LLM 已经向查询交付了响应）。
+We can now assemble these steps into a workflow using the [Graph API](/oss/javascript/langgraph/graph-api). We define a [conditional edge](/oss/javascript/langgraph/graph-api#conditional-edges) at the query generation step that will route to the query checker if a query is generated, or end if there are no tool calls present, such that the LLM has delivered a response to the query.
 
 
 ```typescript
@@ -344,7 +344,7 @@ const builder = new StateGraph(MessagesState)
 
 const agent = builder.compile();
 ```
-我们在下方可视化应用：
+We visualize the application below:
 ```typescript
 import * as fs from "node:fs/promises";
 
@@ -357,11 +357,11 @@ await fs.writeFile("graph.png", imageBuffer);
 
 <img
   src="/oss/images/sql-agent-langgraph.png"
-  alt="SQL 智能体图"
+  alt="SQL agent graph"
   style={{ height: "800px" }}
 />
 
-现在我们可以调用图：
+We can now invoke the graph:
 
 ```typescript
 const question = "Which genre on average has the longest tracks?";
@@ -456,17 +456,17 @@ The genre with the longest tracks on average is "Sci Fi & Fantasy," with an aver
 ```
 
 <Tip>
-查看上述运行的 [LangSmith 追踪](https://smith.langchain.com/public/a6a96896-686a-4040-b9b5-28d701453d6f/r)。
+See [LangSmith trace](https://smith.langchain.com/public/a6a96896-686a-4040-b9b5-28d701453d6f/r) for the above run.
 </Tip>
 
 
 ## 6. 实现人机协作审查
 
-在执行智能体的 SQL 查询之前检查它们以发现任何意外操作或效率问题是明智的做法。
+It can be prudent to check the agent's SQL queries before they are executed for any unintended actions or inefficiencies.
 
-这里我们利用 LangGraph 的[人机协作](/oss/javascript/langgraph/interrupts)特性在执行 SQL 查询之前暂停运行并等待人工审查。使用 LangGraph 的[持久化层](/oss/javascript/langgraph/persistence)，我们可以无限期地暂停运行（或至少在持久化层存活期间）。
+Here we leverage LangGraph's [human-in-the-loop](/oss/javascript/langgraph/interrupts) features to pause the run before executing a SQL query and wait for human review. Using LangGraph's [persistence layer](/oss/javascript/langgraph/persistence), we can pause the run indefinitely (or at least as long as the persistence layer is alive).
 
-让我们将 `sql_db_query` 工具包装在一个接收人工输入的节点中。我们可以使用[中断](/oss/javascript/langgraph/interrupts)函数来实现这一点。下面，我们允许输入来批准工具调用、编辑其参数或提供用户反馈。
+Let's wrap the `sql_db_query` tool in a node that receives human input. We can implement this using the [interrupt](/oss/javascript/langgraph/interrupts) function. Below, we allow for input to approve the tool call, edit its arguments, or provide user feedback.
 
 
 ```typescript
@@ -483,18 +483,18 @@ const queryToolWithInterrupt = tool(
       description: "Please review the tool call",
     };
     const response = interrupt([request]); // [!code highlight]
-    // 批准工具调用
+    // approve the tool call
     if (response.type === "accept") {
       const toolResponse = await queryTool.invoke(input, config);
       return toolResponse;
     }
-    // 更新工具调用参数
+    // update tool call args
     else if (response.type === "edit") {
       const editedInput = response.args.args;
       const toolResponse = await queryTool.invoke(editedInput, config);
       return toolResponse;
     }
-    // 用用户反馈响应 LLM
+    // respond to the LLM with user feedback
     else if (response.type === "response") {
       const userFeedback = response.args;
       return userFeedback;
@@ -512,10 +512,10 @@ const queryToolWithInterrupt = tool(
 
 
 <Note>
-上述实现遵循了更广泛的[人机协作](/oss/javascript/langgraph/interrupts)指南中的[工具中断示例](/oss/javascript/langgraph/interrupts#interrupts-in-tools)。有关详细信息和替代方案，请参阅该指南。
+The above implementation follows the [tool interrupt example](/oss/javascript/langgraph/interrupts#interrupts-in-tools) in the broader [human-in-the-loop](/oss/javascript/langgraph/interrupts) guide. Refer to that guide for details and alternatives.
 </Note>
 
-现在让我们重新组装图。我们将用人工审查替换程序化检查。请注意，我们现在包含了一个[检查点器](/oss/javascript/langgraph/persistence)；这是暂停和恢复运行所必需的。
+Let's now re-assemble our graph. We will replace the programmatic check with human review. Note that we now include a [checkpointer](/oss/javascript/langgraph/persistence); this is required to pause and resume the run.
 
 
 ```typescript
@@ -551,7 +551,7 @@ const agentWithHuman = builderWithHuman.compile({ checkpointer }); // [!code hig
 ```
 
 
-我们可以像之前一样调用图。这次，执行被中断了：
+We can invoke the graph as before. This time, execution is interrupted:
 
 
 ```typescript
@@ -571,7 +571,7 @@ for await (const step of stream) {
   }
 }
 
-// 检查中断
+// Check for interrupts
 const state = await agentWithHuman.getState(config);
 if (state.next.length > 0) {
   console.log("\nINTERRUPTED:");
@@ -592,7 +592,7 @@ INTERRUPTED:
   "description": "Please review the tool call"
 }
 ```
-我们可以使用 [Command](/oss/javascript/langgraph/use-graph-api#combine-control-flow-and-state-updates-with-command) 来接受或编辑工具调用：
+We can accept or edit the tool call using [Command](/oss/javascript/langgraph/use-graph-api#combine-control-flow-and-state-updates-with-command):
 
 
 ```typescript
@@ -629,18 +629,18 @@ Name: sql_db_query
 The genre with the longest average track length is "Sci Fi & Fantasy" with an average length of about 2,911,783 milliseconds. Other genres with long average track lengths include "Science Fiction," "Drama," "TV Shows," and "Comedy."
 ```
 
-有关详细信息，请参阅[人机协作指南](/oss/javascript/langgraph/interrupts)。
+Refer to the [human-in-the-loop guide](/oss/javascript/langgraph/interrupts) for details.
 
 ## 下一步
-查看[评估图](/langsmith/evaluate-graph)指南，了解如何使用 LangSmith 评估 LangGraph 应用程序，包括像这样的 SQL 智能体。
+查看[评估图](/langsmith/evaluate-graph)指南，了解如何使用 LangSmith 评估 LangGraph 应用，包括像本示例这样的 SQL 智能体。
 
 ---
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等工具，通过 MCP 获取实时答案。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/sql-agent.mdx) 或 [提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/sql-agent.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

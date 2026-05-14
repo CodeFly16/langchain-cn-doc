@@ -16,13 +16,13 @@ import { PatternEmbed } from "/snippets/pattern-embed.jsx"
 1. **推理块**：模型的内部思维链、问题分解和逐步分析
 2. **文本块**：呈现给用户的最终精炼响应
 
-These are delivered as typed content blocks within an `AIMessage`, accessible via the `contentBlocks` property:
+这些内容以类型化内容块的形式在 `AIMessage` 中传递，可通过 `contentBlocks` 属性访问：
 
 ```ts
-// Reasoning block
+// 推理块
 { type: "reasoning", reasoning: "Let me think about this step by step..." }
 
-// Text block
+// 文本块
 { type: "text", text: "The answer is 42." }
 ```
 
@@ -67,7 +67,7 @@ function extractBlocks(msg: AIMessage) {
 
 
 
-导入你的智能体并将 `typeof myAgent` 作为类型参数传递给 `useStream`，以获得对状态值的类型安全访问：
+导入你的智能体并将 `typeof myAgent` 作为类型参数传递给 `useStream`，以获得类型安全的状态值访问：
 
 ```ts
 import type { myAgent } from "./agent";
@@ -231,7 +231,7 @@ function ThinkingBubble({
           )}
         </span>
         <span className="thinking-label">
-          {isStreaming ? "Thinking..." : `Thought process (${charCount} chars)`}
+          {isStreaming ? "思考中..." : `思考过程 (${charCount} 字符)`}
         </span>
         <span className={`chevron ${isExpanded ? "expanded" : ""}`}>▶</span>
       </button>
@@ -305,7 +305,7 @@ function ThinkingBubble({
 
 ## 推理的流式指示器
 
-While the model is still generating reasoning tokens, show an animated indicator to communicate that thinking is in progress:
+当模型仍在生成推理 Token 时，显示一个动画指示器来表明思考正在进行中：
 
 ```css
 .thinking-spinner {
@@ -324,12 +324,12 @@ While the model is still generating reasoning tokens, show an animated indicator
 ```
 
 <Tip>
-During streaming, keep the ThinkingBubble collapsed 默认情况下 and show only the spinner. Expanding mid-stream can cause layout jitter as new tokens arrive. Let users expand after the reasoning phase completes.
+在流式输出期间，默认保持 ThinkingBubble 折叠，仅显示加载动画。在流式输出中途展开可能会因为新 Token 到达而导致布局抖动。让用户在推理阶段完成后再展开。
 </Tip>
 
 ## 渲染完整的 AI 响应
 
-Combine the `ThinkingBubble` and a standard text bubble into a single `AIResponse` component:
+将 `ThinkingBubble` 和标准文本气泡组合成一个 `AIResponse` 组件：
 
 ```tsx
 function AIResponse({
@@ -396,9 +396,9 @@ const meaningfulReasoning = message.contentBlocks
 ```ts
 message.contentBlocks.forEach((block) => {
   if (block.type === "reasoning") {
-    // Render ThinkingBubble
+    // 渲染 ThinkingBubble
   } else if (block.type === "text") {
-    // Render text paragraph
+    // 渲染文本段落
   }
 });
 ```
@@ -416,9 +416,9 @@ message.contentBlocks.forEach((block) => {
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    [连接这些文档](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
+    [将这些文档连接到](/use-these-docs) Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/frontend/reasoning-tokens.mdx) 或[提交 Issue](https://github.com/langchain-ai/docs/issues/new/choose).
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/frontend/reasoning-tokens.mdx) 或 [提交 issue](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>

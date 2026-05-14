@@ -5,13 +5,13 @@ sidebarTitle: 使用函数式 API
 
 
 
-The [**Functional API**](/oss/javascript/langgraph/functional-api) allows you to add LangGraph's key features ([persistence](/oss/javascript/langgraph/persistence), [memory](/oss/javascript/langgraph/add-memory), [human-in-the-loop](/oss/javascript/langgraph/interrupts), and [streaming](/oss/javascript/langgraph/streaming)) to your applications with minimal changes to your existing code.
+[**函数式 API**](/oss/javascript/langgraph/functional-api) 允许你以最少的代码更改将 LangGraph 的关键功能（[持久化](/oss/javascript/langgraph/persistence)、[记忆](/oss/javascript/langgraph/add-memory)、[人机协作](/oss/javascript/langgraph/interrupts)和[流式输出](/oss/javascript/langgraph/streaming)）添加到现有应用中。
 
 <Tip>
 For conceptual information on the functional API, see [Functional API](/oss/javascript/langgraph/functional-api).
 </Tip>
 
-## Creating a simple workflow
+## 创建简单工作流
 
 When defining an `entrypoint`, input is restricted to the first argument of the function. To pass multiple inputs, you can use a dictionary.
 
@@ -105,7 +105,7 @@ await myWorkflow.invoke({ value: 1, anotherValue: 2 });
     }
   );
 
-  // 执行 the workflow
+  // Execute the workflow
   const config = { configurable: { thread_id: uuid7() } };
   const result = await workflow.invoke("the history of flight", config);
   console.log(result);
@@ -113,7 +113,7 @@ await myWorkflow.invoke({ value: 1, anotherValue: 2 });
 
 </Accordion>
 
-## Parallel execution
+## 并行执行
 
 Tasks can be executed in parallel by invoking them concurrently and waiting for the results. This is useful for improving performance in IO bound tasks (e.g., calling APIs for LLMs).
 
@@ -177,7 +177,7 @@ const graph = entrypoint(
   This example uses LangGraph's concurrency model to improve execution time, especially when tasks involve I/O like LLM completions.
 </Accordion>
 
-## Calling graphs
+## 调用图
 
 The **Functional API** and the [**Graph API**](/oss/javascript/langgraph/graph-api) can be used together in the same application as they share the same underlying runtime.
 
@@ -239,14 +239,14 @@ const someWorkflow = entrypoint(
     }
   );
 
-  // 执行 the workflow
+  // Execute the workflow
   const config = { configurable: { thread_id: uuid7() } };
-  console.log(await workflow.invoke(5, config)); // 输出: { bar: 10 }
+  console.log(await workflow.invoke(5, config)); // Output: { bar: 10 }
   ```
 
 </Accordion>
 
-## Call other entrypoints
+## 调用其他入口点
 
 You can call other **entrypoints** from within an **entrypoint** or a **task**.
 
@@ -298,9 +298,9 @@ const myWorkflow = entrypoint(
     }
   );
 
-  // 执行 the main workflow
+  // Execute the main workflow
   const config = { configurable: { thread_id: uuid7() } };
-  console.log(await main.invoke({ x: 6, y: 7 }, config)); // 输出: { product: 42 }
+  console.log(await main.invoke({ x: 6, y: 7 }, config)); // Output: { product: 42 }
   ```
 
 </Accordion>
@@ -308,7 +308,7 @@ const myWorkflow = entrypoint(
 ## 流式输出
 
 The **Functional API** uses the same streaming mechanism as the **Graph API**. Please
-read the [**streaming guide**](/oss/javascript/langgraph/streaming) section 了解更多详情.
+read the [**streaming guide**](/oss/javascript/langgraph/streaming) section for more details.
 
 Example of using the streaming API to stream both updates and custom data.
 
@@ -361,7 +361,7 @@ updates: {"main": 5}
 ```
 
 
-## Retry policy
+## 重试策略
 
 
 
@@ -421,7 +421,7 @@ await main.invoke({ any_input: "foobar" }, config);
 
 
 
-## Caching tasks
+## 缓存任务
 
 
 
@@ -468,7 +468,7 @@ for await (const chunk of await main.stream(
 1. `ttl` is specified in seconds. The cache will be invalidated after this time.
 
 
-## Resuming after an error
+## 错误后恢复
 
 
 
@@ -548,7 +548,7 @@ await main.invoke(null, config);
 ```
 
 
-## Human-in-the-loop
+## 人机协作
 
 The functional API supports [human-in-the-loop](/oss/javascript/langgraph/interrupts) workflows using the [`interrupt`](https://reference.langchain.com/javascript/langchain-langgraph/index/interrupt) function and the `Command` primitive.
 
@@ -621,7 +621,7 @@ for await (const event of await graph.stream("foo", config)) {
 ```
 
 
-请注意 we've paused with an [`interrupt`](https://reference.langchain.com/javascript/langchain-langgraph/index/interrupt) after `step_1`. The interrupt provides instructions to resume the run. To resume, we issue a [`Command`](/oss/javascript/langgraph/interrupts#resuming-interrupts) containing the data expected by the `human_feedback` task.
+Note that we've paused with an [`interrupt`](https://reference.langchain.com/javascript/langchain-langgraph/index/interrupt) after `step_1`. The interrupt provides instructions to resume the run. To resume, we issue a [`Command`](/oss/javascript/langgraph/interrupts#resuming-interrupts) containing the data expected by the `human_feedback` task.
 
 
 
@@ -732,7 +732,7 @@ const agent = entrypoint(
         }
       }
 
-      // 执行 remaining tool calls
+      // Execute remaining tool calls
       const remainingToolResults = await Promise.all(
         toolCalls.map((toolCall) => callTool(toolCall))
       );
@@ -756,9 +756,9 @@ const agent = entrypoint(
 ```
 
 
-## Short-term memory
+## 短期记忆
 
-Short-term memory allows storing information across different **invocations** of the same **thread id**. See [short-term memory](/oss/javascript/langgraph/functional-api#short-term-memory) 了解更多详情.
+Short-term memory allows storing information across different **invocations** of the same **thread id**. See [short-term memory](/oss/javascript/langgraph/functional-api#short-term-memory) for more details.
 
 ### Manage checkpoints
 
@@ -950,15 +950,15 @@ for await (const chunk of await workflow.stream([inputMessage2], {
 ```
 
 
-## Long-term memory
+## 长期记忆
 
 [long-term memory](/oss/javascript/concepts/memory#long-term-memory) allows storing information across different **thread ids**. This could be useful for learning information about a given user in one conversation and using it in another.
 
-## Workflows
+## 工作流
 
 * [Workflows and agent](/oss/javascript/langgraph/workflows-agents) guide for more examples of how to build workflows using the Functional API.
 
-## Integrate with other libraries
+## 与其他库集成
 
 * [Add LangGraph's features to other frameworks using the functional API](/langsmith/deploy-other-frameworks): Add LangGraph features like persistence, memory and streaming to other agent frameworks that do not provide them out of the box.
 
@@ -966,9 +966,9 @@ for await (const chunk of await workflow.stream([inputMessage2], {
 
 <div className="source-links">
 <Callout icon="terminal-2">
-    [连接这些文档](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
+    [将这些文档连接](/use-these-docs)到 Claude、VSCode 等，通过 MCP 获取实时答案。
 </Callout>
 <Callout icon="edit">
-    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/use-functional-api.mdx) 或[提交 Issue](https://github.com/langchain-ai/docs/issues/new/choose).
+    [在 GitHub 上编辑此页面](https://github.com/langchain-ai/docs/edit/main/src/oss/langgraph/use-functional-api.mdx)或[提交问题](https://github.com/langchain-ai/docs/issues/new/choose)。
 </Callout>
 </div>
