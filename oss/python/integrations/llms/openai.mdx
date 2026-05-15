@@ -37,6 +37,12 @@ if "OPENAI_API_KEY" not in os.environ:
     os.environ["OPENAI_API_KEY"] = getpass.getpass("请输入您的 OpenAI API 密钥: ")
 ```
 
+如果您通过代理或服务模拟器转发请求，可以通过环境变量设置 base URL，而无需传递 `base_url` 参数。解析顺序（优先匹配）：
+
+1. 显式的 `base_url`（或 `openai_api_base`）关键字参数。
+2. `OPENAI_API_BASE` — LangChain 在初始化时读取。
+3. `OPENAI_BASE_URL` — 由底层 `openai` SDK 客户端读取。
+
 要启用模型调用的自动追踪，请设置您的 [LangSmith](/langsmith/home) API key:
 
 ```python

@@ -13,8 +13,12 @@ Use assertions when:
 - You want to capture acceptance criteria in plain English without leaving the review flow.
 
 <Note>
-Assertions are available on [single-run annotation queues](/langsmith/annotation-queues#single-run-annotation-queues). [Pairwise queues](/langsmith/annotation-queues#pairwise-annotation-queues) are unchanged. Assertions are currently UI-only; the [SDK guide](/langsmith/annotation-queues-sdk) covers programmatic access to feedback configs and queue rubrics, not assertions.
+Assertions 可在[单次运行标注队列](/langsmith/annotation-queues#single-run-annotation-queues)中使用。[配对队列](/langsmith/annotation-queues#pairwise-annotation-queues)不受影响。Assertions 目前仅在 LangSmith UI 中可用。
 </Note>
+
+<Tip>
+[LangSmith Engine](/langsmith/engine#add-offline-examples) 可以为标记为反复出现问题的生产追踪自动提议 assertions。打开问题的离线样本流程，可以在保存到数据集之前审查、编辑或扩展 Engine 提议的 assertions。
+</Tip>
 
 ## Add assertions
 
