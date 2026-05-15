@@ -438,7 +438,8 @@
                   "pages": [
                     "langsmith/dashboards",
                     "langsmith/alerts",
-                    "langsmith/insights"
+                    "langsmith/insights",
+                    "langsmith/engine"
                   ]
                 },
                 {
